@@ -65,7 +65,9 @@ export default function Question({ lessonId, questionData }) {
     }
 
     return (
-        <div className={`my-4 p-6 border rounded-lg shadow-lg transition-all duration-500 ease-in-out 
+        <div 
+            id={`question-${questionData.id}`}
+            className={`my-4 p-6 border rounded-lg shadow-lg transition-all duration-500 ease-in-out 
             ${!isUnlocked ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'}
             ${isCorrect === true ? 'bg-green-50 border-green-400' : ''} 
             ${isCorrect === false ? 'bg-red-50 border-red-400' : ''}`}>

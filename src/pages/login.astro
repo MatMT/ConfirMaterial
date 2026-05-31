@@ -1,0 +1,104 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+
+const { cookies, redirect, url } = Astro;
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+const credential = url.searchParams.get("credential");
+const isRegistered = url.searchParams.get("registered") === "true";
+const isTeacherRegistered = url.searchParams.get("teacher_registered") === "true";
+const errorMsg = url.searchParams.get("error");
+
+if (accessToken && refreshToken) {
+  return redirect("/dashboard");
+}
+---
+
+<!doctype html>
+<html lang="es" data-theme="confirtheme">
+  <head>
+    <BaseHead title={`Iniciar Sesión | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+  </head>
+  <body class="min-h-screen bg-base-200 flex flex-col justify-center items-center p-4">
+    <div class="card w-full max-w-sm shadow-2xl bg-base-100 animate-fade-down animate-duration-500">
+      <div class="card-body">
+        <div class="text-center mb-6">
+          <h1 class="text-3xl font-bold text-primary">Bienvenido</h1>
+          <p class="text-sm text-base-content/70 mt-2">Ingresa a tu cuenta para continuar aprendiendo</p>
+        </div>
+
+        <div class="toast toast-top toast-center z-50 w-full max-w-md" id="successToast">
+          {isRegistered && credential && (
+            <div class="alert bg-base-100 border-l-4 border-primary shadow-2xl flex justify-between rounded-lg">
+              <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-primary shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                  <h3 class="font-bold text-primary">¡Cuenta creada!</h3>
+                  <div class="text-sm mt-1">Tu credencial es: <strong class="text-xl text-primary">{credential}</strong></div>
+                  <div class="text-xs mt-1 text-base-content/70">Guárdala bien. Ya puedes iniciar sesión.</div>
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm btn-circle" onclick="document.getElementById('successToast').style.display='none'">✕</button>
+            </div>
+          )}
+
+          {isTeacherRegistered && (
+            <div class="alert bg-base-100 border-l-4 border-secondary shadow-2xl flex justify-between rounded-lg">
+              <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-secondary shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                  <h3 class="font-bold text-secondary">¡Registro Exitoso!</h3>
+                  <div class="text-xs mt-1 text-base-content/70">Revisa tu correo para confirmar.</div>
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm btn-circle" onclick="document.getElementById('successToast').style.display='none'">✕</button>
+            </div>
+          )}
+
+          {errorMsg && (
+            <div class="alert alert-error shadow-2xl flex justify-between rounded-lg">
+              <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                  <h3 class="font-bold text-error-content">Error</h3>
+                  <div class="text-sm mt-1 text-error-content/90">{errorMsg}</div>
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm btn-circle text-error-content" onclick="document.getElementById('successToast').style.display='none'">✕</button>
+            </div>
+          )}
+        </div>
+        
+        <form action="/api/auth/signin" method="post" class="flex flex-col gap-4 relative z-10">
+          <div class="form-control">
+            <label class="label" for="identifier">
+              <span class="label-text font-semibold">Credencial de Alumno o Correo</span>
+            </label>
+            <input type="text" name="identifier" id="identifier" value={credential || ""} placeholder="EL231027 o tu@correo.com" class="input input-bordered w-full" required />
+          </div>
+          
+          <div class="form-control">
+            <label class="label" for="password">
+              <span class="label-text font-semibold">Contraseña</span>
+            </label>
+            <input type="password" name="password" id="password" placeholder="••••••••" class="input input-bordered w-full" required />
+            <label class="label mt-1">
+              <a href="#" class="label-text-alt link link-hover text-primary">¿Olvidaste tu contraseña?</a>
+            </label>
+          </div>
+          
+          <div class="form-control mt-4">
+            <button type="submit" class="btn btn-primary w-full">Iniciar Sesión</button>
+          </div>
+        </form>
+
+        <div class="divider my-6">o</div>
+        
+        <p class="text-center text-sm">
+          ¿No tienes una cuenta? <a href="/register" class="link link-primary font-semibold">Regístrate aquí</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

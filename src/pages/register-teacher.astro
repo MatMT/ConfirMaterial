@@ -1,0 +1,93 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+
+const { cookies, redirect, url } = Astro;
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+const errorMsg = url.searchParams.get("error");
+
+if (accessToken && refreshToken) {
+  return redirect("/dashboard");
+}
+---
+
+<!doctype html>
+<html lang="es" data-theme="confirtheme">
+  <head>
+    <BaseHead title={`Registro de Maestros | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+  </head>
+  <body class="min-h-screen bg-base-200 flex flex-col justify-center items-center p-4">
+    
+    {errorMsg && (
+      <div class="toast toast-top toast-center z-50 w-full max-w-md" id="errorToast">
+        <div class="alert alert-error shadow-2xl flex justify-between rounded-lg">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div>
+              <h3 class="font-bold text-error-content">Error de Registro</h3>
+              <div class="text-sm mt-1 text-error-content/90">{errorMsg}</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-circle text-error-content" onclick="document.getElementById('errorToast').style.display='none'">✕</button>
+        </div>
+      </div>
+    )}
+
+    <div class="card w-full max-w-sm shadow-2xl bg-base-100 animate-fade-down animate-duration-500 border-t-4 border-secondary">
+      <div class="card-body">
+        <div class="text-center mb-6">
+          <h1 class="text-3xl font-bold text-secondary">Acceso Maestros</h1>
+          <p class="text-sm text-base-content/70 mt-2">Área restringida para docentes</p>
+        </div>
+        
+        <form action="/api/auth/register-teacher" method="post" class="flex flex-col gap-4">
+          <div class="form-control">
+            <label class="label" for="firstName">
+              <span class="label-text font-semibold">Nombre(s)</span>
+            </label>
+            <input type="text" name="firstName" id="firstName" class="input input-bordered w-full" required />
+          </div>
+
+          <div class="form-control">
+            <label class="label" for="lastNames">
+              <span class="label-text font-semibold">Apellidos</span>
+            </label>
+            <input type="text" name="lastNames" id="lastNames" class="input input-bordered w-full" required />
+          </div>
+
+          <div class="form-control">
+            <label class="label" for="email">
+              <span class="label-text font-semibold">Correo Electrónico</span>
+            </label>
+            <input type="email" name="email" id="email" placeholder="tu@correo.com" class="input input-bordered w-full" required />
+          </div>
+          
+          <div class="form-control">
+            <label class="label" for="password">
+              <span class="label-text font-semibold">Contraseña</span>
+            </label>
+            <input type="password" name="password" id="password" class="input input-bordered w-full" required minlength="6" />
+          </div>
+
+          <div class="form-control mt-2 p-3 bg-base-200 rounded-lg">
+            <label class="label" for="adminPin">
+              <span class="label-text font-bold text-error">PIN de Administrador</span>
+            </label>
+            <input type="password" name="adminPin" id="adminPin" placeholder="Requerido" class="input input-bordered border-error w-full text-center tracking-widest font-mono" required />
+          </div>
+          
+          <div class="form-control mt-4">
+            <button type="submit" class="btn btn-secondary w-full">Crear Cuenta de Maestro</button>
+          </div>
+        </form>
+
+        <div class="divider my-4"></div>
+        
+        <p class="text-center text-xs">
+          ¿Eres estudiante? <a href="/register" class="link link-primary">Regístrate aquí</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

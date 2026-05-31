@@ -217,3 +217,10 @@ a:hover svg {
 ul{
     list-style: disc !important;
 }
+
+/* Evitar que los botones se oscurezcan al mantener el clic (DaisyUI override) */
+.btn:active, .btn:active:hover, .btn:active:focus {
+    transform: none !important;
+    animation: none !important;
+    filter: none !important;
+}

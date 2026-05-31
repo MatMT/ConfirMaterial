@@ -1,0 +1,99 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+
+const { cookies, redirect, url } = Astro;
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+const errorMsg = url.searchParams.get("error");
+
+if (accessToken && refreshToken) {
+  return redirect("/dashboard");
+}
+---
+
+<!doctype html>
+<html lang="es" data-theme="confirtheme">
+  <head>
+    <BaseHead title={`Registro Alumno | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+  </head>
+  <body class="min-h-screen bg-base-200 flex flex-col justify-center items-center p-4">
+    
+    {errorMsg && (
+      <div class="toast toast-top toast-center z-50 w-full max-w-md" id="errorToast">
+        <div class="alert alert-error shadow-2xl flex justify-between rounded-lg">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div>
+              <h3 class="font-bold text-error-content">Error de Registro</h3>
+              <div class="text-sm mt-1 text-error-content/90">{errorMsg}</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-circle text-error-content" onclick="document.getElementById('errorToast').style.display='none'">✕</button>
+        </div>
+      </div>
+    )}
+
+    <div class="card w-full max-w-sm shadow-2xl bg-base-100 animate-fade-down animate-duration-500">
+      <div class="card-body">
+        <div class="text-center mb-6">
+          <h1 class="text-3xl font-bold text-primary">Únete a Nosotros</h1>
+          <p class="text-sm text-base-content/70 mt-2">Crea tu cuenta para empezar tu camino</p>
+        </div>
+        
+        <form action="/api/auth/register-student" method="post" class="flex flex-col gap-4">
+          
+          <div class="form-control">
+            <label class="label" for="firstName">
+              <span class="label-text font-semibold">Nombre(s)</span>
+            </label>
+            <input type="text" name="firstName" id="firstName" placeholder="Juan Pablo" class="input input-bordered w-full" required />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label" for="lastName1">
+                <span class="label-text font-semibold">Apellido Paterno</span>
+              </label>
+              <input type="text" name="lastName1" id="lastName1" placeholder="Pérez" class="input input-bordered w-full" required />
+            </div>
+
+            <div class="form-control">
+              <label class="label" for="lastName2">
+                <span class="label-text font-semibold">Apellido Materno</span>
+              </label>
+              <input type="text" name="lastName2" id="lastName2" placeholder="López (Opcional)" class="input input-bordered w-full" />
+            </div>
+          </div>
+
+          <div class="form-control">
+            <label class="label" for="birthDate">
+              <span class="label-text font-semibold">Fecha de Nacimiento</span>
+            </label>
+            <input type="date" name="birthDate" id="birthDate" class="input input-bordered w-full" required />
+          </div>
+          
+          <div class="form-control">
+            <label class="label" for="password">
+              <span class="label-text font-semibold">Contraseña</span>
+            </label>
+            <input type="password" name="password" id="password" placeholder="Crea una contraseña (mín. 6 letras)" class="input input-bordered w-full" required minlength="6" />
+          </div>
+          
+          <div class="form-control mt-4">
+            <button type="submit" class="btn btn-primary w-full">Crear Cuenta</button>
+          </div>
+        </form>
+
+        <div class="divider my-6">o</div>
+        
+        <p class="text-center text-sm">
+          ¿Ya tienes una credencial? <a href="/login" class="link link-primary font-semibold">Inicia Sesión</a>
+        </p>
+        <p class="text-center text-xs mt-2">
+          ¿Eres profesor? <a href="/register-teacher" class="link link-secondary">Regístrate aquí</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,56 +1,83 @@
 ---
 import HeaderLink from "./HeaderLink.astro";
 import { SITE_TITLE } from "../consts";
+import { Icon } from 'astro-icon/components';
+import StoreInitializer from './react/StoreInitializer';
+import { supabase } from '../utils/supabase';
+
+interface Props {
+  isSticky?: boolean;
+}
+
+const { isSticky = true } = Astro.props;
+const { cookies } = Astro;
+const accessToken = cookies.get("sb-access-token");
+const isLoggedIn = !!accessToken;
+
+let userProfile = null;
+if (isLoggedIn) {
+  // Opcional: Obtener perfil del usuario para inicializar Zustand
+  // Como esto corre en SSR, le pasaremos los datos básicos si existen
+  try {
+    const { data: { user } } = await supabase.auth.getUser(accessToken.value);
+    if (user) {
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      userProfile = profile;
+    }
+  } catch (e) {}
+}
 ---
 
-<header>
-  <nav>
-    <h2 class="text-3xl font-bold text-center w-full py-5 md:py-0"><a href="/">{SITE_TITLE}</a></h2>
-
-    <div class="internal-links flex-wrap w-full flex justify-center">
-      <HeaderLink href="/">Inicio</HeaderLink>
-      <HeaderLink href="/lessons">Lecciones</HeaderLink>
-      <HeaderLink href="/more">Material</HeaderLink>
+<header class={`navbar bg-base-100 shadow-sm ${isSticky ? 'sticky top-0 z-50' : 'relative z-40'}`}>
+  <StoreInitializer client:only="react" user={userProfile} />
+  
+  <div class="navbar-start">
+    <div class="dropdown">
+      <div tabindex="0" role="button" class="btn btn-ghost md:hidden">
+        <Icon name="mdi:menu" class="h-6 w-6" />
+      </div>
+      <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+        <li><HeaderLink href="/">Inicio</HeaderLink></li>
+        <li><HeaderLink href="/lessons">Lecciones</HeaderLink></li>
+        <li><HeaderLink href="/more">Material</HeaderLink></li>
+      </ul>
     </div>
-  </nav>
+    <a href="/" class="btn btn-ghost text-xl font-bold text-primary">{SITE_TITLE}</a>
+  </div>
+  
+  <div class="navbar-center hidden md:flex">
+    <ul class="menu menu-horizontal px-1">
+      <li><HeaderLink href="/">Inicio</HeaderLink></li>
+      <li><HeaderLink href="/lessons">Lecciones</HeaderLink></li>
+      <li><HeaderLink href="/more">Material</HeaderLink></li>
+    </ul>
+  </div>
+  
+  <div class="navbar-end">
+    {isLoggedIn ? (
+      <a href="/dashboard" class="btn btn-ghost btn-circle" aria-label="Perfil">
+        <Icon name="mdi:account-circle" class="h-8 w-8 text-primary" />
+      </a>
+    ) : (
+      <a href="/login" class="btn btn-outline btn-primary btn-sm rounded-full">
+        <Icon name="mdi:login" class="h-4 w-4 mr-1" /> Entrar
+      </a>
+    )}
+  </div>
 </header>
-<style>
-  header {
-    margin: 0;
-    padding: 0.5rem 1em;
-    background: white;
-    box-shadow: 0 2px 8px rgba(var(--black), 5%);
+<style is:global>
+  .menu a {
+    border: 1px solid transparent;
+    border-radius: 9999px; /* Pill shape */
+    margin: 0 0.25rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
   }
-  h2 {
-    margin: 0;
+  .menu a.active {
+    border-color: var(--fallback-p,oklch(var(--p))) !important;
+    color: var(--fallback-p,oklch(var(--p))) !important;
+    font-weight: bold !important;
+    background-color: transparent !important;
+    text-decoration: none !important;
   }
-
-  h2 a,
-  h2 a.active {
-    text-decoration: none;
-  }
-  nav {
-    display: flex;
-	flex-wrap: wrap ;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  @media (width > 720px) {
-	nav {
-		flex-wrap: nowrap;
-	}
-  }
-
-  nav a {
-    padding: 1em 0.5em;
-    color: var(--black);
-    border-bottom: 4px solid transparent;
-    text-decoration: none;
-  }
-  nav a.active {
-    text-decoration: none;
-    border-bottom-color: var(--accent);
-  }
-
 </style>
