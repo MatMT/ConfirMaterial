@@ -60,10 +60,10 @@ if (user) {
     <main class="container mx-auto p-4 max-w-4xl animate-fade-up my-8">
       {
         successMsg && (
-          <div class="toast toast-top toast-center z-50">
-            <div class="alert alert-success shadow-lg">
+          <div class="toast toast-top toast-end z-[100]">
+            <div class="alert alert-success shadow-lg text-white border-none">
               <Icon name="mdi:check-circle" class="w-6 h-6" />
-              <span>{successMsg}</span>
+              <span class="font-medium">{successMsg}</span>
             </div>
           </div>
         )
@@ -71,10 +71,10 @@ if (user) {
 
       {
         errorMsg && (
-          <div class="toast toast-top toast-center z-50">
-            <div class="alert alert-error shadow-lg text-white">
+          <div class="toast toast-top toast-end z-[100]">
+            <div class="alert alert-error shadow-lg text-white border-none">
               <Icon name="mdi:alert-circle" class="w-6 h-6" />
-              <span>{errorMsg}</span>
+              <span class="font-medium">{errorMsg}</span>
             </div>
           </div>
         )
