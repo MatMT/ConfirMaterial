@@ -2,19 +2,30 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import GrettingName from "../components/react/GrettingName";
 import {SITE_TITLE, SITE_DESCRIPTION} from "../consts";
+import { supabase } from "../utils/supabase";
+
+const { cookies } = Astro;
+const accessToken = cookies.get("sb-access-token");
+let firstName = "";
+
+if (accessToken) {
+  const { data: { user } } = await supabase.auth.getUser(accessToken.value);
+  if (user) {
+    firstName = user.user_metadata?.first_name || "";
+  }
+}
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="es" data-theme="confirtheme">
 <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION}/>
 </head>
 <body>
 <Header/>
 <main>
-    <GrettingName client:load/>
+    <h1 class="text-4xl font-bold mb-4">¡Hola{firstName ? `, ${firstName}` : ""}!</h1>
     <p>
         En este espacio podras explorar, aprender y crecer en la fe.
     </p>

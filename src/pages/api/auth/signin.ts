@@ -7,7 +7,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const password = formData.get("password")?.toString();
 
   if (!identifier || !password) {
-    return redirect("/login?error=" + encodeURIComponent("Credencial y contraseña obligatorios"));
+    return redirect(`/login?error=${encodeURIComponent("Credencial y contraseña obligatorios")}&credential=${encodeURIComponent(identifier || "")}`);
   }
 
   // Si no tiene '@', asumimos que es una credencial (ej: EL231027)
@@ -20,7 +20,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
 
   if (error) {
-    return redirect("/login?error=" + encodeURIComponent(error.message));
+    return redirect(`/login?error=${encodeURIComponent(error.message)}&credential=${encodeURIComponent(identifier)}`);
   }
 
   const { access_token, refresh_token } = data.session;

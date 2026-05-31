@@ -42,21 +42,29 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   // Actualizar la tabla profiles usando el rol admin (o se podría usar el token del usuario si RLS lo permite)
   const { error: profileError } = await supabaseAdmin
     .from('profiles')
-    .update({
+    .upsert({
+      id: user.id,
       first_name: firstName,
       last_names: lastNames,
       birth_date: birthDate,
-      // actualizamos también un full_name compuesto por si se usa en otro lado
-    })
-    .eq('id', user.id);
+      credential: user.user_metadata?.credential || null, // Preserve credential
+      role: user.user_metadata?.role || 'student'
+    });
 
   if (profileError) {
     console.error("Error al actualizar perfil:", profileError);
     return redirect("/dashboard?error=" + encodeURIComponent("Error al guardar los cambios: " + profileError.message));
   }
 
-  // Opcional: También podríamos actualizar el user_metadata de auth.users si es necesario
-  // await supabaseAdmin.auth.admin.updateUserById(user.id, { user_metadata: { first_name: firstName, last_names: lastNames } });
+  // Actualizar el user_metadata de auth.users
+  await supabaseAdmin.auth.admin.updateUserById(user.id, { 
+    user_metadata: { 
+      ...user.user_metadata,
+      first_name: firstName, 
+      last_names: lastNames,
+      birth_date: birthDate
+    } 
+  });
 
   return redirect("/dashboard?success=" + encodeURIComponent("Perfil actualizado correctamente"));
 };
