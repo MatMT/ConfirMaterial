@@ -3,7 +3,7 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { supabase } from "../utils/supabase";
-import { Icon } from 'astro-icon/components';
+import { Icon } from "astro-icon/components";
 
 const { cookies, redirect, url } = Astro;
 const accessToken = cookies.get("sb-access-token");
@@ -32,9 +32,9 @@ const user = data?.user;
 let profile = null;
 if (user) {
   const { data: profileData } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
     .single();
   profile = profileData;
 }
@@ -43,41 +43,55 @@ if (user) {
 <!doctype html>
 <html lang="es" data-theme="confirtheme">
   <head>
-    <BaseHead title={`Dashboard | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+    <BaseHead
+      title={`Dashboard | ${SITE_TITLE}`}
+      description={SITE_DESCRIPTION}
+    />
   </head>
   <body class="min-h-screen bg-base-200">
     <Header />
-    
-    <main class="container mx-auto p-4 max-w-4xl animate-fade-up my-8">
-      
-      {successMsg && (
-        <div class="toast toast-top toast-center z-50">
-          <div class="alert alert-success shadow-lg">
-            <Icon name="mdi:check-circle" class="w-6 h-6" />
-            <span>{successMsg}</span>
-          </div>
-        </div>
-      )}
-      
-      {errorMsg && (
-        <div class="toast toast-top toast-center z-50">
-          <div class="alert alert-error shadow-lg text-white">
-            <Icon name="mdi:alert-circle" class="w-6 h-6" />
-            <span>{errorMsg}</span>
-          </div>
-        </div>
-      )}
 
-      <div class="flex justify-between items-center mb-8 bg-base-100 p-6 rounded-2xl shadow-sm">
+    <main class="container mx-auto p-4 max-w-4xl animate-fade-up my-8">
+      {
+        successMsg && (
+          <div class="toast toast-top toast-center z-50">
+            <div class="alert alert-success shadow-lg">
+              <Icon name="mdi:check-circle" class="w-6 h-6" />
+              <span>{successMsg}</span>
+            </div>
+          </div>
+        )
+      }
+
+      {
+        errorMsg && (
+          <div class="toast toast-top toast-center z-50">
+            <div class="alert alert-error shadow-lg text-white">
+              <Icon name="mdi:alert-circle" class="w-6 h-6" />
+              <span>{errorMsg}</span>
+            </div>
+          </div>
+        )
+      }
+
+      <div
+        class="flex justify-between items-center mb-8 bg-base-100 p-6 rounded-2xl shadow-sm"
+      >
         <div class="flex items-center gap-4">
           <div class="avatar placeholder">
             <div class="bg-primary text-primary-content rounded-full w-16">
-              <span class="text-2xl">{profile?.first_name?.charAt(0) || 'U'}</span>
+              <span class="text-2xl"
+                >{profile?.first_name?.charAt(0) || "U"}</span
+              >
             </div>
           </div>
           <div>
-            <h1 class="text-3xl font-bold">Hola, {profile?.first_name || 'Usuario'}</h1>
-            <span class="badge badge-accent mt-1">Credencial: {profile?.credential || 'N/A'}</span>
+            <h1 class="text-3xl font-bold" id="dashboardTitle">
+              Hola, {profile?.first_name || "Usuario"}
+            </h1>
+            <span class="badge badge-accent mt-1" id="dashboardCredential"
+              >Credencial: {profile?.credential || "N/A"}</span
+            >
           </div>
         </div>
         <a href="/api/auth/signout" class="btn btn-error btn-outline shadow-sm">
@@ -85,40 +99,96 @@ if (user) {
           Cerrar Sesión
         </a>
       </div>
-      
+
       <div class="bg-base-100 shadow-xl rounded-2xl overflow-hidden">
         <div role="tablist" class="tabs tabs-bordered p-4">
-          
           {/* TAB 1: Datos Personales */}
-          <input type="radio" name="dashboard_tabs" role="tab" class="tab font-bold text-lg h-12" aria-label="Tus Datos" checked />
+          <input
+            type="radio"
+            name="dashboard_tabs"
+            role="tab"
+            class="tab font-bold text-lg h-12"
+            aria-label="Tus Datos"
+            checked
+          />
           <div role="tabpanel" class="tab-content p-6 border-t-0 mt-4">
-            
-            <form action="/api/auth/update-profile" method="POST" class="max-w-2xl" id="profile-form">
+            <form
+              action="/api/auth/update-profile"
+              method="POST"
+              class="max-w-2xl"
+              id="profile-form"
+            >
               <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                <Icon name="mdi:card-account-details-outline" class="w-6 h-6 text-primary" />
+                <Icon
+                  name="mdi:card-account-details-outline"
+                  class="w-6 h-6 text-primary"
+                />
                 Edita tus datos
               </h2>
-              
+
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="form-control">
-                  <label class="label"><span class="label-text font-semibold">Nombre(s)</span></label>
-                  <input type="text" name="firstName" id="firstNameInput" value={profile?.first_name || ''} class="input input-bordered w-full" required />
-                </div>
-                
-                <div class="form-control">
-                  <label class="label"><span class="label-text font-semibold">Apellidos</span></label>
-                  <input type="text" name="lastNames" id="lastNamesInput" value={profile?.last_names || ''} class="input input-bordered w-full" required />
-                </div>
-                
-                <div class="form-control">
-                  <label class="label"><span class="label-text font-semibold">Fecha de Nacimiento</span></label>
-                  <input type="date" name="birthDate" id="birthDateInput" value={profile?.birth_date || ''} class="input input-bordered w-full" required />
+                  <label class="label"
+                    ><span class="label-text font-semibold">Nombre(s)</span
+                    ></label
+                  >
+                  <input
+                    type="text"
+                    name="firstName"
+                    id="firstNameInput"
+                    value={profile?.first_name || ""}
+                    class="input input-bordered w-full"
+                    required
+                  />
                 </div>
 
                 <div class="form-control">
-                  <label class="label"><span class="label-text font-semibold">Correo Electrónico</span></label>
-                  <input type="text" value={user?.email || ''} class="input input-bordered w-full opacity-60" disabled />
-                  <label class="label"><span class="label-text-alt">No modificable por ahora</span></label>
+                  <label class="label"
+                    ><span class="label-text font-semibold">Apellidos</span
+                    ></label
+                  >
+                  <input
+                    type="text"
+                    name="lastNames"
+                    id="lastNamesInput"
+                    value={profile?.last_names || ""}
+                    class="input input-bordered w-full"
+                    required
+                  />
+                </div>
+
+                <div class="form-control">
+                  <label class="label"
+                    ><span class="label-text font-semibold"
+                      >Fecha de Nacimiento</span
+                    ></label
+                  >
+                  <input
+                    type="date"
+                    name="birthDate"
+                    id="birthDateInput"
+                    value={profile?.birth_date || ""}
+                    class="input input-bordered w-full"
+                    required
+                  />
+                </div>
+
+                <div class="form-control">
+                  <label class="label"
+                    ><span class="label-text font-semibold"
+                      >Correo Electrónico</span
+                    ></label
+                  >
+                  <input
+                    type="text"
+                    value={user?.email || ""}
+                    class="input input-bordered w-full opacity-60"
+                    disabled
+                  />
+                  <label class="label"
+                    ><span class="label-text-alt">No modificable por ahora</span
+                    ></label
+                  >
                 </div>
               </div>
 
@@ -129,13 +199,17 @@ if (user) {
                 </button>
               </div>
             </form>
-
           </div>
 
           {/* TAB 2: Seguridad / Ayuda */}
-          <input type="radio" name="dashboard_tabs" role="tab" class="tab font-bold text-lg h-12" aria-label="Contraseña y Ayuda" />
+          <input
+            type="radio"
+            name="dashboard_tabs"
+            role="tab"
+            class="tab font-bold text-lg h-12"
+            aria-label="Contraseña y Ayuda"
+          />
           <div role="tabpanel" class="tab-content p-6 border-t-0 mt-4">
-            
             <div class="max-w-2xl">
               <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
                 <Icon name="mdi:shield-account" class="w-6 h-6 text-primary" />
@@ -143,7 +217,8 @@ if (user) {
               </h2>
 
               <p class="text-base-content/80 mb-6">
-                Si necesitas cambiar tu contraseña o tienes problemas con tu cuenta, escríbenos por WhatsApp para ayudarte rápidamente.
+                Si necesitas cambiar tu contraseña o tienes problemas con tu
+                cuenta, escríbenos por WhatsApp para ayudarte rápidamente.
               </p>
 
               <div class="card bg-green-50 border border-green-200 shadow-sm">
@@ -152,9 +227,16 @@ if (user) {
                     <Icon name="mdi:whatsapp" class="w-6 h-6" />
                     Soporte por WhatsApp
                   </h3>
-                  <p class="text-green-700 text-sm">Nuestro equipo te ayudará a restablecer tu contraseña o solucionar cualquier problema de forma súper rápida.</p>
+                  <p class="text-green-700 text-sm">
+                    Nuestro equipo te ayudará a restablecer tu contraseña o
+                    solucionar cualquier problema de forma súper rápida.
+                  </p>
                   <div class="card-actions justify-start mt-4">
-                    <a href="https://wa.me/1234567890?text=Hola,%20necesito%20ayuda%20para%20cambiar%20mi%20contraseña%20en%20ConfirMaterial" target="_blank" class="btn bg-green-500 hover:bg-green-600 text-white border-none shadow-md w-full sm:w-auto">
+                    <a
+                      href="https://wa.me/1234567890?text=Hola,%20necesito%20ayuda%20para%20cambiar%20mi%20contraseña%20en%20ConfirMaterial"
+                      target="_blank"
+                      class="btn bg-green-500 hover:bg-green-600 text-white border-none shadow-md w-full sm:w-auto"
+                    >
                       <Icon name="mdi:whatsapp" class="w-5 h-5 mr-1" />
                       Contactar Soporte
                     </a>
@@ -162,7 +244,6 @@ if (user) {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -171,39 +252,60 @@ if (user) {
     <script>
       // Populate fields from Zustand localStorage if they are empty
       document.addEventListener("DOMContentLoaded", () => {
-        const firstNameInput = document.getElementById("firstNameInput") as HTMLInputElement;
-        const lastNamesInput = document.getElementById("lastNamesInput") as HTMLInputElement;
-        const birthDateInput = document.getElementById("birthDateInput") as HTMLInputElement;
+        const firstNameInput = document.getElementById(
+          "firstNameInput",
+        ) as HTMLInputElement;
+        const lastNamesInput = document.getElementById(
+          "lastNamesInput",
+        ) as HTMLInputElement;
+        const birthDateInput = document.getElementById(
+          "birthDateInput",
+        ) as HTMLInputElement;
         
+        const dashboardTitle = document.getElementById("dashboardTitle");
+        const dashboardCredential = document.getElementById("dashboardCredential");
+
         if (firstNameInput && !firstNameInput.value) {
-          const storeStr = localStorage.getItem('progress-storage');
+          const storeStr = localStorage.getItem("progress-storage");
           if (storeStr) {
             try {
               const store = JSON.parse(storeStr).state;
               if (store && store.user) {
-                firstNameInput.value = store.user.firstName || '';
-                lastNamesInput.value = store.user.lastName || '';
-                if (store.user.birthDate) birthDateInput.value = store.user.birthDate;
+                firstNameInput.value = store.user.firstName || "";
+                lastNamesInput.value = store.user.lastName || "";
+                if (store.user.birthDate)
+                  birthDateInput.value = store.user.birthDate;
+                  
+                if (dashboardTitle && store.user.firstName) {
+                  dashboardTitle.textContent = `Hola, ${store.user.firstName}`;
+                }
+                if (dashboardCredential && store.user.credential) {
+                  dashboardCredential.textContent = `Credencial: ${store.user.credential}`;
+                }
               }
-            } catch(e) {}
+            } catch (e) {}
           }
         }
       });
 
       // Remover toasts automáticamente después de 3 segundos
       setTimeout(() => {
-        const toasts = document.querySelectorAll('.toast');
-        toasts.forEach(toast => {
-          toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+        const toasts = document.querySelectorAll(".toast");
+        toasts.forEach((toast) => {
+          toast.classList.add(
+            "opacity-0",
+            "transition-opacity",
+            "duration-500",
+          );
           setTimeout(() => toast.remove(), 500);
         });
-        
+
         // Limpiar URL
-        if(window.history.replaceState) {
+        if (window.history.replaceState) {
           const url = new URL(window.location.href);
-          url.searchParams.delete('success');
-          url.searchParams.delete('error');
-          window.history.replaceState({path: url.href}, '', url.href);
+          url.searchParams.delete("success");
+          url.searchParams.delete("error");
+          window.history.replaceState({ path: url.href }, "", url.href);
         }
       }, 3000);
     </script>

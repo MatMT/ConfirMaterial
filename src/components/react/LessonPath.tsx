@@ -25,7 +25,7 @@ export default function LessonPath({ lessons }: LessonPathProps) {
   const isLessonCompleted = (lessonId: string) => {
     // Aquí podrías leer "totalQuestions" de la lección, pero por ahora asumimos 3.
     const totalQuestions = 3; 
-    return progress[lessonId] && progress[lessonId].completedQuestions.length >= totalQuestions;
+    return progress.lessons && progress.lessons[lessonId] && progress.lessons[lessonId].completedQuestions.length >= totalQuestions;
   };
 
   return (

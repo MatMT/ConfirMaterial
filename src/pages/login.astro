@@ -21,53 +21,54 @@ if (accessToken && refreshToken) {
     <BaseHead title={`Iniciar Sesión | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
   </head>
   <body class="min-h-screen bg-base-200 flex flex-col justify-center items-center p-4">
+    
+    <div class="toast toast-top toast-center z-[100] w-full max-w-md" id="successToast">
+      {isRegistered && credential && (
+        <div class="alert bg-base-100 border-l-4 border-primary shadow-2xl flex justify-between rounded-lg">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-primary shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div>
+              <h3 class="font-bold text-primary">¡Cuenta creada!</h3>
+              <div class="text-sm mt-1">Tu credencial es: <strong class="text-xl text-primary">{credential}</strong></div>
+              <div class="text-xs mt-1 text-base-content/70">Guárdala bien. Ya puedes iniciar sesión.</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-circle" onclick="document.getElementById('successToast').style.display='none'">✕</button>
+        </div>
+      )}
+
+      {isTeacherRegistered && (
+        <div class="alert bg-base-100 border-l-4 border-secondary shadow-2xl flex justify-between rounded-lg">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-secondary shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div>
+              <h3 class="font-bold text-secondary">¡Registro Exitoso!</h3>
+              <div class="text-xs mt-1 text-base-content/70">Revisa tu correo para confirmar.</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-circle" onclick="document.getElementById('successToast').style.display='none'">✕</button>
+        </div>
+      )}
+
+      {errorMsg && (
+        <div class="alert alert-error shadow-2xl flex justify-between rounded-lg">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div>
+              <h3 class="font-bold text-error-content">Error al iniciar sesión</h3>
+              <div class="text-sm mt-1 text-error-content/90">{errorMsg === 'Invalid login credentials' ? 'Credencial o contraseña incorrecta' : errorMsg}</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-circle text-error-content" onclick="document.getElementById('successToast').style.display='none'">✕</button>
+        </div>
+      )}
+    </div>
+
     <div class="card w-full max-w-sm shadow-2xl bg-base-100 animate-fade-down animate-duration-500">
       <div class="card-body">
         <div class="text-center mb-6">
           <h1 class="text-3xl font-bold text-primary">Bienvenido</h1>
           <p class="text-sm text-base-content/70 mt-2">Ingresa a tu cuenta para continuar aprendiendo</p>
-        </div>
-
-        <div class="toast toast-top toast-center z-50 w-full max-w-md" id="successToast">
-          {isRegistered && credential && (
-            <div class="alert bg-base-100 border-l-4 border-primary shadow-2xl flex justify-between rounded-lg">
-              <div class="flex items-start gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-primary shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <div>
-                  <h3 class="font-bold text-primary">¡Cuenta creada!</h3>
-                  <div class="text-sm mt-1">Tu credencial es: <strong class="text-xl text-primary">{credential}</strong></div>
-                  <div class="text-xs mt-1 text-base-content/70">Guárdala bien. Ya puedes iniciar sesión.</div>
-                </div>
-              </div>
-              <button class="btn btn-ghost btn-sm btn-circle" onclick="document.getElementById('successToast').style.display='none'">✕</button>
-            </div>
-          )}
-
-          {isTeacherRegistered && (
-            <div class="alert bg-base-100 border-l-4 border-secondary shadow-2xl flex justify-between rounded-lg">
-              <div class="flex items-start gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-secondary shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <div>
-                  <h3 class="font-bold text-secondary">¡Registro Exitoso!</h3>
-                  <div class="text-xs mt-1 text-base-content/70">Revisa tu correo para confirmar.</div>
-                </div>
-              </div>
-              <button class="btn btn-ghost btn-sm btn-circle" onclick="document.getElementById('successToast').style.display='none'">✕</button>
-            </div>
-          )}
-
-          {errorMsg && (
-            <div class="alert alert-error shadow-2xl flex justify-between rounded-lg">
-              <div class="flex items-start gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <div>
-                  <h3 class="font-bold text-error-content">Error</h3>
-                  <div class="text-sm mt-1 text-error-content/90">{errorMsg}</div>
-                </div>
-              </div>
-              <button class="btn btn-ghost btn-sm btn-circle text-error-content" onclick="document.getElementById('successToast').style.display='none'">✕</button>
-            </div>
-          )}
         </div>
         
         <form action="/api/auth/signin" method="post" class="flex flex-col gap-4 relative z-10">
@@ -100,5 +101,33 @@ if (accessToken && refreshToken) {
         </p>
       </div>
     </div>
+    <script>
+      // Populate credential from Zustand localStorage if empty
+      document.addEventListener("DOMContentLoaded", () => {
+        const identifierInput = document.getElementById("identifier") as HTMLInputElement;
+        if (identifierInput && !identifierInput.value) {
+          const storeStr = localStorage.getItem('progress-storage');
+          if (storeStr) {
+            try {
+              const store = JSON.parse(storeStr).state;
+              if (store && store.user && store.user.credential) {
+                identifierInput.value = store.user.credential;
+              }
+            } catch(e) {}
+          }
+        }
+        
+        // Remove error toast from URL after a delay
+        setTimeout(() => {
+          if(window.history.replaceState) {
+            const url = new URL(window.location.href);
+            if (url.searchParams.has('error')) {
+              url.searchParams.delete('error');
+              window.history.replaceState({path: url.href}, '', url.href);
+            }
+          }
+        }, 3000);
+      });
+    </script>
   </body>
 </html>
