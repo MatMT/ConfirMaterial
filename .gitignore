@@ -1,4 +1,4 @@
-﻿# build output
+# build output
 dist/
 # generated types
 
@@ -19,3 +19,4 @@ pnpm-debug.log*
 # jetbrains setting folder
 .env
 .env.local
+.astro/

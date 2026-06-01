@@ -5,7 +5,6 @@ import Footer from '../../components/Footer.astro';
 import {SITE_TITLE, SITE_DESCRIPTION} from '../../consts';
 import {getCollection} from 'astro:content';
 import FormattedDate from '../../components/FormattedDate.astro';
-import WelcomeModal from "../../components/react/WelcomeModal";
 import getRandomGradient from '../../utils/getRandomGradients';
 import {Icon} from 'astro-icon/components';
 
@@ -28,7 +27,7 @@ const isLoggedIn = !!accessToken;
 </head>
 <body class="min-h-screen bg-base-100 flex flex-col">
 <Header/>
-<main class="flex-grow container mx-auto px-4 py-8 max-w-[960px]">
+<main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
     
     {!isLoggedIn && (
         <div class="alert bg-base-200 border-l-4 border-accent shadow-md mb-8 flex flex-col sm:flex-row justify-between items-center rounded-lg">
@@ -136,7 +135,6 @@ const isLoggedIn = !!accessToken;
 
 </main>
 <Footer/>
-<WelcomeModal client:only="react"/>
 
 <script>
     // Lógica para alternar vistas
