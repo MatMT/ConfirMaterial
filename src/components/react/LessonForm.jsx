@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useProgressStore from '../../stores/progressStore.js';
 
-export default function LessonForm({ lessonId, formsUrl, totalQuestions }) {
+export default function LessonForm({ lessonId, nextLessonUrl, totalQuestions }) {
     const { areAllQuestionsCompleted } = useProgressStore();
     const [isClient, setIsClient] = useState(false);
 
@@ -23,11 +23,8 @@ export default function LessonForm({ lessonId, formsUrl, totalQuestions }) {
                 </div>
                 <h3 className="text-xl font-bold text-center text-base-content mb-2">Continúa tu aprendizaje</h3>
                 <p className="text-center font-medium text-base-content/80">
-                    Completa todas las preguntas de la lección para desbloquear el cuestionario final.
+                    Completa todas las preguntas de la lección para desbloquear el siguiente paso.
                 </p>
-                {/*<div className="mt-4 w-full max-w-xs bg-base-300 rounded-full h-2">*/}
-                {/*    <div className="bg-primary h-2 rounded-full" style={{ width: `${Math.floor((areAllQuestionsCompleted(lessonId, totalQuestions-1) ? totalQuestions-1 : 0) / totalQuestions * 100)}%` }}></div>*/}
-                {/*</div>*/}
             </div>
         );
     }
@@ -39,17 +36,15 @@ export default function LessonForm({ lessonId, formsUrl, totalQuestions }) {
             </div>
             <h3 className="text-2xl font-bold text-center text-green-800 mb-3">¡Felicitaciones!</h3>
             <p className="text-center text-lg text-gray-700 mb-6 max-w-md">
-                Has completado esta lección. Estás listo para continuar con el cuestionario final.
+                Has completado esta lección. Ya puedes continuar con la siguiente.
             </p>
             <a
-                href={formsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={nextLessonUrl || "/lessons"}
                 className="btn text-teal-700 bg-white btn-lg gap-2 shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105"
             >
-                <span>Ir al cuestionario ➜</span>
+                <span>Siguiente Lección ➜</span>
             </a>
-            <p className="mt-4 text-sm text-center text-gray-500">El cuestionario se abrirá en una nueva ventana</p>
+            <p className="mt-4 text-sm text-center text-gray-500">Haz clic para avanzar en tu preparación</p>
         </div>
     );
 }

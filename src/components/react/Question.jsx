@@ -6,7 +6,7 @@ const getCorrectOptionIndex = (options) => {
     return options.findIndex(option => option.correct);
 };
 
-export default function Question({ lessonId, questionData }) {
+export default function Question({ lessonId, questionData, totalQuestions }) {
     const { completeQuestion, isQuestionUnlocked, initializeStore, isQuestionCompleted } = useProgressStore();
     const [feedback, setFeedback] = useState('');
     const [selectedOption, setSelectedOption] = useState(null);
@@ -41,7 +41,7 @@ export default function Question({ lessonId, questionData }) {
             setSelectedOption(preselectedOption);
             if (correct) {
                 setFeedback(getRandomMessage('correct'));
-                completeQuestion(lessonId, questionData.id);
+                completeQuestion(lessonId, questionData.id, totalQuestions);
             } else {
                 setFeedback(getRandomMessage('incorrect'));
                 // Resetear la selección para permitir otra intento.

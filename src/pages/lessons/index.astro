@@ -165,14 +165,23 @@ const isLoggedIn = !!accessToken;
     function checkLessonStatus() {
         const now = new Date();
         const lessonCards = document.querySelectorAll('.lesson-card');
+        
+        const progressStr = localStorage.getItem('lessonProgress');
+        const progress = progressStr ? JSON.parse(progressStr) : {};
+        
+        let prevCompleted = true; // La primera siempre está habilitada si la fecha lo permite
+        
         lessonCards.forEach(card => {
             const unlockDate = new Date(card.dataset.unlockDate);
             const lessonId = card.dataset.lessonId;
-            const isUnlocked = now >= unlockDate;
+            
+            // Está desbloqueada si pasó la fecha Y la lección anterior está completada
+            const isUnlocked = now >= unlockDate && prevCompleted;
 
             const lockOverlay = card.querySelector('.lock-overlay');
             const unlockedButton = card.querySelector('.unlocked-button');
             const lockedButton = card.querySelector('.locked-button');
+            const unlockDateText = card.querySelector('.unlock-date-text');
 
             if (isUnlocked) {
                 if(lockOverlay) lockOverlay.classList.add('hidden');
@@ -189,7 +198,15 @@ const isLoggedIn = !!accessToken;
                 if(lockOverlay) lockOverlay.classList.remove('hidden');
                 if(unlockedButton) unlockedButton.classList.add('hidden');
                 if(lockedButton) lockedButton.classList.remove('hidden');
+                
+                if (!prevCompleted && now >= unlockDate && unlockDateText) {
+                    unlockDateText.textContent = "Completa la lección anterior";
+                }
             }
+            
+            // Preparar prevCompleted para la siguiente lección
+            const lessonProg = progress[lessonId];
+            prevCompleted = !!(lessonProg && lessonProg.isCompleted);
         });
     }
 
