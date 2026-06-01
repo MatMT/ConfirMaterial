@@ -36,12 +36,12 @@ if (user) {
     .select("*")
     .eq("id", user.id)
     .single();
-    
+
   profile = profileData || {
     first_name: user.user_metadata?.first_name || "",
     last_names: user.user_metadata?.last_names || "",
     credential: user.user_metadata?.credential || "",
-    birth_date: user.user_metadata?.birth_date || ""
+    birth_date: user.user_metadata?.birth_date || "",
   };
 }
 ---
@@ -100,7 +100,7 @@ if (user) {
             >
           </div>
         </div>
-        <a href="/api/auth/signout" class="btn btn-error btn-outline shadow-sm">
+        <a href="/api/auth/signout" class="btn btn-error btn-outline shadow-sm" onclick="localStorage.clear();">
           <Icon name="mdi:logout" class="w-5 h-5 mr-1" />
           Cerrar Sesión
         </a>
@@ -227,7 +227,7 @@ if (user) {
                 cuenta, escríbenos por WhatsApp para ayudarte rápidamente.
               </p>
 
-              <div class="card bg-green-50 border border-green-200 shadow-sm">
+              <!-- <div class="card bg-green-50 border border-green-200 shadow-sm">
                 <div class="card-body">
                   <h3 class="card-title text-green-800">
                     <Icon name="mdi:whatsapp" class="w-6 h-6" />
@@ -248,7 +248,7 @@ if (user) {
                     </a>
                   </div>
                 </div>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -267,9 +267,11 @@ if (user) {
         const birthDateInput = document.getElementById(
           "birthDateInput",
         ) as HTMLInputElement;
-        
+
         const dashboardTitle = document.getElementById("dashboardTitle");
-        const dashboardCredential = document.getElementById("dashboardCredential");
+        const dashboardCredential = document.getElementById(
+          "dashboardCredential",
+        );
 
         if (firstNameInput && !firstNameInput.value) {
           const storeStr = localStorage.getItem("progress-storage");
@@ -281,7 +283,7 @@ if (user) {
                 lastNamesInput.value = store.user.lastName || "";
                 if (store.user.birthDate)
                   birthDateInput.value = store.user.birthDate;
-                  
+
                 if (dashboardTitle && store.user.firstName) {
                   dashboardTitle.textContent = `Hola, ${store.user.firstName}`;
                 }

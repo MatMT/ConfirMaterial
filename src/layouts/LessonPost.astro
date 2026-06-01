@@ -109,12 +109,14 @@ const lessonData = lessonDataObj?.default || null;
                     <hr/>
                     
                     {/* Botón Drawer Móvil ancho completo debajo del título */}
-                    <div class="w-full mt-6 mb-8">
-                        <label for="lesson-drawer" class="btn btn-outline btn-primary w-full drawer-button shadow-sm">
-                            <Icon name="mdi:format-list-bulleted" class="w-5 h-5 mr-2" />
-                            Seguimiento de la lección
-                        </label>
-                    </div>
+                    {lessonId && (
+                        <div class="w-full mt-6 mb-8">
+                            <label for="lesson-drawer" class="btn btn-outline btn-primary w-full drawer-button shadow-sm">
+                                <Icon name="mdi:format-list-bulleted" class="w-5 h-5 mr-2" />
+                                Seguimiento de la lección
+                            </label>
+                        </div>
+                    )}
                 </div>
                 
                 {/* Contenido MDX inyectado aquí */}
@@ -127,6 +129,31 @@ const lessonData = lessonDataObj?.default || null;
 
     <Footer/>
   </div> 
+
+  {/* Botón flotante para el Drawer (Aparece al scrollear) */}
+  {lessonId && (
+      <div id="fab-drawer" class="fixed bottom-6 right-6 z-[90] transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+        <label for="lesson-drawer" class="btn btn-primary btn-circle shadow-lg shadow-primary/30 h-14 w-14 pointer-events-auto">
+            <Icon name="mdi:format-list-bulleted" class="w-6 h-6 text-white" />
+        </label>
+      </div>
+  )}
+
+  <script>
+    // Mostrar el FAB solo cuando el usuario haga scroll hacia abajo
+    const fab = document.getElementById('fab-drawer');
+    if (fab) {
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          fab.classList.remove('translate-y-20', 'opacity-0');
+          fab.classList.add('translate-y-0', 'opacity-100');
+        } else {
+          fab.classList.add('translate-y-20', 'opacity-0');
+          fab.classList.remove('translate-y-0', 'opacity-100');
+        }
+      });
+    }
+  </script>
 
   {/* Sidebar / Drawer */}
   <div class="drawer-side z-[100]">

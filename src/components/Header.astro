@@ -3,6 +3,7 @@ import HeaderLink from "./HeaderLink.astro";
 import { SITE_TITLE } from "../consts";
 import { Icon } from 'astro-icon/components';
 import StoreInitializer from './react/StoreInitializer';
+import StreakDisplay from './react/StreakDisplay';
 import { supabase } from '../utils/supabase';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 const { isSticky = true } = Astro.props;
 const { cookies } = Astro;
 const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
 const isLoggedIn = !!accessToken;
 
 let userProfile = null;
@@ -21,15 +23,18 @@ if (isLoggedIn) {
   try {
     const { data: { user } } = await supabase.auth.getUser(accessToken.value);
     if (user) {
+      userProfile = { id: user.id }; // Garantizar que el ID siempre esté
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      userProfile = profile;
+      if (profile) {
+          userProfile = { ...userProfile, ...profile };
+      }
     }
   } catch (e) {}
 }
 ---
 
 <header class={`navbar bg-base-100 shadow-sm ${isSticky ? 'sticky top-0 z-50' : 'relative z-40'}`}>
-  <StoreInitializer client:only="react" user={userProfile} />
+  <StoreInitializer client:only="react" user={userProfile} accessToken={accessToken?.value} refreshToken={refreshToken?.value} />
   
   <div class="navbar-start">
     <div class="dropdown">
@@ -53,7 +58,8 @@ if (isLoggedIn) {
     </ul>
   </div>
   
-  <div class="navbar-end">
+  <div class="navbar-end flex items-center">
+    {isLoggedIn && <StreakDisplay client:only="react" />}
     {isLoggedIn ? (
       <a href="/dashboard" class="btn btn-ghost btn-circle" aria-label="Perfil">
         <Icon name="mdi:account-circle" class="h-8 w-8 text-primary" />

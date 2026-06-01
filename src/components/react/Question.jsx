@@ -7,25 +7,45 @@ const getCorrectOptionIndex = (options) => {
 };
 
 export default function Question({ lessonId, questionData, totalQuestions }) {
-    const { completeQuestion, isQuestionUnlocked, initializeStore, isQuestionCompleted } = useProgressStore();
+    const { completeQuestion } = useProgressStore();
+    const progress = useProgressStore((state) => state.progress);
+    
     const [feedback, setFeedback] = useState('');
     const [selectedOption, setSelectedOption] = useState(null);
     const [isCorrect, setIsCorrect] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [preselectedOption, setPreselectedOption] = useState(null);
+    const [isExploreMode, setIsExploreMode] = useState(false);
+
+    const lessonProgress = progress[lessonId];
+    
+    const isQuestionCompleted = () => {
+        if (!lessonProgress) return false;
+        return questionData.id <= lessonProgress.lastCompletedQuestion;
+    };
+
+    const isQuestionUnlocked = () => {
+        if (questionData.id === 0) return true;
+        if (!lessonProgress) return false;
+        return lessonProgress.lastCompletedQuestion >= questionData.id - 1;
+    };
 
     useEffect(() => {
-        initializeStore();
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('mode') === 'explore') setIsExploreMode(true);
+        }
+        
         setIsLoaded(true);
-        if (isQuestionCompleted(lessonId, questionData.id)) {
+        if (isQuestionCompleted()) {
             const correctIndex = getCorrectOptionIndex(questionData.options);
             setSelectedOption(correctIndex);
             setIsCorrect(true);
             setFeedback('Ya respondiste esta pregunta correctamente. 🎉');
         }
-    }, [lessonId, questionData.id, questionData.options]);
+    }, [lessonId, questionData.id, questionData.options, lessonProgress?.lastCompletedQuestion]);
 
-    const isUnlocked = isQuestionUnlocked(lessonId, questionData.id);
+    const isUnlocked = isExploreMode || isQuestionUnlocked();
 
     const handlePreselectAnswer = (optionIndex) => {
         // Permite cambiar la opción preseleccionada si no se ha confirmado una respuesta correcta.
@@ -41,7 +61,9 @@ export default function Question({ lessonId, questionData, totalQuestions }) {
             setSelectedOption(preselectedOption);
             if (correct) {
                 setFeedback(getRandomMessage('correct'));
-                completeQuestion(lessonId, questionData.id, totalQuestions);
+                if (!isExploreMode) {
+                    completeQuestion(lessonId, questionData.id, totalQuestions);
+                }
             } else {
                 setFeedback(getRandomMessage('incorrect'));
                 // Resetear la selección para permitir otra intento.

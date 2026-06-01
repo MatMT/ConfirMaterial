@@ -20,8 +20,9 @@ export default function ResumeLearningButton({ lessons }) {
             const lessonId = lesson.data?.lessonId || lesson.id;
             
             // Comprobar si está completada (asumimos totalQuestions = 3 si no se especifica)
-            // Ya que `progressStore` tiene `isCompleted`, podemos usarlo directamente.
-            const isCompleted = progress[lessonId]?.isCompleted;
+            // Retrocompatibilidad: lastCompletedQuestion >= 2
+            const lessonData = progress[lessonId];
+            const isCompleted = lessonData && (lessonData.isCompleted || lessonData.lastCompletedQuestion >= 2);
             
             if (!isCompleted) {
                 foundLesson = lesson;

@@ -91,13 +91,6 @@ const isLoggedIn = !!accessToken;
                                             />
                                     )}
                                     <div class="lock-overlay absolute inset-0 bg-base-300/80 backdrop-blur-sm flex flex-col items-center justify-center hidden">
-                                        <Icon
-                                                name="mdi:lock"
-                                                class="w-12 h-12 text-base-content"
-                                        />
-                                        <p class="text-base-content text-xl mt-4 px-4 text-center unlock-date-text">
-                                            Se desbloquea el {unlockDate.toLocaleDateString()}
-                                        </p>
                                     </div>
                                 </figure>
                                 <div class="card-body p-3">
@@ -110,19 +103,12 @@ const isLoggedIn = !!accessToken;
                                         </p>
                                         <div class={`card-actions ${index === 0 ? 'justify-center' : 'justify-end'}`}>
                                             <a
-                                                    href={`/lessons/${lesson.id}/`}
-                                                    class="unlocked-button btn text-lg btn-primary hover:text-white"
+                                                    href={`/lessons/${lesson.id}/?mode=explore`}
+                                                    class="btn text-lg btn-secondary hover:text-white"
                                             >
-                                                Ver lección
-                                                <Icon name="mdi:arrow-right" class="w-4 h-4 ml-2"/>
+                                                Explorar
+                                                <Icon name="mdi:compass-outline" class="w-5 h-5 ml-2"/>
                                             </a>
-                                            <button
-                                                    class="locked-button btn text-lg btn-disabled hidden"
-                                                    disabled
-                                            >
-                                                Bloqueado
-                                                <Icon name="mdi:lock" class="w-4 h-4 ml-2"/>
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -161,56 +147,8 @@ const isLoggedIn = !!accessToken;
         btnPath?.classList.add('btn-ghost');
     });
 
-    // Lógica para bloqueo de tarjetas (solo para vista de cuadrícula)
-    function checkLessonStatus() {
-        const now = new Date();
-        const lessonCards = document.querySelectorAll('.lesson-card');
-        
-        const progressStr = localStorage.getItem('lessonProgress');
-        const progress = progressStr ? JSON.parse(progressStr) : {};
-        
-        let prevCompleted = true; // La primera siempre está habilitada si la fecha lo permite
-        
-        lessonCards.forEach(card => {
-            const unlockDate = new Date(card.dataset.unlockDate);
-            const lessonId = card.dataset.lessonId;
-            
-            // Está desbloqueada si pasó la fecha Y la lección anterior está completada
-            const isUnlocked = now >= unlockDate && prevCompleted;
-
-            const lockOverlay = card.querySelector('.lock-overlay');
-            const unlockedButton = card.querySelector('.unlocked-button');
-            const lockedButton = card.querySelector('.locked-button');
-            const unlockDateText = card.querySelector('.unlock-date-text');
-
-            if (isUnlocked) {
-                if(lockOverlay) lockOverlay.classList.add('hidden');
-                if(unlockedButton) unlockedButton.classList.remove('hidden');
-                if(lockedButton) lockedButton.classList.add('hidden');
-
-                card.addEventListener('click', (e) => {
-                    if (!e.target.closest('.unlocked-button')) {
-                        window.location.href = `/lessons/${lessonId}/`;
-                    }
-                });
-                card.classList.add('cursor-pointer');
-            } else {
-                if(lockOverlay) lockOverlay.classList.remove('hidden');
-                if(unlockedButton) unlockedButton.classList.add('hidden');
-                if(lockedButton) lockedButton.classList.remove('hidden');
-                
-                if (!prevCompleted && now >= unlockDate && unlockDateText) {
-                    unlockDateText.textContent = "Completa la lección anterior";
-                }
-            }
-            
-            // Preparar prevCompleted para la siguiente lección
-            const lessonProg = progress[lessonId];
-            prevCompleted = !!(lessonProg && lessonProg.isCompleted);
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', checkLessonStatus);
+    // Lógica para bloqueo de tarjetas eliminada.
+    // La cuadrícula (GridView) es ahora de "Modo Exploración" y no tiene bloqueos.
 </script>
 </body>
 </html>
