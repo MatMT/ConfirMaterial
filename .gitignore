@@ -15,6 +15,11 @@ pnpm-debug.log*
 # environment variables
 
 # macOS-specific files
+.DS_Store
+confirmaterial.iml
+modules.xml
+vcs.xml
+.idea/
 
 # jetbrains setting folder
 .env

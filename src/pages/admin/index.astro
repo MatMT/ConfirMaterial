@@ -23,7 +23,7 @@ if (Astro.request.method === "POST") {
         console.log(`[Admin] Try Login. Received: ${pin}, Expected: ${correctPin}`);
         if (pin === correctPin) {
             console.log("[Admin] PIN Correct. Setting cookie and redirecting.");
-            Astro.cookies.set('admin-pin', pin, { path: '/', httpOnly: true, secure: true, sameSite: 'lax', maxAge: 60 * 60 * 24 });
+            Astro.cookies.set('admin-pin', pin, { path: '/', httpOnly: true, secure: import.meta.env.PROD, sameSite: 'lax', maxAge: 60 * 60 * 24 });
             return Astro.redirect('/admin');
         } else {
             console.log("[Admin] PIN Incorrect!");

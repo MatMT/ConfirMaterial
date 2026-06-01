@@ -34,14 +34,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   cookies.set("sb-access-token", access_token, {
     path: "/",
     httpOnly: true,
-    secure: true,
+    secure: import.meta.env.PROD,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 7, // 1 semana
   });
   cookies.set("sb-refresh-token", refresh_token, {
     path: "/",
     httpOnly: true,
-    secure: true,
+    secure: import.meta.env.PROD,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 30, // 30 dias
   });
