@@ -1,8 +1,14 @@
 import type { APIRoute } from "astro";
+export const prerender = false;
 import { supabase } from "../../../utils/supabase";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
-  const formData = await request.formData();
+  let formData;
+  try {
+    formData = await request.formData();
+  } catch (e) {
+    return redirect(`/login?error=${encodeURIComponent("Error en la solicitud. Intenta nuevamente.")}`);
+  }
   const identifier = formData.get("identifier")?.toString();
   const password = formData.get("password")?.toString();
 

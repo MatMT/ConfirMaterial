@@ -1,0 +1,159 @@
+---
+export const prerender = false;
+import { createClient } from "@supabase/supabase-js";
+import AdminStreakDisplay from '../../../components/react/AdminStreakDisplay.tsx';
+
+// Inicializar cliente admin para saltar RLS
+const supabaseAdmin = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { persistSession: false } }
+);
+
+// Verificar el PIN desde las cookies
+const adminPinCookie = Astro.cookies.get('admin-pin')?.value;
+const correctPin = import.meta.env.ADMIN_PIN?.replace(/['"]/g, '') || "1234";
+
+if (adminPinCookie !== correctPin) {
+    return Astro.redirect('/admin');
+}
+
+const { id } = Astro.params;
+
+if (!id) {
+    return Astro.redirect('/admin');
+}
+
+// Obtener datos del alumno
+const { data: profile } = await supabaseAdmin
+    .from('profiles')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+if (!profile) {
+    return Astro.redirect('/admin');
+}
+
+// Obtener la racha
+const { data: streakData } = await supabaseAdmin
+    .from('user_streaks')
+    .select('*')
+    .eq('user_id', id)
+    .single();
+
+// Obtener las lecciones completadas
+const { data: progressData } = await supabaseAdmin
+    .from('lesson_progress')
+    .select('*')
+    .eq('user_id', id);
+
+// Reconstruir el objeto `progress` que espera el componente (como se guarda localmente)
+const reconstructedProgress = {};
+if (progressData) {
+    progressData.forEach(p => {
+        reconstructedProgress[p.lesson_id] = {
+            isCompleted: p.status === 'completed',
+            completedAt: p.completed_at
+        };
+    });
+}
+---
+<!DOCTYPE html>
+<html lang="es" data-theme="lofi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Alumno | Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-base-200 min-h-screen">
+    
+    <div class="navbar bg-base-100 shadow-sm mb-8">
+        <div class="flex-1">
+            <a href="/admin" class="btn btn-ghost text-xl">⬅️ Volver al Panel</a>
+        </div>
+    </div>
+
+    <main class="container mx-auto px-4 max-w-4xl pb-12">
+        <div class="flex flex-col md:flex-row gap-8">
+            
+            <!-- Detalles del Perfil -->
+            <div class="flex-1 space-y-6">
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title text-2xl mb-4 border-b border-base-200 pb-2">Información del Alumno</h2>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm text-base-content/60 font-semibold">Nombre Completo</p>
+                                <p class="text-xl font-bold">{profile.full_name || `${profile.first_name || ''} ${profile.last_names || ''}`}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-base-content/60 font-semibold">Credencial (Usuario)</p>
+                                <div class="badge badge-primary font-mono text-lg py-3 px-4 mt-1">{profile.credential}</div>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-base-content/60 font-semibold">Fecha de Nacimiento</p>
+                                <p class="text-lg">{profile.birth_date ? new Date(profile.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'No registrada'}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-base-content/60 font-semibold">Fecha de Registro</p>
+                                <p class="text-lg">{new Date(profile.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title text-xl mb-4">Registro de Lecciones (Base de Datos)</h2>
+                        <div class="overflow-x-auto">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Lección ID</th>
+                                        <th>Estado</th>
+                                        <th>Fecha de Completado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {progressData && progressData.length > 0 ? progressData.map(p => (
+                                        <tr>
+                                            <td class="font-mono">{p.lesson_id}</td>
+                                            <td>
+                                                <div class={`badge ${p.status === 'completed' ? 'badge-success text-white' : 'badge-warning'}`}>
+                                                    {p.status === 'completed' ? 'Completado' : 'En progreso'}
+                                                </div>
+                                            </td>
+                                            <td>{p.completed_at ? new Date(p.completed_at).toLocaleString('es-ES') : '-'}</td>
+                                        </tr>
+                                    )) : (
+                                        <tr><td colSpan="3" class="text-center py-4 text-base-content/50">Aún no ha iniciado ninguna lección.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendario y Racha -->
+            <div class="md:w-[400px]">
+                <AdminStreakDisplay 
+                    client:load
+                    streak={streakData?.current_streak || 0}
+                    progressData={reconstructedProgress}
+                    lastLessonDate={streakData?.last_lesson_date || null}
+                />
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

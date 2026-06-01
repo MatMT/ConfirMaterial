@@ -1,0 +1,218 @@
+---
+export const prerender = false;
+import { supabase } from '../../../utils/supabase';
+import { createClient } from "@supabase/supabase-js";
+
+// Verificar el PIN desde las cookies
+const adminPinCookie = Astro.cookies.get('admin-pin')?.value;
+const correctPin = import.meta.env.ADMIN_PIN || "1234";
+
+if (adminPinCookie !== correctPin) {
+    return Astro.redirect('/admin');
+}
+
+let error = null;
+let successData = null;
+
+if (Astro.request.method === "POST") {
+    try {
+        const formData = await Astro.request.formData();
+        const firstName = formData.get("firstName")?.toString().trim();
+        const lastName1 = formData.get("lastName1")?.toString().trim();
+        const lastName2 = formData.get("lastName2")?.toString().trim() || "";
+        const birthDate = formData.get("birthDate")?.toString(); 
+        const password = formData.get("password")?.toString(); // Autogenerada
+
+        if (!firstName || !lastName1 || !birthDate || !password) {
+            error = "Todos los campos obligatorios deben estar completos.";
+        } else {
+            const lastNames = lastName2 ? `${lastName1} ${lastName2}` : lastName1;
+
+            let initials = lastName1[0].toUpperCase();
+            if (lastName2) {
+                initials += lastName2[0].toUpperCase();
+            } else {
+                initials = lastName1.substring(0, 2).toUpperCase();
+            }
+
+            const currentYear = new Date().getFullYear().toString().slice(-2);
+            const birthMonth = birthDate.split("-")[1];
+            const randomSeq = Math.floor(Math.random() * 90 + 10).toString();
+
+            const credential = `${initials}${currentYear}${birthMonth}${randomSeq}`;
+            const fakeEmail = `${credential.toLowerCase()}@confir.local`;
+
+            const supabaseAdmin = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.SUPABASE_SERVICE_ROLE_KEY, {
+                auth: { autoRefreshToken: false, persistSession: false }
+            });
+
+            const { data, error: createError } = await supabaseAdmin.auth.admin.createUser({
+                email: fakeEmail,
+                password: password,
+                email_confirm: true,
+                user_metadata: {
+                    first_name: firstName,
+                    last_names: lastNames,
+                    full_name: `${firstName} ${lastNames}`,
+                    credential: credential,
+                    birth_date: birthDate
+                }
+            });
+
+            if (createError) {
+                error = createError.message;
+            } else if (data.user) {
+                await supabaseAdmin.from('profiles').insert({
+                    id: data.user.id,
+                    first_name: firstName,
+                    last_names: lastNames,
+                    full_name: `${firstName} ${lastNames}`,
+                    credential: credential,
+                    birth_date: birthDate,
+                    role: 'student'
+                });
+
+                successData = { credential, password, fullName: `${firstName} ${lastNames}` };
+            }
+        }
+    } catch (e) {
+        error = "Hubo un error al procesar el formulario.";
+    }
+}
+---
+<!DOCTYPE html>
+<html lang="es" data-theme="lofi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Alumno | Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-base-200 min-h-screen">
+    
+    <div class="navbar bg-base-100 shadow-sm mb-8">
+        <div class="flex-1">
+            <a href="/admin" class="btn btn-ghost text-xl">⬅️ Volver al Panel</a>
+        </div>
+    </div>
+
+    <main class="container mx-auto px-4 max-w-2xl pb-12">
+        <h1 class="text-3xl font-bold mb-8 text-center">Registrar Nuevo Alumno</h1>
+
+        {error && (
+            <div class="alert alert-error mb-6 shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>{error}</span>
+            </div>
+        )}
+
+        {successData ? (
+            <div class="card bg-base-100 shadow-xl border border-success/30">
+                <div class="card-body items-center text-center">
+                    <div class="w-16 h-16 bg-success/20 text-success rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <h2 class="card-title text-2xl text-success">¡Alumno Creado con Éxito!</h2>
+                    <p class="text-base-content/70 mt-2">Guarda estos datos y entrégaselos al alumno. <br/><b>No se podrán recuperar después.</b></p>
+                    
+                    <div class="bg-base-200 w-full p-6 rounded-lg mt-6 text-left space-y-4 font-mono text-lg shadow-inner">
+                        <div class="flex justify-between items-center border-b border-base-300 pb-2">
+                            <span class="text-base-content/50 text-sm">Alumno</span>
+                            <span class="font-bold">{successData.fullName}</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-base-300 pb-2">
+                            <span class="text-base-content/50 text-sm">Credencial (Usuario)</span>
+                            <span class="font-bold text-primary text-xl tracking-widest">{successData.credential}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-base-content/50 text-sm">Contraseña Temporal</span>
+                            <span class="font-bold text-accent text-xl tracking-widest">{successData.password}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions mt-8 w-full gap-4">
+                        <a href="/admin/students/new" class="btn btn-outline flex-1">Crear Otro Alumno</a>
+                        <a href="/admin" class="btn btn-primary flex-1">Ir al Panel</a>
+                    </div>
+                </div>
+            </div>
+        ) : (
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <form method="POST" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-control w-full">
+                                <label class="label"><span class="label-text font-semibold">Nombres</span></label>
+                                <input type="text" name="firstName" required class="input input-bordered w-full" placeholder="Ej. Juan Carlos" />
+                            </div>
+                            <div class="form-control w-full">
+                                <label class="label"><span class="label-text font-semibold">Fecha de Nacimiento</span></label>
+                                <input type="date" name="birthDate" required class="input input-bordered w-full" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-control w-full">
+                                <label class="label"><span class="label-text font-semibold">Primer Apellido</span></label>
+                                <input type="text" name="lastName1" required class="input input-bordered w-full" placeholder="Ej. Pérez" />
+                            </div>
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text font-semibold">Segundo Apellido</span>
+                                    <span class="label-text-alt text-base-content/50">Opcional</span>
+                                </label>
+                                <input type="text" name="lastName2" class="input input-bordered w-full" placeholder="Ej. López" />
+                            </div>
+                        </div>
+
+                        <div class="divider my-6">Seguridad</div>
+
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text font-semibold">Contraseña Temporal</span>
+                            </label>
+                            <div class="join w-full">
+                                <input type="text" id="password" name="password" required readonly class="input input-bordered join-item w-full font-mono text-lg tracking-widest bg-base-200" placeholder="••••" />
+                                <button type="button" onclick="generatePassword()" class="btn btn-secondary join-item whitespace-nowrap shadow-sm">🎲 Generar PIN 4-dígitos</button>
+                            </div>
+                            <label class="label">
+                                <span class="label-text-alt text-base-content/50">Se requiere generar un PIN numérico antes de crear al usuario.</span>
+                            </label>
+                        </div>
+
+                        <div class="mt-8">
+                            <button type="submit" id="submitBtn" class="btn btn-primary w-full btn-lg shadow-md" disabled>
+                                Crear Alumno y Credencial
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        )}
+    </main>
+
+    <script>
+        function generatePassword() {
+            // Genera un PIN aleatorio de 4 dígitos (1000 - 9999)
+            const pin = Math.floor(1000 + Math.random() * 9000).toString();
+            const passInput = document.getElementById('password') as HTMLInputElement;
+            const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+            
+            if (passInput && submitBtn) {
+                passInput.value = pin;
+                submitBtn.disabled = false; // Habilitar el botón de submit
+                
+                // Efectito visual
+                passInput.classList.add('bg-success/10', 'border-success');
+                setTimeout(() => {
+                    passInput.classList.remove('bg-success/10', 'border-success');
+                }, 500);
+            }
+        }
+        
+        // Exponer la función globalmente para el onclick
+        window.generatePassword = generatePassword;
+    </script>
+</body>
+</html>
