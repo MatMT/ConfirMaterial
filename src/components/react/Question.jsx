@@ -6,31 +6,56 @@ const getCorrectOptionIndex = (options) => {
     return options.findIndex(option => option.correct);
 };
 
-export default function Question({ lessonId, questionData }) {
-    const { completeQuestion, isQuestionUnlocked, initializeStore, isQuestionCompleted } = useProgressStore();
+export default function Question({ lessonId, questionData, totalQuestions }) {
+    const { completeQuestion } = useProgressStore();
+    const progress = useProgressStore((state) => state.progress);
+    
     const [feedback, setFeedback] = useState('');
     const [selectedOption, setSelectedOption] = useState(null);
     const [isCorrect, setIsCorrect] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [preselectedOption, setPreselectedOption] = useState(null);
+    const [isExploreMode, setIsExploreMode] = useState(false);
+
+    const lessonProgress = progress[lessonId];
+    
+    const isQuestionCompleted = () => {
+        if (!lessonProgress) return false;
+        return questionData.id <= lessonProgress.lastCompletedQuestion;
+    };
+
+    const isQuestionUnlocked = () => {
+        if (questionData.id === 0) return true;
+        if (!lessonProgress) return false;
+        return lessonProgress.lastCompletedQuestion >= questionData.id - 1;
+    };
 
     useEffect(() => {
-        initializeStore();
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('mode') === 'explore') setIsExploreMode(true);
+        }
+        
         setIsLoaded(true);
-        if (isQuestionCompleted(lessonId, questionData.id)) {
+        if (isQuestionCompleted()) {
             const correctIndex = getCorrectOptionIndex(questionData.options);
             setSelectedOption(correctIndex);
             setIsCorrect(true);
             setFeedback('Ya respondiste esta pregunta correctamente. 🎉');
         }
-    }, [lessonId, questionData.id, questionData.options]);
+    }, [lessonId, questionData.id, questionData.options, lessonProgress?.lastCompletedQuestion]);
 
-    const isUnlocked = isQuestionUnlocked(lessonId, questionData.id);
+    const isUnlocked = isExploreMode || isQuestionUnlocked();
 
     const handlePreselectAnswer = (optionIndex) => {
         // Permite cambiar la opción preseleccionada si no se ha confirmado una respuesta correcta.
         if (isCorrect !== true) {
-            setPreselectedOption(optionIndex);
+            if (preselectedOption === optionIndex) {
+                // Segundo clic en la misma opción: Enviar!
+                handleConfirmAnswer();
+            } else {
+                setPreselectedOption(optionIndex);
+            }
         }
     };
 
@@ -41,7 +66,9 @@ export default function Question({ lessonId, questionData }) {
             setSelectedOption(preselectedOption);
             if (correct) {
                 setFeedback(getRandomMessage('correct'));
-                completeQuestion(lessonId, questionData.id);
+                if (!isExploreMode) {
+                    completeQuestion(lessonId, questionData.id, totalQuestions);
+                }
             } else {
                 setFeedback(getRandomMessage('incorrect'));
                 // Resetear la selección para permitir otra intento.
@@ -65,7 +92,9 @@ export default function Question({ lessonId, questionData }) {
     }
 
     return (
-        <div className={`my-4 p-6 border rounded-lg shadow-lg transition-all duration-500 ease-in-out 
+        <div 
+            id={`question-${questionData.id}`}
+            className={`my-4 p-6 border rounded-lg shadow-lg transition-all duration-500 ease-in-out 
             ${!isUnlocked ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'}
             ${isCorrect === true ? 'bg-green-50 border-green-400' : ''} 
             ${isCorrect === false ? 'bg-red-50 border-red-400' : ''}`}>

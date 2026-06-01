@@ -4,8 +4,9 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
-import WelcomeModal from '../components/react/WelcomeModal';
 import ProgressBar from '../components/react/ProgressBar';
+import LessonSidebar from '../components/react/LessonSidebar';
+import { Icon } from 'astro-icon/components';
 
 type Props = CollectionEntry<'lessons'>['data'];
 
@@ -18,18 +19,17 @@ const {
     lessonId = null, // Valor por defecto si no se proporciona
     totalQuestions = 3 // Valor por defecto si no se proporciona
 } = Astro.props;
+
+// Cargar dinámicamente el JSON de preguntas correspondiente a este lessonId
+const allQuestions = import.meta.glob('../content/data/questions/*.json', { eager: true });
+const lessonDataObj = allQuestions[`../content/data/questions/${lessonId}.json`] as any;
+const lessonData = lessonDataObj?.default || null;
 ---
 
 <html lang="es">
 <head>
     <BaseHead title={title} description={description}/>
     <style>
-        main {
-            width: calc(100% - 2em);
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
         .hero-image {
             width: 100%;
         }
@@ -42,20 +42,11 @@ const {
         }
 
         .prose {
-            //width: 720px;
-            //max-width: calc(100% - 2em);
-            //margin: auto;
-            //padding: 1em;
             color: rgb(var(--gray-dark));
-        }
-
-        @media (width > 768px) {
-            .prose {
-                width: 780px;
-                max-width: calc(100% - 2em);
-                margin: auto;
-                padding: 1em;
-            }
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            padding: 1em;
         }
 
         .title {
@@ -81,43 +72,111 @@ const {
 </head>
 
 <body>
-<Header/>
 
-<!--<pre>{JSON.stringify(lessonId, null, 2)}</pre>-->
-
-{
-    lessonId &&
-        <ProgressBar client:load lessonId={lessonId} totalQuestions={totalQuestions}/>
-}
-
-<main>
-    <article>
-        <div class="hero-image">
-            {heroImage && <img width={1020} height={510} src={heroImage} alt=""/>}
-        </div>
-        <div class="prose">
-            <div class="title">
-                <div class="date">
-                    <FormattedDate date={pubDate}/>
-                    {
-                        updatedDate && (
-                                    <div class="last-updated-on">
-                                        Last updated on
-                                        <FormattedDate date={updatedDate}/>
-                                    </div>
-                        )
-                    }
-                </div>
-                <h1 class="text-4xl md:text-6xl font-black text-slate-800">{title}</h1>
-                <hr/>
+<div class="drawer">
+  <input id="lesson-drawer" type="checkbox" class="drawer-toggle" />
+  
+  <div class="drawer-content flex flex-col min-h-screen">
+    {/* Cabecera NO fija (isSticky=false) para que la barra de progreso resalte */}
+    <Header isSticky={false} />
+    
+    {
+        lessonId &&
+            <div class="sticky top-0 z-50 bg-base-100/90 backdrop-blur-sm pb-2">
+                <ProgressBar client:only="react" lessonId={lessonId} totalQuestions={totalQuestions}/>
             </div>
-            <slot/>
-        </div>
-    </article>
-</main>
+    }
 
-<WelcomeModal client:load/>
+    <main class="flex-grow w-full mx-auto px-4 lg:px-8">
+        <article>
+            <div class="hero-image mt-4 max-w-4xl mx-auto">
+                {heroImage && <img width={1020} height={510} src={heroImage} alt=""/>}
+            </div>
+            <div class="prose max-w-none w-full mx-auto lg:max-w-5xl">
+                <div class="title max-w-4xl mx-auto">
+                    <div class="date">
+                        <FormattedDate date={pubDate}/>
+                        {
+                            updatedDate && (
+                                        <div class="last-updated-on">
+                                            Last updated on
+                                            <FormattedDate date={updatedDate}/>
+                                        </div>
+                            )
+                        }
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-800 text-center">{title}</h1>
+                    <hr/>
+                    
+                    {/* Botón Drawer Móvil ancho completo debajo del título */}
+                    {lessonId && (
+                        <div class="w-full mt-6 mb-8">
+                            <label for="lesson-drawer" class="btn btn-outline btn-primary w-full drawer-button shadow-sm">
+                                <Icon name="mdi:format-list-bulleted" class="w-5 h-5 mr-2" />
+                                Seguimiento de la lección
+                            </label>
+                        </div>
+                    )}
+                </div>
+                
+                {/* Contenido MDX inyectado aquí */}
+                <div class="mt-8">
+                    <slot/>
+                </div>
+            </div>
+        </article>
+    </main>
 
-<Footer/>
+    <Footer/>
+  </div> 
+
+  {/* Botón flotante para el Drawer (Aparece al scrollear) */}
+  {lessonId && (
+      <div id="fab-drawer" class="fixed bottom-6 right-6 z-[90] transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+        <label for="lesson-drawer" class="btn btn-primary btn-circle shadow-lg shadow-primary/30 h-14 w-14 pointer-events-auto">
+            <Icon name="mdi:format-list-bulleted" class="w-6 h-6 text-white" />
+        </label>
+      </div>
+  )}
+
+  <script>
+    // Mostrar el FAB solo cuando el usuario haga scroll hacia abajo
+    const fab = document.getElementById('fab-drawer');
+    if (fab) {
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          fab.classList.remove('translate-y-20', 'opacity-0');
+          fab.classList.add('translate-y-0', 'opacity-100');
+        } else {
+          fab.classList.add('translate-y-20', 'opacity-0');
+          fab.classList.remove('translate-y-0', 'opacity-100');
+        }
+      });
+    }
+  </script>
+
+  {/* Sidebar / Drawer */}
+  <div class="drawer-side z-[100]">
+    <label for="lesson-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+    <div class="menu bg-base-100 text-base-content min-h-full w-80 p-4 shadow-xl border-r border-base-200">
+      <div class="mb-4 hidden lg:block">
+        <a href="/lessons" class="btn btn-ghost btn-sm">
+          <Icon name="mdi:arrow-left" class="w-4 h-4 mr-1" />
+          Volver a Lecciones
+        </a>
+      </div>
+      
+      {lessonData && (
+        <LessonSidebar 
+          client:only="react" 
+          lessonId={lessonId} 
+          lessonData={lessonData} 
+          title={title} 
+        />
+      )}
+    </div>
+  </div>
+
+</div>
 </body>
 </html>

@@ -37,8 +37,6 @@ body {
     margin: 0;
     padding: 0;
     text-align: left;
-    background: linear-gradient(var(--gray-gradient)) no-repeat;
-    background-size: 100% 600px;
     word-wrap: break-word;
     overflow-wrap: break-word;
     color: rgb(var(--gray-dark));
@@ -86,11 +84,11 @@ b {
     font-weight: 700;
 }
 
-a {
+.prose a {
     color: var(--accent);
 }
 
-a:hover {
+.prose a:hover {
     color: var(--accent);
 }
 
@@ -216,4 +214,11 @@ a:hover svg {
 
 ul{
     list-style: disc !important;
+}
+
+/* Evitar que los botones se oscurezcan al mantener el clic (DaisyUI override) */
+.btn:active, .btn:active:hover, .btn:active:focus {
+    transform: none !important;
+    animation: none !important;
+    filter: none !important;
 }

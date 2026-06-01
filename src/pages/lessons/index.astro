@@ -5,142 +5,150 @@ import Footer from '../../components/Footer.astro';
 import {SITE_TITLE, SITE_DESCRIPTION} from '../../consts';
 import {getCollection} from 'astro:content';
 import FormattedDate from '../../components/FormattedDate.astro';
-import WelcomeModal from "../../components/react/WelcomeModal";
 import getRandomGradient from '../../utils/getRandomGradients';
 import {Icon} from 'astro-icon/components';
+
+import LessonPath from "../../components/react/LessonPath.tsx";
 
 // Ya no usamos la función en el servidor
 // En su lugar, obtenemos todas las lecciones sin filtrar
 const lessons = (await getCollection('lessons')).sort(
     (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf(),
 );
+const { cookies } = Astro;
+const accessToken = cookies.get("sb-access-token");
+const isLoggedIn = !!accessToken;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="es" data-theme="confirtheme">
 <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION}/>
 </head>
-<body class="min-h-screen bg-base-100">
+<body class="min-h-screen bg-base-100 flex flex-col">
 <Header/>
-<main class="container mx-auto px-4 py-8 max-w-[960px]">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {
-            lessons.map((lesson, index) => {
-                // Guardamos la fecha de publicación y la fecha de desbloqueo como atributos data-*
-                // para que el JavaScript del cliente pueda acceder a ellos
-                const pubDate = lesson.data.pubDate;
-                const unlockDate = new Date(pubDate);
-                unlockDate.setDate(unlockDate.getDate() - 7);
+<main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+    
+    {!isLoggedIn && (
+        <div class="alert bg-base-200 border-l-4 border-accent shadow-md mb-8 flex flex-col sm:flex-row justify-between items-center rounded-lg">
+            <div class="flex items-center gap-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-accent shrink-0 h-8 w-8" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <h3 class="font-bold text-lg text-accent">Modo Explorador</h3>
+                    <div class="text-sm text-base-content/70">Puedes ver el contenido, pero para guardar tu progreso necesitas iniciar sesión.</div>
+                </div>
+            </div>
+            <div class="mt-4 sm:mt-0 flex gap-2 w-full sm:w-auto">
+                <a href="/login" class="btn btn-primary flex-1 sm:flex-none">Iniciar Sesión</a>
+                <a href="/register" class="btn btn-outline btn-primary flex-1 sm:flex-none">Registrarse</a>
+            </div>
+        </div>
+    )}
 
-                return (
-                        <div class={`lesson-card card overflow-hidden ${index === 0 ? 'md:col-span-2' : ''}`}
-                             data-pub-date={pubDate.toISOString()}
-                             data-unlock-date={unlockDate.toISOString()}
-                             data-lesson-id={lesson.id}>
-                            <figure class="relative">
-                                {lesson.data.heroImage ? (
-                                        <img
-                                                src={lesson.data.heroImage}
-                                                alt=""
-                                                class={`w-full ${index === 0 ? 'md:h-80' : 'h-52'} object-cover`}
-                                        />
-                                ) : (
-                                        <div
-                                                class={`w-full rounded-md ${index === 0 ? 'md:h-80' : 'h-52'} ${getRandomGradient()}`}
-                                        />
-                                )}
+    {/* Toggle de vistas */}
+    <div class="flex justify-center mb-8">
+        <div class="join bg-base-200 p-1 rounded-full shadow-inner">
+            <button class="join-item btn btn-sm rounded-full bg-base-100 shadow-sm px-6" id="btnPathView">
+                <Icon name="mdi:map-marker-path" class="w-4 h-4 mr-2" />
+                Mapa
+            </button>
+            <button class="join-item btn btn-sm rounded-full btn-ghost px-6" id="btnGridView">
+                <Icon name="mdi:view-grid" class="w-4 h-4 mr-2" />
+                Cuadrícula
+            </button>
+        </div>
+    </div>
 
-                                {/* El overlay de bloqueo ahora se gestionará con JavaScript */}
-                                <div class="lock-overlay absolute inset-0 bg-base-300/80 backdrop-blur-sm flex flex-col items-center justify-center hidden">
-                                    <Icon
-                                            name="mdi:lock"
-                                            class="w-12 h-12 text-base-content"
-                                    />
-                                    <p class="text-base-content text-xl mt-4 px-4 text-center unlock-date-text">
-                                        Se desbloquea el {unlockDate.toLocaleDateString()}
-                                    </p>
-                                </div>
-                            </figure>
+    {/* Vista de Mapa (Por defecto) */}
+    <div id="pathView">
+        <LessonPath client:only="react" lessons={lessons} />
+    </div>
 
-                            <div class="card-body p-3">
-                                <h2 class={`${index === 0 ? 'text-4xl text-center' : 'text-2xl'} text-gray-900`}>
-                                    {lesson.data.title}
-                                </h2>
+    {/* Vista de Cuadrícula (Oculta por defecto) */}
+    <div id="gridView" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {
+                lessons.map((lesson, index) => {
+                    const pubDate = lesson.data.pubDate;
+                    const unlockDate = new Date(pubDate);
+                    unlockDate.setDate(unlockDate.getDate() - 7);
 
-                                <div class={`grid items-center grid-cols-2 ${index === 0 ? 'md:grid-cols-1' : ''}`}>
-                                    <p class={`${index === 0 ? 'text-center' : ''} text-base-content/70 m-0`}>
-                                        <FormattedDate date={lesson.data.pubDate}/>
-                                    </p>
-                                    <div class={`card-actions ${index === 0 ? 'justify-center' : 'justify-end'}`}>
-                                        {/* Ambos botones están presentes, pero se mostrarán u ocultarán con JavaScript */}
-                                        <a
-                                                href={`/lessons/${lesson.id}/`}
-                                                class="unlocked-button btn text-lg btn-primary"
-                                        >
-                                            Ver lección
-                                            <Icon name="mdi:arrow-right" class="w-4 h-4 ml-2"/>
-                                        </a>
-                                        <button
-                                                class="locked-button btn text-lg btn-disabled hidden"
-                                                disabled
-                                        >
-                                            Bloqueado
-                                            <Icon name="mdi:lock" class="w-4 h-4 ml-2"/>
-                                        </button>
+                    return (
+                            <div class={`lesson-card card overflow-hidden ${index === 0 ? 'md:col-span-2' : ''}`}
+                                 data-pub-date={pubDate.toISOString()}
+                                 data-unlock-date={unlockDate.toISOString()}
+                                 data-lesson-id={lesson.id}>
+                                <figure class="relative">
+                                    {lesson.data.heroImage ? (
+                                            <img
+                                                    src={lesson.data.heroImage}
+                                                    alt=""
+                                                    class={`w-full ${index === 0 ? 'md:h-80' : 'h-52'} object-cover`}
+                                            />
+                                    ) : (
+                                            <div
+                                                    class={`w-full rounded-md ${index === 0 ? 'md:h-80' : 'h-52'} ${getRandomGradient()}`}
+                                            />
+                                    )}
+                                    <div class="lock-overlay absolute inset-0 bg-base-300/80 backdrop-blur-sm flex flex-col items-center justify-center hidden">
+                                    </div>
+                                </figure>
+                                <div class="card-body p-3">
+                                    <h2 class={`${index === 0 ? 'text-4xl text-center' : 'text-2xl'} text-gray-900`}>
+                                        {lesson.data.title}
+                                    </h2>
+                                    <div class={`grid items-center grid-cols-2 ${index === 0 ? 'md:grid-cols-1' : ''}`}>
+                                        <p class={`${index === 0 ? 'text-center' : ''} text-base-content/70 m-0`}>
+                                            <FormattedDate date={lesson.data.pubDate}/>
+                                        </p>
+                                        <div class={`card-actions ${index === 0 ? 'justify-center' : 'justify-end'}`}>
+                                            <a
+                                                    href={`/lessons/${lesson.id}/?mode=explore`}
+                                                    class="btn text-lg btn-secondary hover:text-white"
+                                            >
+                                                Explorar
+                                                <Icon name="mdi:compass-outline" class="w-5 h-5 ml-2"/>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                );
-            })
-        }
+                    );
+                })
+            }
+        </div>
     </div>
+
 </main>
 <Footer/>
-<WelcomeModal client:load/>
 
 <script>
-    // Esta función se ejecutará en el cliente
-    function checkLessonStatus() {
-        const now = new Date();
-        const lessonCards = document.querySelectorAll('.lesson-card');
+    // Lógica para alternar vistas
+    const btnPath = document.getElementById('btnPathView');
+    const btnGrid = document.getElementById('btnGridView');
+    const pathView = document.getElementById('pathView');
+    const gridView = document.getElementById('gridView');
 
-        lessonCards.forEach(card => {
-            const unlockDate = new Date(card.dataset.unlockDate);
-            const lessonId = card.dataset.lessonId;
-            const isUnlocked = now >= unlockDate;
+    btnPath?.addEventListener('click', () => {
+        pathView?.classList.remove('hidden');
+        gridView?.classList.add('hidden');
+        btnPath.classList.add('bg-base-100', 'shadow-sm');
+        btnPath.classList.remove('btn-ghost');
+        btnGrid?.classList.remove('bg-base-100', 'shadow-sm');
+        btnGrid?.classList.add('btn-ghost');
+    });
 
-            const lockOverlay = card.querySelector('.lock-overlay');
-            const unlockedButton = card.querySelector('.unlocked-button');
-            const lockedButton = card.querySelector('.locked-button');
+    btnGrid?.addEventListener('click', () => {
+        gridView?.classList.remove('hidden');
+        pathView?.classList.add('hidden');
+        btnGrid.classList.add('bg-base-100', 'shadow-sm');
+        btnGrid.classList.remove('btn-ghost');
+        btnPath?.classList.remove('bg-base-100', 'shadow-sm');
+        btnPath?.classList.add('btn-ghost');
+    });
 
-            if (isUnlocked) {
-                // Lección desbloqueada
-                lockOverlay.classList.add('hidden');
-                unlockedButton.classList.remove('hidden');
-                lockedButton.classList.add('hidden');
-
-                // Convertir la tarjeta en un enlace
-                card.addEventListener('click', (e) => {
-                    // Solo redirigir si no se hizo clic en el botón
-                    if (!e.target.closest('.unlocked-button')) {
-                        window.location.href = `/lessons/${lessonId}/`;
-                    }
-                });
-                card.classList.add('cursor-pointer');
-            } else {
-                // Lección bloqueada
-                lockOverlay.classList.remove('hidden');
-                unlockedButton.classList.add('hidden');
-                lockedButton.classList.remove('hidden');
-            }
-        });
-    }
-
-    // Ejecutar cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', checkLessonStatus);
+    // Lógica para bloqueo de tarjetas eliminada.
+    // La cuadrícula (GridView) es ahora de "Modo Exploración" y no tiene bloqueos.
 </script>
-
 </body>
 </html>

@@ -1,0 +1,36 @@
+--color-bronze-spice-50: #fff0e6;
+--color-bronze-spice-100: #fee1cd;
+--color-bronze-spice-200: #fec49a;
+--color-bronze-spice-300: #fda668;
+--color-bronze-spice-400: #fd8835;
+--color-bronze-spice-500: #fc6b03;
+--color-bronze-spice-600: #ca5502;
+--color-bronze-spice-700: #974002;
+--color-bronze-spice-800: #652b01;
+--color-bronze-spice-900: #321501;
+--color-bronze-spice-950: #230f00;
+
+--color-berry-blush-50: #f7edf3;
+--color-berry-blush-100: #efdce7;
+--color-berry-blush-200: #e0b8d0;
+--color-berry-blush-300: #d095b8;
+--color-berry-blush-400: #c171a1;
+--color-berry-blush-500: #b14e89;
+--color-berry-blush-600: #8e3e6e;
+--color-berry-blush-700: #6a2f52;
+--color-berry-blush-800: #471f37;
+--color-berry-blush-900: #23101b;
+--color-berry-blush-950: #190b13;
+
+--color-ocean-twilight-50: #ecedf8;
+--color-ocean-twilight-100: #dadbf1;
+--color-ocean-twilight-200: #b5b8e3;
+--color-ocean-twilight-300: #8f94d6;
+--color-ocean-twilight-400: #6a70c8;
+--color-ocean-twilight-500: #454dba;
+--color-ocean-twilight-600: #373d95;
+--color-ocean-twilight-700: #292e70;
+--color-ocean-twilight-800: #1c1f4a;
+--color-ocean-twilight-900: #0e0f25;
+--color-ocean-twilight-950: #0a0b1a;
+

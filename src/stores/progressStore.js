@@ -1,30 +1,190 @@
 import { create } from 'zustand';
+import { supabase } from '../utils/supabase';
 
 const useProgressStore = create((set, get) => ({
     progress: typeof localStorage !== 'undefined'
         ? JSON.parse(localStorage.getItem('lessonProgress') || '{}')
         : {},
+    streak: 0,
+    lastLessonDate: null,
+    userId: null,
+    isInitialized: false,
 
-    initializeStore: () => {
+    initializeStore: async (explicitUserId) => {
+        // Ignorar llamadas automáticas sin argumentos. 
+        // Solo StoreInitializer enviará explícitamente null o el userId.
+        if (explicitUserId === undefined) return;
+        
+        if (get().isInitialized) return;
+        
+        let localUserId = null;
         if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem('lessonProgress');
-            if (stored) {
-                set({ progress: JSON.parse(stored) });
+            localUserId = localStorage.getItem('lessonUserId');
+        }
+        
+        try {
+            const userId = explicitUserId; // Recibido desde Astro/SSR
+            
+            if (!userId) {
+                console.log('No user session. Using local storage only.');
+                if (typeof window !== 'undefined') {
+                    if (localUserId) {
+                        // User logged out. Clear their progress.
+                        console.log('User logged out. Clearing local progress.');
+                        localStorage.removeItem('lessonProgress');
+                        localStorage.removeItem('lessonUserId');
+                        set({ progress: {}, streak: 0, lastLessonDate: null });
+                    } else {
+                        const stored = localStorage.getItem('lessonProgress');
+                        if (stored) set({ progress: JSON.parse(stored) });
+                    }
+                }
+                set({ isInitialized: true, userId: null });
+                return;
             }
+            
+            if (typeof window !== 'undefined') {
+                // Si había un usuario registrado distinto al actual, borramos.
+                // Si localUserId es null, era un invitado y hereda el progreso.
+                if (localUserId && localUserId !== userId) {
+                    console.log('User changed. Clearing old local progress.');
+                    localStorage.removeItem('lessonProgress');
+                    set({ progress: {}, streak: 0, lastLessonDate: null });
+                } else {
+                    const stored = localStorage.getItem('lessonProgress');
+                    if (stored) set({ progress: JSON.parse(stored) });
+                }
+                localStorage.setItem('lessonUserId', userId);
+            }
+
+            set({ userId });
+
+            // Cargar progreso desde Supabase
+            const { data: progressData, error: progressError } = await supabase
+                .from('user_progress')
+                .select('*')
+                .eq('user_id', userId);
+
+            if (!progressError && progressData) {
+                const newProgress = {};
+                progressData.forEach(row => {
+                    newProgress[row.lesson_id] = {
+                        lastCompletedQuestion: row.last_completed_question,
+                        isCompleted: row.is_completed,
+                        completedAt: row.completed_at
+                    };
+                });
+
+                // Cargar rachas
+                const { data: streakData } = await supabase
+                    .from('user_streaks')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                set({ 
+                    progress: newProgress,
+                    streak: streakData ? streakData.current_streak : 0,
+                    lastLessonDate: streakData ? streakData.last_lesson_date : null,
+                    isInitialized: true
+                });
+
+                // Sincronizar localStorage
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('lessonProgress', JSON.stringify(newProgress));
+                }
+            } else {
+                set({ isInitialized: true, userId });
+            }
+        } catch (error) {
+            console.error('Error initializing store:', error);
+            // Ensure we don't keep old progress on error if user changed
+            set({ progress: {}, isInitialized: true });
         }
     },
 
-    completeQuestion: (lessonId, questionId) => {
+    completeQuestion: async (lessonId, questionId, totalQuestions) => {
         set((state) => {
+            const currentLessonProgress = state.progress[lessonId] || {};
+            const currentMaxQuestion = currentLessonProgress.lastCompletedQuestion !== undefined 
+                ? currentLessonProgress.lastCompletedQuestion 
+                : -1;
+            
+            // Solo actualizamos si estamos avanzando o si es la primera vez
+            const newMaxQuestion = Math.max(currentMaxQuestion, questionId);
+            const isCompleted = newMaxQuestion >= totalQuestions - 1;
+            
+            // Si ya estaba completado, mantenemos la fecha de completado
+            const completedAt = currentLessonProgress.isCompleted 
+                ? currentLessonProgress.completedAt 
+                : (isCompleted ? new Date().toISOString() : null);
+
             const newProgress = {
                 ...state.progress,
                 [lessonId]: {
-                    lastCompletedQuestion: questionId,
+                    ...currentLessonProgress,
+                    lastCompletedQuestion: newMaxQuestion,
+                    isCompleted: isCompleted,
+                    completedAt: completedAt
                 }
             };
 
             if (typeof localStorage !== 'undefined') {
                 localStorage.setItem('lessonProgress', JSON.stringify(newProgress));
+            }
+
+            // Sync en background con Supabase si hay usuario
+            if (state.userId) {
+                const payload = {
+                    last_completed_question: questionId,
+                    is_completed: isCompleted,
+                    completed_at: isCompleted ? new Date().toISOString() : null,
+                    updated_at: new Date().toISOString()
+                };
+
+                supabase.from('user_progress').select('id').eq('user_id', state.userId).eq('lesson_id', lessonId).maybeSingle()
+                .then(({ data }) => {
+                    if (data) {
+                        supabase.from('user_progress').update(payload).eq('id', data.id).then();
+                    } else {
+                        supabase.from('user_progress').insert({
+                            user_id: state.userId,
+                            lesson_id: lessonId,
+                            ...payload
+                        }).then();
+                    }
+                });
+
+                // Lógica de racha si se completó la lección
+                if (isCompleted && (!state.progress[lessonId] || !state.progress[lessonId].isCompleted)) {
+                    const newStreak = state.streak + 1;
+                    const newDate = new Date().toISOString();
+                    
+                    supabase.from('user_streaks').select('user_id').eq('user_id', state.userId).maybeSingle()
+                    .then(({ data, error }) => {
+                        if (error) console.error("Error fetching streak:", error);
+                        
+                        if (data) {
+                            supabase.from('user_streaks').update({
+                                current_streak: newStreak,
+                                last_lesson_date: newDate
+                            }).eq('user_id', state.userId).then(({error}) => {
+                                if(error) console.error("Error updating streak", error);
+                            });
+                        } else {
+                            supabase.from('user_streaks').insert({
+                                user_id: state.userId,
+                                current_streak: newStreak,
+                                last_lesson_date: newDate
+                            }).then(({error}) => {
+                                if(error) console.error("Error inserting streak", error);
+                            });
+                        }
+                    });
+                    
+                    // Actualizar el estado local de la racha inmediatamente
+                    setTimeout(() => set({ streak: newStreak, lastLessonDate: newDate }), 0);
+                }
             }
 
             return { progress: newProgress };
@@ -35,20 +195,14 @@ const useProgressStore = create((set, get) => ({
         const state = get();
         const lessonProgress = state.progress[lessonId];
 
-        // Primera pregunta siempre desbloqueada
         if (questionId === 0) return true;
-
-        // Si no hay progreso, solo la primera pregunta está desbloqueada
         if (!lessonProgress) return false;
-
-        // Una pregunta está desbloqueada si la anterior fue completada
         return lessonProgress.lastCompletedQuestion >= questionId - 1;
     },
 
     areAllQuestionsCompleted: (lessonId, totalQuestions) => {
         const state = get();
         const lessonProgress = state.progress[lessonId];
-
         if (!lessonProgress) return false;
         return lessonProgress.lastCompletedQuestion === totalQuestions - 1;
     },
@@ -56,7 +210,6 @@ const useProgressStore = create((set, get) => ({
     isQuestionCompleted: (lessonId, questionId) => {
         const state = get();
         const lessonProgress = state.progress[lessonId];
-
         if (!lessonProgress) return false;
         return questionId <= lessonProgress.lastCompletedQuestion;
     }

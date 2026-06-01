@@ -19,9 +19,10 @@ Quien opta libremente por una vida como **hijo de Dios**, y bajo el signo de la 
 Es entonces un **miembro pleno y responsable de la Iglesia católica**.
 
 <Question
-    client:load
+    client:only="react"
     lessonId={lessonData.lessonId}
     questionData={lessonData.questions[0]}
+    totalQuestions={lessonData.questions.length}
 />
 
 ---
@@ -33,9 +34,10 @@ En la Confirmación, el alma de un **cristiano bautizado** queda marcada con un 
 > *El don del Espíritu Santo es la fuerza de lo alto, en la que esta persona realiza la gracia de su Bautismo a través de su vida y es «testigo» de Cristo.*
 
 <Question
-    client:load
+    client:only="react"
     lessonId={lessonData.lessonId}
     questionData={lessonData.questions[1]}
+    totalQuestions={lessonData.questions.length}
 />
 
 ---
@@ -52,9 +54,10 @@ En el **Bautismo**:
 Sin embargo, la **vida cristiana no culmina** allí; necesita **fortalecerse y desarrollarse**.
 
 <Question
-    client:load
+    client:only="react"
     lessonId={lessonData.lessonId}
     questionData={lessonData.questions[2]}
+    totalQuestions={lessonData.questions.length}
 />
 
 ---
@@ -72,7 +75,7 @@ En el sacramento de la **Confirmación**, el obispo **unge al confirmando con el
 ---
 
 <LessonForms
-    client:load
+    client:only="react"
     lessonId={lessonData.lessonId}
     formsUrl={lessonData.formsUrl}
     totalQuestions={lessonData.questions.length}

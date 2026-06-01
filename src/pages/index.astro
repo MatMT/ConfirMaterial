@@ -2,31 +2,91 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import GrettingName from "../components/react/GrettingName";
-import {SITE_TITLE, SITE_DESCRIPTION} from "../consts";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import { supabase } from "../utils/supabase";
+import { getCollection } from "astro:content";
+import ResumeLearningButton from "../components/react/ResumeLearningButton";
+
+const lessons = (await getCollection("lessons")).sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+
+const { cookies } = Astro;
+const accessToken = cookies.get("sb-access-token");
+let firstName = "";
+
+if (accessToken) {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser(accessToken.value);
+    if (user) {
+        firstName = user.user_metadata?.first_name || "";
+    }
+}
 ---
 
 <!doctype html>
-<html lang="en">
-<head>
-    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION}/>
-</head>
-<body>
-<Header/>
-<main>
-    <GrettingName client:load/>
-    <p>
-        En este espacio podras explorar, aprender y crecer en la fe.
-    </p>
-    <p>
-        Aquí encontrarás el material visto en clase con respuestas claras y breves sobre algunos temas esenciales que
-        veremos en la catequesis de confirmación.
-    </p>
-    <p>
-        Prepárate para confirmar tu fe y compartirla con los
-        demás. ¡Comencemos juntos este viaje!
-    </p>
-</main>
-<Footer/>
-</body>
+<html lang="es" data-theme="confirtheme">
+    <head>
+        <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    </head>
+    <body class="min-h-screen flex flex-col bg-base-200">
+        <Header />
+        <main class="flex-grow">
+            <div class="hero min-h-[75vh]">
+                <div class="hero-content flex-col lg:flex-row-reverse gap-8 lg:gap-16 w-full max-w-6xl">
+                    <div
+                        class="relative w-full max-w-[12rem] md:max-w-xs lg:max-w-sm animate-fade-left animate-duration-1000 mx-auto lg:mx-0"
+                    >
+                        <div class="absolute inset-0 bg-primary/20 rounded-full blur-3xl -z-10 transform scale-110">
+                        </div>
+                        <img
+                            src="/images/confi/Happy2.png"
+                            class="w-full drop-shadow-2xl hover:scale-105 transition-transform duration-500 ease-in-out"
+                            alt="Mascota Feliz"
+                        />
+                    </div>
+
+                    <div class="max-w-2xl lg:max-w-4xl animate-fade-right animate-duration-1000 w-full">
+                        <h1
+                            class="text-4xl md:text-5xl lg:text-6xl font-black text-slate-800 leading-tight text-center lg:text-left"
+                        >
+                            ¡Hola{firstName ? `, ${firstName}` : ""}! <span class="text-primary block mt-2">
+                                Bienvenido a tu catequesis
+                            </span>
+                        </h1>
+                        <p class="py-6 text-lg text-base-content/80 leading-relaxed font-medium text-left">
+                            En este espacio podrás explorar, aprender y crecer en la fe. Aquí encontrarás material con
+                            respuestas claras y breves sobre algunos temas para tu preparación de confirmación.
+                        </p>
+
+                        <p class="mb-8 text-base text-base-content/70 italic text-left">
+                            Prepárate para confirmar tu fe y compartirla con los demás. ¡Comencemos juntos este viaje!
+                        </p>
+
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                            {
+                                firstName ? (
+                                    <ResumeLearningButton client:load lessons={lessons} />
+                                ) : (
+                                    <a
+                                        href="/lessons"
+                                        class="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-shadow w-full sm:w-auto"
+                                    >
+                                        Comenzar a aprender
+                                    </a>
+                                )
+                            }
+                            {
+                                !firstName && (
+                                    <a href="/login" class="btn btn-outline btn-primary btn-lg w-full sm:w-auto">
+                                        Iniciar Sesión
+                                    </a>
+                                )
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <Footer />
+    </body>
 </html>

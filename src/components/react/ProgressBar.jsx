@@ -37,30 +37,34 @@ export default function ProgressBar({lessonId, totalQuestions = 0}) {
 
     // Este useEffect ahora depende de 'progress' para ejecutarse cuando cambie el store
     useEffect(() => {
-        let completedCount = 0;
+        let percentage = 0;
+        
+        if (progress[lessonId]?.isCompleted) {
+            percentage = 100;
+        } else {
+            let completedCount = 0;
+            for (let i = 0; i < totalQuestions; i++) {
+                if (isQuestionCompleted(lessonId, i)) {
+                    completedCount++;
+                }
+            }
 
-        for (let i = 0; i < totalQuestions; i++) {
-            if (isQuestionCompleted(lessonId, i)) {
-                completedCount++;
+            percentage = (completedCount / (totalQuestions + 1)) * 100;
+            if(readProgress > 97 && completedCount === totalQuestions) {
+                percentage = 100;
             }
         }
 
-        // Calculate percentage
-        let percentage = (completedCount / (totalQuestions + 1)) * 100;
         setQuestionProgress(percentage);
-
-        if(readProgress > 97 && completedCount === totalQuestions) {
-          setQuestionProgress(100)
-        }
 
         // Update Confi image based on progress
         if (percentage === 0) {
             setConfiImage("/images/confi/Simple1.png");
         } else if (percentage < 33.33) {
             setConfiImage("/images/confi/Happy1.png");
-        } else if (percentage < 66.67) {
+        } else if (percentage < 99) {
             setConfiImage("/images/confi/Happy2.png");
-        } else if (percentage >= 66.67) {
+        } else {
             setConfiImage("/images/confi/Shout1.png");
         }
 
