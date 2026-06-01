@@ -4,9 +4,14 @@ import useProgressStore from '../../stores/progressStore.js';
 export default function LessonForm({ lessonId, nextLessonUrl, totalQuestions }) {
     const progress = useProgressStore((state) => state.progress);
     const [isClient, setIsClient] = useState(false);
+    const [isExploreMode, setIsExploreMode] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('mode') === 'explore') setIsExploreMode(true);
+        }
     }, []);
 
     if (!isClient) {
@@ -17,17 +22,6 @@ export default function LessonForm({ lessonId, nextLessonUrl, totalQuestions }) 
     const isUnlocked = totalQuestions === 0 
         ? (lessonProgress?.isCompleted || false)
         : (lessonProgress?.lastCompletedQuestion === totalQuestions - 1);
-
-    console.log("LessonForm render:", { lessonId, totalQuestions, lastCompleted: lessonProgress?.lastCompletedQuestion, isUnlocked });
-
-    const [isExploreMode, setIsExploreMode] = useState(false);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('mode') === 'explore') setIsExploreMode(true);
-        }
-    }, []);
 
     const handleManualComplete = () => {
         if (!isExploreMode) {

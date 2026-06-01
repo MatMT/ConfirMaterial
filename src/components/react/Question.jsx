@@ -50,7 +50,12 @@ export default function Question({ lessonId, questionData, totalQuestions }) {
     const handlePreselectAnswer = (optionIndex) => {
         // Permite cambiar la opción preseleccionada si no se ha confirmado una respuesta correcta.
         if (isCorrect !== true) {
-            setPreselectedOption(optionIndex);
+            if (preselectedOption === optionIndex) {
+                // Segundo clic en la misma opción: Enviar!
+                handleConfirmAnswer();
+            } else {
+                setPreselectedOption(optionIndex);
+            }
         }
     };
 
