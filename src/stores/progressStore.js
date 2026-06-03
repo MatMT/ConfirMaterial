@@ -9,6 +9,9 @@ const useProgressStore = create((set, get) => ({
     lastLessonDate: null,
     userId: null,
     isInitialized: false,
+    testDangerMode: false,
+
+    toggleTestDangerMode: () => set((state) => ({ testDangerMode: !state.testDangerMode })),
 
     initializeStore: async (explicitUserId) => {
         // Ignorar llamadas automáticas sin argumentos. 
@@ -82,10 +85,35 @@ const useProgressStore = create((set, get) => ({
                     .eq('user_id', userId)
                     .maybeSingle();
 
+                let currentStreak = streakData ? streakData.current_streak : 0;
+                let lastLessonDate = streakData ? streakData.last_lesson_date : null;
+
+                // Verificar si la racha ha expirado
+                if (currentStreak > 0 && lastLessonDate) {
+                    const lDate = new Date(lastLessonDate);
+                    const daysToSaturday = 6 - lDate.getDay();
+                    
+                    const firstDeadline = new Date(lDate);
+                    firstDeadline.setDate(firstDeadline.getDate() + daysToSaturday);
+                    firstDeadline.setHours(11, 0, 0, 0);
+
+                    // La expiración es el sábado de la SIGUIENTE semana a las 11:00 AM
+                    const expirationDate = new Date(firstDeadline);
+                    expirationDate.setDate(expirationDate.getDate() + 7);
+
+                    const now = new Date();
+                    if (now.getTime() > expirationDate.getTime()) {
+                        console.log('La racha ha expirado. Reseteando a 0.');
+                        currentStreak = 0;
+                        // Actualizar en BD silenciosamente
+                        supabase.from('user_streaks').update({ current_streak: 0 }).eq('user_id', userId).then();
+                    }
+                }
+
                 set({ 
                     progress: newProgress,
-                    streak: streakData ? streakData.current_streak : 0,
-                    lastLessonDate: streakData ? streakData.last_lesson_date : null,
+                    streak: currentStreak,
+                    lastLessonDate: lastLessonDate,
                     isInitialized: true
                 });
 

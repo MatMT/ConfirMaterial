@@ -1,8 +1,11 @@
 ---
 export const prerender = false;
-import BaseLayout from '../../layouts/LessonPost.astro';
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
 import { createClient } from "@supabase/supabase-js";
 import StudentsTable from '../../components/react/admin/StudentsTable';
+import { Icon } from 'astro-icon/components';
 
 // Inicializar cliente admin para saltar RLS
 const supabaseAdmin = createClient(
@@ -13,21 +16,17 @@ const supabaseAdmin = createClient(
 
 // Verificar el PIN desde las cookies
 const adminPinCookie = Astro.cookies.get('admin-pin')?.value;
-const correctPin = import.meta.env.ADMIN_PIN?.replace(/['"]/g, '') || "1234"; // Evitar problemas con comillas en el .env
+const correctPin = import.meta.env.ADMIN_PIN?.replace(/['"]/g, '') || "1234";
 
-// Si es un POST (login), verificamos el PIN
 if (Astro.request.method === "POST") {
     let formData;
     try {
         formData = await Astro.request.formData();
         const pin = formData.get("pin")?.toString();
-        console.log(`[Admin] Try Login. Received: ${pin}, Expected: ${correctPin}`);
         if (pin === correctPin) {
             console.log("[Admin] PIN Correct. Setting cookie and redirecting.");
             Astro.cookies.set('admin-pin', pin, { path: '/', httpOnly: true, secure: import.meta.env.PROD, sameSite: 'lax', maxAge: 60 * 60 * 24 });
             return Astro.redirect('/admin');
-        } else {
-            console.log("[Admin] PIN Incorrect!");
         }
     } catch (e) {
         console.error("[Admin] Error in POST:", e);
@@ -36,7 +35,6 @@ if (Astro.request.method === "POST") {
 
 const isAuthenticated = adminPinCookie === correctPin;
 
-// Obtener la lista de alumnos
 let students = [];
 if (isAuthenticated) {
     const { data, error } = await supabaseAdmin
@@ -46,12 +44,10 @@ if (isAuthenticated) {
         .order('created_at', { ascending: false });
     
     if (data) {
-        // Obtener la última lección para cada alumno
         const { data: streaksData } = await supabaseAdmin
             .from('user_streaks')
             .select('*');
         
-        // Unir datos
         students = data.map(student => {
             const streak = streaksData?.find(s => s.user_id === student.id);
             return {
@@ -63,53 +59,60 @@ if (isAuthenticated) {
     }
 }
 ---
-<!DOCTYPE html>
-<html lang="es" data-theme="lofi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-base-200 min-h-screen">
-    
-    <div class="navbar bg-base-100 shadow-sm mb-8">
-        <div class="flex-1">
-            <a href="/" class="btn btn-ghost text-xl">🏠 Inicio</a>
-            <span class="text-xl font-bold ml-4">Panel de Administración</span>
-        </div>
-        {isAuthenticated && (
-            <div class="flex-none">
-                <a href="/admin/students/new" class="btn btn-primary">Crear Alumno</a>
-            </div>
-        )}
-    </div>
 
-    <main class="container mx-auto px-4 max-w-6xl">
+<!DOCTYPE html>
+<html lang="es" data-theme="confirtheme">
+<head>
+    <BaseHead title="Panel de Administración" description="Administración de alumnos" />
+</head>
+<body class="bg-base-200 min-h-screen flex flex-col font-sans">
+    
+    <Header />
+
+    <main class="container mx-auto px-4 max-w-6xl flex-grow py-12 animate-fade-up">
         {!isAuthenticated ? (
-            <div class="max-w-md mx-auto bg-base-100 p-8 rounded-xl shadow-lg mt-20">
-                <h1 class="text-2xl font-bold text-center mb-6">Acceso Restringido</h1>
-                <form method="POST" class="flex flex-col gap-4">
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">PIN de Administrador</span></label>
-                        <input type="password" name="pin" class="input input-bordered text-center text-2xl tracking-widest" maxLength="4" required placeholder="••••" />
+            <div class="max-w-md mx-auto bg-base-100 p-8 rounded-3xl shadow-2xl mt-20 border border-base-200 backdrop-blur-xl">
+                <div class="flex justify-center mb-6">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                        <Icon name="mdi:shield-lock-outline" class="w-8 h-8" />
                     </div>
-                    <button type="submit" class="btn btn-primary w-full">Ingresar</button>
+                </div>
+                <h1 class="text-3xl font-extrabold text-center mb-2">Acceso Restringido</h1>
+                <p class="text-center text-base-content/60 mb-8">Ingresa el PIN de administrador para continuar.</p>
+                <form method="POST" class="flex flex-col gap-6">
+                    <div class="form-control">
+                        <input type="password" name="pin" class="input input-bordered input-lg text-center text-3xl tracking-widest bg-base-200/50 focus:bg-base-100 transition-colors rounded-2xl" maxLength="4" required placeholder="••••" />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                        Ingresar al Panel
+                        <Icon name="mdi:arrow-right" class="w-5 h-5 ml-2" />
+                    </button>
                 </form>
             </div>
         ) : (
-            <div>
-                <div class="flex justify-between items-end mb-6">
-                    <h2 class="text-3xl font-bold">Listado de Alumnos</h2>
+            <div class="space-y-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-base-100 p-8 rounded-3xl shadow-xl border border-base-200">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm mb-4">
+                            <Icon name="mdi:shield-check" class="w-4 h-4" />
+                            Modo Administrador
+                        </div>
+                        <h2 class="text-4xl font-extrabold tracking-tight">Gestión de Alumnos</h2>
+                        <p class="text-base-content/60 mt-2 text-lg">Supervisa el progreso y las rachas de todos los estudiantes.</p>
+                    </div>
+                    <a href="/admin/students/new" class="btn btn-primary shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all rounded-full px-8">
+                        <Icon name="mdi:account-plus-outline" class="w-5 h-5 mr-2" />
+                        Crear Nuevo Alumno
+                    </a>
                 </div>
                 
-                <div className="bg-base-100 rounded-xl shadow-md p-4">
+                <div className="bg-base-100 rounded-3xl shadow-2xl p-6 md:p-8 border border-base-200">
                     <StudentsTable client:load students={students} />
                 </div>
             </div>
         )}
     </main>
 
+    <Footer />
 </body>
 </html>

@@ -1,7 +1,11 @@
 ---
 export const prerender = false;
+import BaseHead from '../../../components/BaseHead.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
 import { createClient } from "@supabase/supabase-js";
 import AdminStreakDisplay from '../../../components/react/AdminStreakDisplay.tsx';
+import { Icon } from 'astro-icon/components';
 
 // Inicializar cliente admin para saltar RLS
 const supabaseAdmin = createClient(
@@ -44,7 +48,7 @@ const { data: streakData } = await supabaseAdmin
 
 // Obtener las lecciones completadas
 const { data: progressData } = await supabaseAdmin
-    .from('lesson_progress')
+    .from('user_progress')
     .select('*')
     .eq('user_id', id);
 
@@ -53,87 +57,98 @@ const reconstructedProgress = {};
 if (progressData) {
     progressData.forEach(p => {
         reconstructedProgress[p.lesson_id] = {
-            isCompleted: p.status === 'completed',
+            isCompleted: p.is_completed,
             completedAt: p.completed_at
         };
     });
 }
 ---
-<!DOCTYPE html>
-<html lang="es" data-theme="lofi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalles del Alumno | Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-base-200 min-h-screen">
-    
-    <div class="navbar bg-base-100 shadow-sm mb-8">
-        <div class="flex-1">
-            <a href="/admin" class="btn btn-ghost text-xl">⬅️ Volver al Panel</a>
-        </div>
-    </div>
 
-    <main class="container mx-auto px-4 max-w-4xl pb-12">
+<!DOCTYPE html>
+<html lang="es" data-theme="confirtheme">
+<head>
+    <BaseHead title={`Progreso: ${profile.first_name}`} description="Detalles del progreso del alumno" />
+</head>
+<body class="bg-base-200 min-h-screen flex flex-col font-sans">
+    
+    <Header />
+
+    <main class="container mx-auto px-4 max-w-6xl flex-grow py-12 animate-fade-up">
+        
+        <div class="mb-8">
+            <a href="/admin" class="btn btn-ghost hover:bg-base-100 rounded-full px-6 font-bold">
+                <Icon name="mdi:arrow-left" class="w-5 h-5 mr-2" />
+                Volver al Panel
+            </a>
+        </div>
+
         <div class="flex flex-col md:flex-row gap-8">
             
             <!-- Detalles del Perfil -->
-            <div class="flex-1 space-y-6">
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title text-2xl mb-4 border-b border-base-200 pb-2">Información del Alumno</h2>
+            <div class="flex-1 space-y-8">
+                <div class="card bg-base-100 shadow-xl border border-base-200 rounded-3xl">
+                    <div class="card-body p-8">
+                        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-base-200">
+                            <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                <Icon name="mdi:account-details-outline" class="w-8 h-8" />
+                            </div>
+                            <h2 class="text-3xl font-bold">Información del Alumno</h2>
+                        </div>
                         
-                        <div class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                                <p class="text-sm text-base-content/60 font-semibold">Nombre Completo</p>
+                                <p class="text-sm text-base-content/60 font-semibold mb-1">Nombre Completo</p>
                                 <p class="text-xl font-bold">{profile.full_name || `${profile.first_name || ''} ${profile.last_names || ''}`}</p>
                             </div>
                             
                             <div>
-                                <p class="text-sm text-base-content/60 font-semibold">Credencial (Usuario)</p>
+                                <p class="text-sm text-base-content/60 font-semibold mb-1">Credencial (Usuario)</p>
                                 <div class="badge badge-primary font-mono text-lg py-3 px-4 mt-1">{profile.credential}</div>
                             </div>
 
                             <div>
-                                <p class="text-sm text-base-content/60 font-semibold">Fecha de Nacimiento</p>
-                                <p class="text-lg">{profile.birth_date ? new Date(profile.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'No registrada'}</p>
+                                <p class="text-sm text-base-content/60 font-semibold mb-1">Fecha de Nacimiento</p>
+                                <p class="text-lg font-medium">{profile.birth_date ? new Date(profile.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'No registrada'}</p>
                             </div>
                             
                             <div>
-                                <p class="text-sm text-base-content/60 font-semibold">Fecha de Registro</p>
-                                <p class="text-lg">{new Date(profile.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                <p class="text-sm text-base-content/60 font-semibold mb-1">Fecha de Registro</p>
+                                <p class="text-lg font-medium">{new Date(profile.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title text-xl mb-4">Registro de Lecciones (Base de Datos)</h2>
+                <div class="card bg-base-100 shadow-xl border border-base-200 rounded-3xl">
+                    <div class="card-body p-8">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
+                                <Icon name="mdi:format-list-checks" class="w-6 h-6" />
+                            </div>
+                            <h2 class="text-2xl font-bold">Registro de Lecciones (Base de Datos)</h2>
+                        </div>
                         <div class="overflow-x-auto">
-                            <table class="table table-sm">
-                                <thead>
+                            <table class="table table-zebra w-full">
+                                <thead class="bg-base-300 text-base-content">
                                     <tr>
-                                        <th>Lección ID</th>
+                                        <th class="rounded-tl-lg">Lección ID</th>
                                         <th>Estado</th>
-                                        <th>Fecha de Completado</th>
+                                        <th class="rounded-tr-lg">Fecha de Completado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {progressData && progressData.length > 0 ? progressData.map(p => (
-                                        <tr>
-                                            <td class="font-mono">{p.lesson_id}</td>
+                                        <tr class="hover">
+                                            <td class="font-mono font-medium">{p.lesson_id}</td>
                                             <td>
-                                                <div class={`badge ${p.status === 'completed' ? 'badge-success text-white' : 'badge-warning'}`}>
-                                                    {p.status === 'completed' ? 'Completado' : 'En progreso'}
+                                                <div class={`badge ${p.is_completed ? 'badge-success text-white' : 'badge-warning font-semibold'}`}>
+                                                    {p.is_completed ? 'Completado' : 'En progreso'}
                                                 </div>
                                             </td>
-                                            <td>{p.completed_at ? new Date(p.completed_at).toLocaleString('es-ES') : '-'}</td>
+                                            <td class="text-base-content/80">{p.completed_at ? new Date(p.completed_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}</td>
                                         </tr>
                                     )) : (
-                                        <tr><td colSpan="3" class="text-center py-4 text-base-content/50">Aún no ha iniciado ninguna lección.</td></tr>
+                                        <tr><td colSpan="3" class="text-center py-8 text-base-content/50 font-medium bg-base-200/30 rounded-b-lg">Aún no ha completado ninguna lección en la base de datos.</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -143,7 +158,7 @@ if (progressData) {
             </div>
 
             <!-- Calendario y Racha -->
-            <div class="md:w-[400px]">
+            <div class="md:w-[400px] shrink-0">
                 <AdminStreakDisplay 
                     client:load
                     streak={streakData?.current_streak || 0}
@@ -155,5 +170,6 @@ if (progressData) {
         </div>
     </main>
 
+    <Footer />
 </body>
 </html>

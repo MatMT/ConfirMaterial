@@ -85,22 +85,33 @@ if (user) {
       >
         <div class="flex items-center gap-4 w-full min-w-0">
           <div class="avatar placeholder shrink-0">
-            <div class="bg-primary text-primary-content rounded-full w-14 sm:w-16">
+            <div
+              class="bg-primary text-primary-content rounded-full w-14 sm:w-16"
+            >
               <span class="text-xl sm:text-2xl"
                 >{profile?.first_name?.charAt(0) || "U"}</span
               >
             </div>
           </div>
           <div class="flex flex-col min-w-0 w-full">
-            <h1 class="text-2xl sm:text-3xl font-bold break-words w-full leading-tight" id="dashboardTitle">
+            <h1
+              class="text-2xl sm:text-3xl font-bold break-words w-full leading-tight"
+              id="dashboardTitle"
+            >
               Hola, {profile?.first_name || "Usuario"}
             </h1>
-            <span class="badge badge-accent mt-2 sm:mt-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full" id="dashboardCredential"
+            <span
+              class="badge badge-accent mt-2 sm:mt-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
+              id="dashboardCredential"
               >Credencial: {profile?.credential || "N/A"}</span
             >
           </div>
         </div>
-        <a href="/api/auth/signout" class="btn btn-error btn-outline shadow-sm w-full sm:w-auto shrink-0" onclick="localStorage.clear();">
+        <a
+          href="/api/auth/signout"
+          class="btn btn-error btn-outline shadow-sm w-full sm:w-auto shrink-0"
+          onclick="localStorage.clear();"
+        >
           <Icon name="mdi:logout" class="w-5 h-5 mr-1" />
           Cerrar Sesión
         </a>
@@ -113,7 +124,7 @@ if (user) {
             type="radio"
             name="dashboard_tabs"
             role="tab"
-            class="tab font-bold text-lg h-12"
+            class="tab font-bold text-sm sm:text-base whitespace-nowrap px-4"
             aria-label="Tus Datos"
             checked
           />
@@ -212,7 +223,7 @@ if (user) {
             type="radio"
             name="dashboard_tabs"
             role="tab"
-            class="tab font-bold text-lg h-12"
+            class="tab font-bold text-sm sm:text-base whitespace-nowrap px-4"
             aria-label="Contraseña y Ayuda"
           />
           <div role="tabpanel" class="tab-content p-6 border-t-0 mt-4">
@@ -222,33 +233,76 @@ if (user) {
                 Seguridad de tu Cuenta
               </h2>
 
-              <p class="text-base-content/80 mb-6">
-                Si necesitas cambiar tu contraseña o tienes problemas con tu
-                cuenta, escríbenos por WhatsApp para ayudarte rápidamente.
-              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Formulario de Cambio de Contraseña -->
+                <div class="card bg-base-100 shadow-sm border border-base-200">
+                  <div class="card-body p-5">
+                    <h3 class="card-title text-lg mb-2">
+                      <Icon
+                        name="mdi:lock-reset"
+                        class="w-5 h-5 text-primary"
+                      />
+                      Cambiar Contraseña
+                    </h3>
+                    <form action="/api/auth/update-password" method="POST">
+                      <div class="form-control mb-3">
+                        <label class="label"
+                          ><span class="label-text font-semibold"
+                            >Nueva Contraseña</span
+                          ></label
+                        >
+                        <input
+                          type="password"
+                          name="newPassword"
+                          class="input input-bordered w-full"
+                          minlength="6"
+                          required
+                        />
+                      </div>
+                      <div class="form-control mb-5">
+                        <label class="label"
+                          ><span class="label-text font-semibold"
+                            >Confirmar Contraseña</span
+                          ></label
+                        >
+                        <input
+                          type="password"
+                          name="confirmPassword"
+                          class="input input-bordered w-full"
+                          minlength="6"
+                          required
+                        />
+                      </div>
+                      <button type="submit" class="btn btn-primary w-full">
+                        <Icon name="mdi:lock-check" class="w-5 h-5 mr-1" /> Actualizar
+                        Contraseña
+                      </button>
+                    </form>
+                  </div>
+                </div>
 
-              <!-- <div class="card bg-green-50 border border-green-200 shadow-sm">
-                <div class="card-body">
-                  <h3 class="card-title text-green-800">
-                    <Icon name="mdi:whatsapp" class="w-6 h-6" />
-                    Soporte por WhatsApp
-                  </h3>
-                  <p class="text-green-700 text-sm">
-                    Nuestro equipo te ayudará a restablecer tu contraseña o
-                    solucionar cualquier problema de forma súper rápida.
-                  </p>
-                  <div class="card-actions justify-start mt-4">
+                <!-- Botón de WhatsApp -->
+                <div class="card bg-base-100 shadow-sm border border-base-200 h-fit">
+                  <div class="card-body p-5">
+                    <h3 class="card-title text-base-content text-lg">
+                      <Icon name="mdi:whatsapp" class="w-6 h-6 text-green-500" />
+                      Soporte y Ayuda
+                    </h3>
+                    <p class="text-base-content/70 text-sm mt-1 mb-4 leading-relaxed">
+                      ¿Tienes problemas u olvidaste algo? Escríbenos
+                      directamente y te ayudaremos rápido.
+                    </p>
                     <a
-                      href="https://wa.me/1234567890?text=Hola,%20necesito%20ayuda%20para%20cambiar%20mi%20contraseña%20en%20ConfirMaterial"
+                      href="https://wa.me/50360505363?text=Hola,%20necesito%20ayuda%20con%20mi%20cuenta%20de%20ConfirMaterial"
                       target="_blank"
-                      class="btn bg-green-500 hover:bg-green-600 text-white border-none shadow-md w-full sm:w-auto"
+                      class="btn btn-outline border-green-500 text-green-600 hover:bg-green-500 hover:text-white hover:border-green-500 w-full"
                     >
                       <Icon name="mdi:whatsapp" class="w-5 h-5 mr-1" />
-                      Contactar Soporte
+                      Contactar por WhatsApp
                     </a>
                   </div>
                 </div>
-              </div> -->
+              </div>
             </div>
           </div>
         </div>

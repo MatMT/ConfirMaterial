@@ -33,7 +33,7 @@ if (isLoggedIn) {
 }
 ---
 
-<header class={`navbar bg-base-100 shadow-sm ${isSticky ? 'sticky top-0 z-50' : 'relative z-40'}`}>
+<header class={`navbar bg-base-100 shadow-sm ${isSticky ? 'sticky top-0 z-[100]' : 'relative z-[100]'}`}>
   <StoreInitializer client:only="react" user={userProfile} accessToken={accessToken?.value} refreshToken={refreshToken?.value} />
   
   <div class="navbar-start">

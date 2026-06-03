@@ -1,0 +1,73 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import { Icon } from "astro-icon/components";
+
+export const prerender = true;
+---
+
+<!doctype html>
+<html lang="es" data-theme="confirtheme">
+    <head>
+        <BaseHead
+            title={`Página no encontrada - ${SITE_TITLE}`}
+            description={SITE_DESCRIPTION}
+        />
+    </head>
+    <body class="min-h-screen bg-base-100 flex flex-col">
+        <Header />
+
+        <main
+            class="flex-grow container mx-auto px-4 py-16 max-w-4xl flex flex-col items-center justify-center text-center animate-fade-up"
+        >
+            <div class="relative mb-8">
+                <div
+                    class="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse"
+                >
+                </div>
+                <Icon
+                    name="mdi:compass-off-outline"
+                    class="w-40 h-40 text-primary relative z-10 opacity-80"
+                />
+            </div>
+
+            <h1
+                class="text-6xl md:text-8xl font-black text-base-content tracking-tighter mb-4 drop-shadow-sm"
+            >
+                404
+            </h1>
+
+            <h2
+                class="text-3xl md:text-4xl font-bold text-base-content/80 mb-6"
+            >
+                ¡Te has desviado del camino!
+            </h2>
+
+            <p class="text-xl text-base-content/60 max-w-2xl mx-auto mb-10">
+                ¡Pero no te preocupes, el Espíritu Santo siempre nos ayuda a
+                encontrar la dirección correcta!
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a
+                    href="/lessons"
+                    class="btn btn-primary btn-lg rounded-full shadow-lg shadow-primary/30 hover:scale-105 transition-all"
+                >
+                    <Icon name="mdi:map-marker-path" class="w-6 h-6 mr-2" />
+                    Volver al Roadmap
+                </a>
+                <a
+                    href="/"
+                    class="btn btn-outline btn-lg rounded-full hover:scale-105 transition-all"
+                >
+                    <Icon name="mdi:home" class="w-6 h-6 mr-2" />
+                    Ir al Inicio
+                </a>
+            </div>
+        </main>
+
+        <Footer />
+    </body>
+</html>

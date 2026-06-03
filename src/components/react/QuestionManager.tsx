@@ -10,10 +10,10 @@ export default function QuestionManager() {
     const [userId, setUserId] = useState(null);
 
     // Edit state
-    const [editingQuestion, setEditingQuestion] = useState(null);
+    const [editingQuestionId, setEditingQuestionId] = useState(null);
     const [editText, setEditText] = useState('');
     const [isSavingEdit, setIsSavingEdit] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [sortOrder, setSortOrder] = useState('desc');
 
     useEffect(() => {
         fetchQuestions();
@@ -27,8 +27,7 @@ export default function QuestionManager() {
         const { data, error } = await supabase
             .from('student_questions')
             .select('*')
-            .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false });
+            .eq('user_id', session.user.id);
 
         if (!error && data) {
             setQuestions(data);
@@ -64,26 +63,24 @@ export default function QuestionManager() {
     };
 
     const openEditModal = (q) => {
-        setEditingQuestion(q);
+        setEditingQuestionId(q.id);
         setEditText(q.question);
-        setIsModalOpen(true);
     };
 
     const closeEditModal = () => {
-        setIsModalOpen(false);
-        setEditingQuestion(null);
+        setEditingQuestionId(null);
         setEditText('');
     };
 
     const handleSaveEdit = async () => {
-        if (!editText.trim() || !editingQuestion) return;
+        if (!editText.trim() || !editingQuestionId) return;
 
         setIsSavingEdit(true);
         try {
             const { error } = await supabase
                 .from('student_questions')
                 .update({ question: editText.trim() })
-                .eq('id', editingQuestion.id);
+                .eq('id', editingQuestionId);
 
             if (error) throw error;
             
@@ -96,9 +93,15 @@ export default function QuestionManager() {
         }
     };
 
+    const sortedQuestions = [...questions].sort((a, b) => {
+        const timeA = new Date(a.created_at).getTime();
+        const timeB = new Date(b.created_at).getTime();
+        return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+    });
+
     return (
         <div className="card bg-base-100 shadow-xl border border-base-200 lg:col-span-3 hover:shadow-2xl transition-all duration-300 animate-fade-up">
-            <div className="card-body">
+            <div className="card-body p-6 sm:p-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -106,7 +109,7 @@ export default function QuestionManager() {
                         </div>
                         <div>
                             <h2 className="card-title text-2xl">¿Tienes alguna pregunta para la clase?</h2>
-                            <p className="text-sm text-base-content/60">Déjanos tu duda y la resolveremos en nuestra próxima sesión en vivo.</p>
+                            <p className="text-sm text-base-content/60 mt-1">Déjanos tu duda y la resolveremos en nuestra próxima sesión en vivo.</p>
                         </div>
                     </div>
                     
@@ -114,7 +117,7 @@ export default function QuestionManager() {
                     {questions.length > 0 && (
                         <button 
                             onClick={() => document.getElementById('questions_modal').showModal()} 
-                            className="btn btn-outline btn-sm md:btn-md shrink-0"
+                            className="btn btn-outline btn-sm md:btn-md shrink-0 border-base-300 shadow-sm"
                         >
                             <Icon icon="mdi:format-list-bulleted" className="w-5 h-5 mr-1" />
                             Mis Preguntas ({questions.length})
@@ -125,7 +128,7 @@ export default function QuestionManager() {
                 {/* Formulario de nueva pregunta */}
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <textarea 
-                        className="textarea textarea-bordered textarea-lg w-full bg-base-200/50 focus:bg-base-100 transition-colors" 
+                        className="textarea textarea-bordered textarea-lg w-full bg-base-200/50 focus:bg-base-100 transition-colors shadow-inner" 
                         placeholder="Escribe tu pregunta aquí..."
                         rows={4}
                         value={newQuestion}
@@ -133,8 +136,8 @@ export default function QuestionManager() {
                         required
                     ></textarea>
                     
-                    <div className="flex justify-end">
-                        <button type="submit" disabled={isSubmitting} className="btn btn-primary px-8 rounded-full shadow-lg hover:scale-105 transition-transform">
+                    <div className="flex justify-end mt-2">
+                        <button type="submit" disabled={isSubmitting} className="btn btn-primary px-8 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
                             {isSubmitting ? <span className="loading loading-spinner loading-sm"></span> : <Icon icon="mdi:send" className="w-5 h-5 mr-2" />}
                             Enviar Pregunta
                         </button>
@@ -150,74 +153,84 @@ export default function QuestionManager() {
             </div>
 
             {/* Modal Principal: Lista de Preguntas */}
-            <dialog id="questions_modal" className="modal modal-bottom sm:modal-middle">
-                <div className="modal-box w-full max-w-3xl">
-                    <form method="dialog">
-                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                    </form>
-                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                        <Icon icon="mdi:format-list-bulleted" className="w-5 h-5 text-primary" />
-                        Historial de Preguntas
-                    </h3>
+            <dialog id="questions_modal" className="modal modal-bottom sm:modal-middle backdrop-blur-sm">
+                <div className="modal-box w-full max-w-2xl bg-base-100 p-0 overflow-hidden">
+                    <div className="p-6 border-b border-base-200 bg-base-100/95 sticky top-0 z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <h3 className="font-bold text-xl flex items-center gap-2">
+                            <Icon icon="mdi:format-list-bulleted" className="w-6 h-6 text-primary" />
+                            Historial de Preguntas
+                        </h3>
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')} 
+                                className="btn btn-sm btn-ghost bg-base-200"
+                            >
+                                <Icon icon={sortOrder === 'desc' ? 'mdi:sort-clock-descending-outline' : 'mdi:sort-clock-ascending-outline'} className="w-4 h-4" />
+                                {sortOrder === 'desc' ? 'Más recientes' : 'Más antiguas'}
+                            </button>
+                            <form method="dialog">
+                                <button className="btn btn-sm btn-circle btn-ghost bg-base-200" onClick={closeEditModal}>✕</button>
+                            </form>
+                        </div>
+                    </div>
                     
-                    <div className="max-h-[60vh] overflow-y-auto space-y-4 pr-2">
-                        {questions.map((q) => (
-                            <div key={q.id} className="bg-base-200 p-4 rounded-xl flex flex-col gap-2 relative group">
-                                <div className="flex justify-between items-start gap-4">
-                                    <p className="text-base-content/90 whitespace-pre-wrap">{q.question}</p>
-                                    <div className="flex items-center gap-2">
-                                        <div className={`badge badge-sm ${q.status === 'answered' ? 'badge-success' : 'badge-warning'}`}>
-                                            {q.status === 'answered' ? 'Respondida' : 'Pendiente'}
+                    <div className="max-h-[60vh] overflow-y-auto p-6 space-y-4 bg-base-50 scrollbar-thin scrollbar-thumb-base-300 hover:scrollbar-thumb-base-400">
+                        {sortedQuestions.map((q) => (
+                            <div key={q.id}>
+                                {editingQuestionId === q.id ? (
+                                    <div className="bg-primary/5 p-4 rounded-xl flex flex-col gap-3 border border-primary/20 shadow-inner animate-fade-in">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Icon icon="mdi:pencil-circle" className="text-primary w-5 h-5" />
+                                            <span className="font-bold text-sm text-primary">Editando pregunta...</span>
                                         </div>
-                                        {q.status === 'pending' && (
-                                            <button 
-                                                type="button"
-                                                onClick={() => openEditModal(q)} 
-                                                className="btn btn-ghost btn-xs btn-square text-primary md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                                                title="Editar pregunta"
-                                            >
-                                                <Icon icon="mdi:pencil" className="w-4 h-4" />
+                                        <textarea 
+                                            className="textarea textarea-bordered w-full text-base bg-base-100 focus:border-primary shadow-sm" 
+                                            rows={3}
+                                            value={editText}
+                                            onChange={(e) => setEditText(e.target.value)}
+                                            autoFocus
+                                        ></textarea>
+                                        <div className="flex justify-end gap-2 mt-1">
+                                            <button onClick={closeEditModal} className="btn btn-sm btn-ghost rounded-full">Cancelar</button>
+                                            <button onClick={handleSaveEdit} disabled={isSavingEdit || !editText.trim()} className="btn btn-sm btn-primary rounded-full px-6 shadow-sm">
+                                                {isSavingEdit ? <span className="loading loading-spinner loading-xs"></span> : 'Guardar'}
                                             </button>
-                                        )}
+                                        </div>
                                     </div>
-                                </div>
-                                <span className="text-xs text-base-content/40">
-                                    {new Date(q.created_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}
-                                </span>
+                                ) : (
+                                    <div className="bg-base-100 p-4 rounded-xl flex flex-col gap-3 relative group transition-all hover:bg-base-200 hover:shadow-md border border-base-200">
+                                        <div className="flex justify-between items-start gap-4">
+                                            <p className="text-base-content/90 whitespace-pre-wrap leading-relaxed">{q.question}</p>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <div className={`badge badge-sm font-semibold shadow-sm ${q.status === 'answered' ? 'badge-success text-white' : 'badge-warning'}`}>
+                                                    {q.status === 'answered' ? 'Respondida' : 'Pendiente'}
+                                                </div>
+                                                {q.status === 'pending' && (
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => openEditModal(q)} 
+                                                        className="btn btn-ghost btn-xs btn-square text-primary md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-base-200/50 hover:bg-primary hover:text-white"
+                                                        title="Editar pregunta"
+                                                    >
+                                                        <Icon icon="mdi:pencil" className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-xs text-base-content/40 font-medium">
+                                            <Icon icon="mdi:clock-outline" className="w-3 h-3" />
+                                            {new Date(q.created_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
                 </div>
-                <form method="dialog" className="modal-backdrop">
-                    <button>cerrar</button>
+                <form method="dialog" className="modal-backdrop bg-black/40">
+                    <button onClick={closeEditModal}>cerrar</button>
                 </form>
             </dialog>
-
-            {/* Sub-modal: Editar Pregunta */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4 animate-fade-in">
-                    <div className="bg-base-100 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-up">
-                        <div className="p-4 border-b border-base-200 flex justify-between items-center">
-                            <h3 className="font-bold text-lg">Editar Pregunta</h3>
-                            <button onClick={closeEditModal} className="btn btn-sm btn-circle btn-ghost">✕</button>
-                        </div>
-                        <div className="p-4">
-                            <textarea 
-                                className="textarea textarea-bordered w-full text-base" 
-                                rows={4}
-                                value={editText}
-                                onChange={(e) => setEditText(e.target.value)}
-                            ></textarea>
-                        </div>
-                        <div className="p-4 bg-base-200/50 border-t border-base-200 flex justify-end gap-2">
-                            <button onClick={closeEditModal} className="btn btn-ghost">Cancelar</button>
-                            <button onClick={handleSaveEdit} disabled={isSavingEdit || !editText.trim()} className="btn btn-primary">
-                                {isSavingEdit ? <span className="loading loading-spinner loading-sm"></span> : 'Guardar Cambios'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
