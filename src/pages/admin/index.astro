@@ -67,7 +67,7 @@ if (isAuthenticated) {
 </head>
 <body class="bg-base-200 min-h-screen flex flex-col font-sans">
     
-    <Header />
+    <Header isAdminMode={true} />
 
     <main class="container mx-auto px-4 max-w-6xl flex-grow py-12 animate-fade-up">
         {!isAuthenticated ? (

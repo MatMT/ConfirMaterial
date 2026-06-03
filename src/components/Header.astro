@@ -8,9 +8,10 @@ import { supabase } from '../utils/supabase';
 
 interface Props {
   isSticky?: boolean;
+  isAdminMode?: boolean;
 }
 
-const { isSticky = true } = Astro.props;
+const { isSticky = true, isAdminMode = false } = Astro.props;
 const { cookies } = Astro;
 const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
@@ -42,25 +43,53 @@ if (isLoggedIn) {
         <Icon name="mdi:menu" class="h-6 w-6" />
       </div>
       <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-        <li><HeaderLink href="/">Inicio</HeaderLink></li>
-        <li><HeaderLink href="/lessons">Lecciones</HeaderLink></li>
-        <li><HeaderLink href="/more">Material</HeaderLink></li>
+        {isAdminMode ? (
+          <>
+            <li><HeaderLink href="/admin">👥 Alumnos</HeaderLink></li>
+            <li><HeaderLink href="/admin/n8n">⚙️ Webhooks (N8N)</HeaderLink></li>
+            <li><HeaderLink href="/admin/lessons">📝 Editar Lecciones</HeaderLink></li>
+            <li><HeaderLink href="/admin/roadmap">🗺️ Ordenar Roadmap</HeaderLink></li>
+          </>
+        ) : (
+          <>
+            <li><HeaderLink href="/">Inicio</HeaderLink></li>
+            <li><HeaderLink href="/lessons">Lecciones</HeaderLink></li>
+            <li><HeaderLink href="/more">Material</HeaderLink></li>
+          </>
+        )}
       </ul>
     </div>
-    <a href="/" class="btn btn-ghost text-xl font-bold text-primary">{SITE_TITLE}</a>
+    <a href={isAdminMode ? "/admin" : "/"} class="btn btn-ghost text-xl font-bold text-primary">
+      {SITE_TITLE} {isAdminMode && <span class="text-xs ml-1 bg-primary/10 text-primary px-2 py-1 rounded-full uppercase tracking-wider">Admin</span>}
+    </a>
   </div>
   
   <div class="navbar-center hidden md:flex">
     <ul class="menu menu-horizontal px-1">
-      <li><HeaderLink href="/">Inicio</HeaderLink></li>
-      <li><HeaderLink href="/lessons">Lecciones</HeaderLink></li>
-      <li><HeaderLink href="/more">Material</HeaderLink></li>
+      {isAdminMode ? (
+        <>
+          <li><HeaderLink href="/admin"><Icon name="mdi:account-group" class="w-4 h-4 mr-1"/> Alumnos</HeaderLink></li>
+          <li><HeaderLink href="/admin/n8n"><Icon name="mdi:api" class="w-4 h-4 mr-1"/> N8N</HeaderLink></li>
+          <li><HeaderLink href="/admin/lessons"><Icon name="mdi:file-document-edit" class="w-4 h-4 mr-1"/> Lecciones</HeaderLink></li>
+          <li><HeaderLink href="/admin/roadmap"><Icon name="mdi:map-marker-path" class="w-4 h-4 mr-1"/> Roadmap</HeaderLink></li>
+        </>
+      ) : (
+        <>
+          <li><HeaderLink href="/">Inicio</HeaderLink></li>
+          <li><HeaderLink href="/lessons">Lecciones</HeaderLink></li>
+          <li><HeaderLink href="/more">Material</HeaderLink></li>
+        </>
+      )}
     </ul>
   </div>
   
   <div class="navbar-end flex items-center">
-    {isLoggedIn && <StreakDisplay client:only="react" />}
-    {isLoggedIn ? (
+    {!isAdminMode && isLoggedIn && <StreakDisplay client:only="react" />}
+    {isAdminMode ? (
+      <a href="/" class="btn btn-outline btn-primary btn-sm rounded-full">
+        <Icon name="mdi:exit-run" class="h-4 w-4 mr-1" /> Salir Admin
+      </a>
+    ) : isLoggedIn ? (
       <a href="/dashboard" class="btn btn-ghost btn-circle" aria-label="Perfil">
         <Icon name="mdi:account-circle" class="h-8 w-8 text-primary" />
       </a>

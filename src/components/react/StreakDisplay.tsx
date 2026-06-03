@@ -248,17 +248,6 @@ export default function StreakDisplay() {
                                 Finaliza: {deadlineDate ? deadlineDate.toLocaleString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }) : '...'}
                             </span>
                         </div>
-
-                        {/* Botón de prueba para desarrollador */}
-                        <div className="pt-2 border-t border-base-200 mt-2">
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); toggleTestDangerMode(); }}
-                                className={`btn btn-sm w-full font-bold ${testDangerMode ? 'btn-error' : 'btn-outline'}`}
-                            >
-                                <Icon icon="mdi:test-tube" className="w-4 h-4" />
-                                {testDangerMode ? 'Desactivar Peligro (Test)' : 'Simular Peligro (Test)'}
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
