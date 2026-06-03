@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayout from '../../layouts/LessonPost.astro';
 import { createClient } from "@supabase/supabase-js";
+import StudentsTable from '../../components/react/admin/StudentsTable';
 
 // Inicializar cliente admin para saltar RLS
 const supabaseAdmin = createClient(
@@ -103,46 +104,8 @@ if (isAuthenticated) {
                     <h2 class="text-3xl font-bold">Listado de Alumnos</h2>
                 </div>
                 
-                <div class="overflow-x-auto bg-base-100 rounded-xl shadow-md">
-                    <table class="table table-zebra w-full">
-                        <thead class="bg-base-300 text-base-content text-sm">
-                            <tr>
-                                <th>Nombre Completo</th>
-                                <th>Credencial</th>
-                                <th>Última Conexión</th>
-                                <th>Racha</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {students.map(student => (
-                                <tr>
-                                    <td class="font-medium">{student.full_name || `${student.first_name || ''} ${student.last_names || ''}`}</td>
-                                    <td>
-                                        <div class="badge badge-ghost font-mono">{student.credential}</div>
-                                    </td>
-                                    <td>
-                                        {student.last_connection 
-                                            ? new Date(student.last_connection).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
-                                            : 'Nunca'}
-                                    </td>
-                                    <td>
-                                        <div class="flex items-center text-orange-500 font-bold">
-                                            🔥 {student.streak}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <a href={`/admin/students/${student.id}`} class="btn btn-sm btn-outline btn-info">Ver Progreso</a>
-                                    </td>
-                                </tr>
-                            ))}
-                            {students.length === 0 && (
-                                <tr>
-                                    <td colSpan="5" class="text-center py-8 text-base-content/50">No hay alumnos registrados aún.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div className="bg-base-100 rounded-xl shadow-md p-4">
+                    <StudentsTable client:load students={students} />
                 </div>
             </div>
         )}

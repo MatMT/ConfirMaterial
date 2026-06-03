@@ -169,7 +169,7 @@ export default function LessonPath({ lessons }: LessonPathProps) {
               window.scrollTo({ top: y, behavior: 'smooth' });
             }
           }}
-          className="btn btn-primary shadow-lg shadow-primary/30 rounded-full h-14 animate-pulse flex items-center justify-center px-6"
+          className="btn btn-primary shadow-lg shadow-primary/30 rounded-full h-14 flex items-center justify-center px-6 hover:scale-105 transition-all"
         >
           <Icon icon="mdi:target" className="w-5 h-5 mr-2" />
           Mi Lección
@@ -215,12 +215,13 @@ export default function LessonPath({ lessons }: LessonPathProps) {
       })}
 
       {/* Nodo Próximamente */}
-      <div className="relative z-10 flex flex-col items-center mt-8 mb-16 opacity-50 blur-[1px]">
-        <div className="mb-3 px-4 py-2 rounded-xl text-sm font-bold shadow-md whitespace-nowrap bg-base-300 text-base-content/50">
+      <div className="relative z-10 flex flex-col items-center mt-8 mb-16 mx-auto animate-pulse">
+        <div className="mb-3 px-4 py-2 rounded-xl text-sm font-bold shadow-md whitespace-nowrap bg-base-200/80 text-base-content/60 backdrop-blur-sm border border-base-content/10">
           Próximamente...
         </div>
-        <div className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full shadow-lg border-4 border-base-300 bg-base-200">
-          <Icon icon="mdi:dots-horizontal" className="w-10 h-10 sm:w-12 sm:h-12 text-base-content/30" />
+        <div className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-dashed border-base-300 bg-base-100/50 backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+          <Icon icon="mdi:cloud-outline" className="absolute w-14 h-14 sm:w-16 sm:h-16 text-base-300/50" />
+          <Icon icon="mdi:lock-outline" className="w-8 h-8 sm:w-10 sm:h-10 text-base-content/30 z-10" />
         </div>
       </div>
     </div>

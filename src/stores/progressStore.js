@@ -157,33 +157,49 @@ const useProgressStore = create((set, get) => ({
 
                 // Lógica de racha si se completó la lección
                 if (isCompleted && (!state.progress[lessonId] || !state.progress[lessonId].isCompleted)) {
-                    const newStreak = state.streak + 1;
-                    const newDate = new Date().toISOString();
-                    
-                    supabase.from('user_streaks').select('user_id').eq('user_id', state.userId).maybeSingle()
-                    .then(({ data, error }) => {
-                        if (error) console.error("Error fetching streak:", error);
-                        
-                        if (data) {
-                            supabase.from('user_streaks').update({
-                                current_streak: newStreak,
-                                last_lesson_date: newDate
-                            }).eq('user_id', state.userId).then(({error}) => {
-                                if(error) console.error("Error updating streak", error);
-                            });
-                        } else {
-                            supabase.from('user_streaks').insert({
-                                user_id: state.userId,
-                                current_streak: newStreak,
-                                last_lesson_date: newDate
-                            }).then(({error}) => {
-                                if(error) console.error("Error inserting streak", error);
-                            });
+                    const now = new Date();
+                    const day = now.getDay();
+                    const hours = now.getHours();
+
+                    // Bloqueo: Sábado (6) desde las 11:00 AM hasta que termina el día.
+                    const isStreakBlocked = day === 6 && hours >= 11;
+
+                    if (isStreakBlocked) {
+                        // Disparar evento para que la UI muestre la "excusa creativa"
+                        if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('streak-blocked', { 
+                                detail: "Lección completada, pero el Maestro del Tiempo ha cerrado el registro de rachas para esta semana. ¡Asegúrate de hacerlo antes del sábado a las 11:00 AM la próxima vez para mantener tu racha ardiendo!" 
+                            }));
                         }
-                    });
-                    
-                    // Actualizar el estado local de la racha inmediatamente
-                    setTimeout(() => set({ streak: newStreak, lastLessonDate: newDate }), 0);
+                    } else {
+                        const newStreak = state.streak + 1;
+                        const newDate = now.toISOString();
+                        
+                        supabase.from('user_streaks').select('user_id').eq('user_id', state.userId).maybeSingle()
+                        .then(({ data, error }) => {
+                            if (error) console.error("Error fetching streak:", error);
+                            
+                            if (data) {
+                                supabase.from('user_streaks').update({
+                                    current_streak: newStreak,
+                                    last_lesson_date: newDate
+                                }).eq('user_id', state.userId).then(({error}) => {
+                                    if(error) console.error("Error updating streak", error);
+                                });
+                            } else {
+                                supabase.from('user_streaks').insert({
+                                    user_id: state.userId,
+                                    current_streak: newStreak,
+                                    last_lesson_date: newDate
+                                }).then(({error}) => {
+                                    if(error) console.error("Error inserting streak", error);
+                                });
+                            }
+                        });
+                        
+                        // Actualizar el estado local de la racha inmediatamente
+                        setTimeout(() => set({ streak: newStreak, lastLessonDate: newDate }), 0);
+                    }
                 }
             }
 

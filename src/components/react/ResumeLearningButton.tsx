@@ -12,8 +12,9 @@ export default function ResumeLearningButton({ lessons }) {
     useEffect(() => {
         if (!isInitialized) return;
 
-        // Encontrar la primera lección no completada, o la última completada si todas están completadas
-        let foundLesson = lessons[0];
+        // Encontrar la primera lección no completada
+        let foundLesson = null;
+        let allCompleted = true;
         
         for (let i = 0; i < lessons.length; i++) {
             const lesson = lessons[i];
@@ -26,23 +27,36 @@ export default function ResumeLearningButton({ lessons }) {
             
             if (!isCompleted) {
                 foundLesson = lesson;
+                allCompleted = false;
                 break; // Encontramos la primera no completada
             }
         }
 
-        setTargetLesson(foundLesson);
+        if (allCompleted) {
+            setTargetLesson({ isMore: true });
+        } else {
+            setTargetLesson(foundLesson || lessons[0]);
+        }
     }, [isInitialized, progress, lessons]);
 
     if (!targetLesson) {
         return (
-            <a href="/lessons" className="btn btn-primary text-white border-none bg-blue-500 hover:bg-blue-600 rounded-full px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto">
+            <a href="/lessons" className="btn btn-primary h-auto min-h-[3rem] text-white border-none bg-blue-500 hover:bg-blue-600 rounded-2xl px-6 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto leading-tight">
                 Cargando...
             </a>
         );
     }
 
+    if (targetLesson.isMore) {
+        return (
+            <a href="/more" className="btn btn-primary h-auto min-h-[3rem] text-white border-none bg-blue-500 hover:bg-blue-600 rounded-2xl px-6 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto animate-fade-up leading-tight">
+                ¡Has completado todo! Explorar Más ✨
+            </a>
+        );
+    }
+
     return (
-        <a href={`/lessons/${targetLesson.id}`} className="btn btn-primary text-white border-none bg-blue-500 hover:bg-blue-600 rounded-full px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto animate-fade-up">
+        <a href={`/lessons/${targetLesson.id}`} className="btn btn-primary h-auto min-h-[3rem] text-white border-none bg-blue-500 hover:bg-blue-600 rounded-2xl px-6 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto animate-fade-up leading-tight">
             Continuar: {targetLesson.data?.title || 'Siguiente Lección'}
         </a>
     );

@@ -62,17 +62,21 @@ if (Astro.request.method === "POST") {
             if (createError) {
                 error = createError.message;
             } else if (data.user) {
-                await supabaseAdmin.from('profiles').insert({
+                const { error: profileError } = await supabaseAdmin.from('profiles').insert({
                     id: data.user.id,
                     first_name: firstName,
                     last_names: lastNames,
-                    full_name: `${firstName} ${lastNames}`,
                     credential: credential,
                     birth_date: birthDate,
                     role: 'student'
                 });
 
-                successData = { credential, password, fullName: `${firstName} ${lastNames}` };
+                if (profileError) {
+                    error = "Error al crear el perfil: " + profileError.message;
+                    // Opcionalmente podrías intentar borrar el usuario de auth aquí si falla el perfil
+                } else {
+                    successData = { credential, password, fullName: `${firstName} ${lastNames}` };
+                }
             }
         }
     } catch (e) {
