@@ -1,16 +1,16 @@
 ---
-import BaseHead from '../../../components/BaseHead.astro';
-import Header from '../../../components/Header.astro';
-import Footer from '../../../components/Footer.astro';
-import LessonEditor from '../../../components/react/admin/LessonEditor';
+import BaseHead from "../../../components/BaseHead.astro";
+import Header from "../../../components/Header.astro";
+import Footer from "../../../components/Footer.astro";
+import LessonEditor from "../../../components/react/admin/LessonEditor";
 
-import { supabase } from '../../../utils/supabase';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from "../../../utils/supabase";
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseAdmin = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
-  { auth: { persistSession: false } }
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { persistSession: false } },
 );
 
 // This is admin area, we must check auth and role
@@ -19,48 +19,71 @@ const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
 
 if (!accessToken || !refreshToken) {
-    return Astro.redirect('/login');
+    return Astro.redirect("/login");
 }
 
 // Set session
 await supabase.auth.setSession({
-  access_token: accessToken.value,
-  refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+    refresh_token: refreshToken.value,
 });
 
-const { data: { user } } = await supabase.auth.getUser();
+const {
+    data: { user },
+} = await supabase.auth.getUser();
 
 if (!user) {
-    return Astro.redirect('/login');
+    return Astro.redirect("/login");
 }
 
 const { data: profile } = await supabaseAdmin
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
     .single();
 
-if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
-    return Astro.redirect('/dashboard?error=Acceso+Denegado');
+if (!profile || (profile.role !== "teacher" && profile.role !== "admin")) {
+    return Astro.redirect("/dashboard?error=Acceso+Denegado");
 }
 
-const defaultAuthor = profile.full_name || profile.username || user.email?.split('@')[0] || 'Autor';
+const defaultAuthor =
+    [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
+    profile.full_name ||
+    profile.username ||
+    user.email?.split("@")[0] ||
+    "Autor";
 ---
 
 <html lang="es" data-theme="confirtheme">
-<head>
-    <BaseHead title="Nueva Lección" description="Crear nueva lección" />
-</head>
-<body class="min-h-screen bg-base-100 flex flex-col">
-    <Header isAdminMode={true} />
-    <main class="flex-grow container mx-auto px-2 sm:px-4 py-8">
-        <div class="mb-8 px-2 sm:px-0">
-            <h1 class="text-3xl font-black mb-2">Crear Nueva Lección</h1>
-            <p class="text-base-content/70 text-sm sm:text-base">Completa los bloques a continuación. El sistema generará el archivo MDX y el JSON correspondientes automáticamente.</p>
-        </div>
+    <head>
+        <BaseHead title="Nueva Lección" description="Crear nueva lección" />
+    </head>
+    <body class="min-h-screen bg-base-100 flex flex-col">
+        <Header isAdminMode={true} />
+        <main class="flex-grow container mx-auto px-2 sm:px-4 py-8">
+            <div
+                class="mb-8 max-w-4xl mx-auto flex justify-between items-center px-2 sm:px-0 gap-4"
+            >
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black mb-1 sm:mb-2">
+                        Crear Nueva Lección
+                    </h1>
+                    <p class="text-base-content/70 text-xs sm:text-base">
+                        Completa los bloques a continuación. El sistema generará
+                        la lección automáticamente.
+                    </p>
+                </div>
+                <a
+                    href="/admin/lessons"
+                    class="btn btn-outline btn-sm sm:btn-md shrink-0">Volver</a
+                >
+            </div>
 
-        <LessonEditor client:only="react" initialData={{ author: defaultAuthor }} />
-    </main>
-    <Footer />
-</body>
+            <LessonEditor
+                client:only="react"
+                initialData={{ author: defaultAuthor }}
+            />
+        </main>
+        <Footer />
+    </body>
 </html>
