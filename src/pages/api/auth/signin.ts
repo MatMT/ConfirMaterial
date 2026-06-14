@@ -46,5 +46,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     maxAge: 60 * 60 * 24 * 30, // 30 dias
   });
 
-  return redirect("/lessons");
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', data.user.id)
+    .single();
+
+  let redirectUrl = "/lessons";
+  if (profile && (profile.role === 'teacher' || profile.role === 'admin')) {
+    redirectUrl = "/admin";
+  }
+
+  return redirect(redirectUrl);
 };

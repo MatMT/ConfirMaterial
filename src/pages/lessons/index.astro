@@ -12,9 +12,11 @@ import LessonPath from "../../components/react/LessonPath.tsx";
 
 // Ya no usamos la función en el servidor
 // En su lugar, obtenemos todas las lecciones sin filtrar
-const lessons = (await getCollection('lessons')).sort(
-    (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf(),
-);
+const lessons = (await getCollection('lessons'))
+    .filter(lesson => !lesson.data.draft)
+    .sort(
+        (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf(),
+    );
 const { cookies } = Astro;
 const accessToken = cookies.get("sb-access-token");
 const isLoggedIn = !!accessToken;
@@ -129,22 +131,33 @@ const isLoggedIn = !!accessToken;
     const pathView = document.getElementById('pathView');
     const gridView = document.getElementById('gridView');
 
-    btnPath?.addEventListener('click', () => {
+    function activatePathView() {
         pathView?.classList.remove('hidden');
         gridView?.classList.add('hidden');
-        btnPath.classList.add('bg-base-100', 'shadow-sm');
-        btnPath.classList.remove('btn-ghost');
+        btnPath?.classList.add('bg-base-100', 'shadow-sm');
+        btnPath?.classList.remove('btn-ghost');
         btnGrid?.classList.remove('bg-base-100', 'shadow-sm');
         btnGrid?.classList.add('btn-ghost');
-    });
+    }
 
-    btnGrid?.addEventListener('click', () => {
+    function activateGridView() {
         gridView?.classList.remove('hidden');
         pathView?.classList.add('hidden');
-        btnGrid.classList.add('bg-base-100', 'shadow-sm');
-        btnGrid.classList.remove('btn-ghost');
+        btnGrid?.classList.add('bg-base-100', 'shadow-sm');
+        btnGrid?.classList.remove('btn-ghost');
         btnPath?.classList.remove('bg-base-100', 'shadow-sm');
         btnPath?.classList.add('btn-ghost');
+    }
+
+    btnPath?.addEventListener('click', activatePathView);
+    btnGrid?.addEventListener('click', activateGridView);
+
+    // Activar grid view si viene por parámetro en la URL
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('view') === 'grid') {
+            activateGridView();
+        }
     });
 
     // Lógica para bloqueo de tarjetas eliminada.

@@ -1,0 +1,140 @@
+---
+import BaseHead from '../../../components/BaseHead.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import { getCollection } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+
+import { supabase } from '../../../utils/supabase';
+
+// This is admin area, we must check auth and role
+const { cookies } = Astro;
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+    return Astro.redirect('/login');
+}
+
+// Set session
+await supabase.auth.setSession({
+  access_token: accessToken.value,
+  refresh_token: refreshToken.value,
+});
+
+const { data: { user } } = await supabase.auth.getUser();
+
+if (!user) {
+    return Astro.redirect('/login');
+}
+
+const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+if (!profile || profile.role !== 'teacher') {
+    return Astro.redirect('/dashboard?error=Acceso+Denegado');
+}
+
+const lessons = (await getCollection('lessons')).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<html lang="es" data-theme="confirtheme">
+<head>
+    <BaseHead title="Panel de Lecciones" description="Administración de Lecciones" />
+</head>
+<body class="min-h-screen bg-base-100 flex flex-col">
+    <Header isAdminMode={true} />
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-black">Panel de Lecciones</h1>
+                <p class="text-base-content/70">Crea, edita y gestiona el contenido de las lecciones.</p>
+            </div>
+            <a href="/admin/lessons/new" class="btn btn-primary">
+                <Icon name="mdi:plus" class="w-5 h-5 mr-1" />
+                Nueva Lección
+            </a>
+        </div>
+
+        <div class="bg-base-200 rounded-box p-4 shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {lessons.map((lesson) => (
+                            <tr class="hover">
+                                <td><span class="font-mono text-sm">{lesson.data.lessonId || lesson.slug}</span></td>
+                                <td class="font-bold">{lesson.data.title}</td>
+                                <td>{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</td>
+                                <td>
+                                    {lesson.data.draft ? (
+                                        <span class="badge badge-warning badge-sm">Borrador (Oculta)</span>
+                                    ) : (
+                                        <span class="badge badge-success badge-sm text-white">Publicada</span>
+                                    )}
+                                </td>
+                                <td class="text-right flex justify-end gap-2">
+                                    <a href={`/lessons/${lesson.slug}`} target="_blank" class="btn btn-ghost btn-xs btn-square" title="Ver lección">
+                                        <Icon name="mdi:eye" class="w-4 h-4" />
+                                    </a>
+                                    <a href={`/admin/lessons/edit/${lesson.slug}`} class="btn btn-ghost btn-xs btn-square text-primary" title="Editar lección">
+                                        <Icon name="mdi:pencil" class="w-4 h-4" />
+                                    </a>
+                                    <button 
+                                        class="btn btn-ghost btn-xs btn-square text-error" 
+                                        title="Eliminar lección"
+                                        onclick={`if(confirm('¿Seguro que deseas eliminar esta lección? Esta acción es irreversible.')) deleteLesson('${lesson.data.lessonId}', '${lesson.slug}')`}
+                                    >
+                                        <Icon name="mdi:trash-can" class="w-4 h-4" />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        {lessons.length === 0 && (
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-base-content/50">
+                                    No hay lecciones creadas todavía.
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <Footer />
+
+    <script is:inline>
+        async function deleteLesson(id, slug) {
+            try {
+                const res = await fetch(`/api/admin/lessons?id=${id}&slug=${slug}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Lección eliminada correctamente.');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Ocurrió un error de red.');
+            }
+        }
+    </script>
+</body>
+</html>

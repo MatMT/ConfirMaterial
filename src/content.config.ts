@@ -16,6 +16,8 @@ const lessons = defineCollection({
 		heroImage: z.string().optional(),
 		lessonId: z.string().optional(),
 		totalQuestions: z.number().optional(),
+		author: z.string().optional(),
+		draft: z.boolean().optional(),
 	}),
 });
 

@@ -129,7 +129,27 @@ export default function LessonForm({ lessonId, nextLessonUrl, totalQuestions }) 
         );
     }
 
-    if (isExploreMode || isUnlocked) {
+    if (isExploreMode) {
+        return (
+            <div className="relative my-8 p-8 md:p-10 bg-base-100 rounded-3xl shadow-xl border-2 border-primary/30 flex flex-col items-center overflow-hidden">
+                <div className="relative z-10 w-20 h-20 rounded-full bg-base-200 flex items-center justify-center mb-6 border-4 border-base-100 shadow-md">
+                    <span className="text-4xl drop-shadow-sm">🧭</span>
+                </div>
+                <h3 className="relative z-10 text-2xl font-black text-center text-base-content mb-3 tracking-tight">Modo Explorador</h3>
+                <p className="relative z-10 text-center text-lg text-base-content/70 mb-8 max-w-md font-medium">
+                    Has terminado de explorar esta lección. Tu progreso y racha no se registrarán en este modo.
+                </p>
+                <button
+                    onClick={() => window.location.href = "/lessons?view=grid"}
+                    className="relative z-10 btn btn-primary btn-lg w-full max-w-sm rounded-2xl shadow-md uppercase tracking-wide transition-all"
+                >
+                    Continuar Explorando
+                </button>
+            </div>
+        );
+    }
+
+    if (isUnlocked) {
         return (
             <div className="relative my-8 p-8 md:p-10 bg-base-100 rounded-3xl shadow-xl border-2 border-orange-400/30 flex flex-col items-center overflow-hidden">
                 {/* Fondo brillante decorativo */}

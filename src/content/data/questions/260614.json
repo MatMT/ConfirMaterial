@@ -1,0 +1,34 @@
+{
+  "lessonId": "260614",
+  "title": "El significado del Pecado y el Perdón",
+  "questions": [
+    {
+      "id": 0,
+      "text": "Según el tema, ¿qué significa principalmente el pecado?",
+      "options": [
+        { "text": "Romper una relación de amor y confianza.", "correct": true },
+        { "text": "Sacar malas notas en la escuela.", "correct": false },
+        { "text": "No cumplir una tarea.", "correct": false }
+      ]
+    },
+    {
+      "id": 1,
+      "text": "¿Qué nos enseña la parábola del hijo pródigo sobre Dios?",
+      "options": [
+        { "text": "Que castiga inmediatamente a quienes se equivocan.", "correct": false },
+        { "text": "Que recibe con amor a quienes regresan a Él.", "correct": true },
+        { "text": "Que solo perdona a las personas perfectas.", "correct": false }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "¿Cuál de los siguientes es un beneficio de la confesión?",
+      "options": [
+        { "text": "Ganar más amigos automáticamente.", "correct": false },
+        { "text": "Obtener mejores calificaciones.", "correct": false },
+        { "text": "Encontrar paz interior y reconciliación.", "correct": true }
+      ]
+    }
+  ],
+  "formsUrl": ""
+}

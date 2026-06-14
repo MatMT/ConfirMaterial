@@ -17,14 +17,29 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const lastNames = formData.get("lastNames")?.toString().trim();
   const email = formData.get("email")?.toString().trim();
   const password = formData.get("password")?.toString();
+  const confirmPassword = formData.get("confirmPassword")?.toString();
   const adminPin = formData.get("adminPin")?.toString();
 
-  if (!firstName || !lastNames || !email || !password || !adminPin) {
-    return redirect("/register-teacher?error=" + encodeURIComponent("Todos los campos son obligatorios"));
+  const buildErrorUrl = (msg: string) => {
+    const params = new URLSearchParams({
+      error: msg,
+      firstName: firstName || "",
+      lastNames: lastNames || "",
+      email: email || ""
+    });
+    return `/register-teacher?${params.toString()}`;
+  };
+
+  if (!firstName || !lastNames || !email || !password || !confirmPassword || !adminPin) {
+    return redirect(buildErrorUrl("Todos los campos son obligatorios"));
+  }
+
+  if (password !== confirmPassword) {
+    return redirect(buildErrorUrl("Las contraseñas no coinciden"));
   }
 
   if (adminPin !== adminPinConfig) {
-    return redirect("/register-teacher?error=" + encodeURIComponent("PIN de administrador incorrecto"));
+    return redirect(buildErrorUrl("PIN de administrador incorrecto"));
   }
 
   // Registro normal para maestro (se enviará el correo de confirmación real de Supabase)
@@ -41,7 +56,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   });
 
   if (error) {
-    return redirect("/register-teacher?error=" + encodeURIComponent(error.message));
+    return redirect(buildErrorUrl(error.message));
   }
 
   // Crear perfil como teacher

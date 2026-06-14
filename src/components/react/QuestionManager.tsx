@@ -8,6 +8,7 @@ export default function QuestionManager() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [alert, setAlert] = useState(null);
     const [userId, setUserId] = useState(null);
+    const [isSessionLoaded, setIsSessionLoaded] = useState(false);
 
     // Edit state
     const [editingQuestionId, setEditingQuestionId] = useState(null);
@@ -21,8 +22,12 @@ export default function QuestionManager() {
 
     const fetchQuestions = async () => {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+        if (!session) {
+            setIsSessionLoaded(true);
+            return;
+        }
         setUserId(session.user.id);
+        setIsSessionLoaded(true);
 
         const { data, error } = await supabase
             .from('student_questions')
@@ -129,15 +134,21 @@ export default function QuestionManager() {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <textarea 
                         className="textarea textarea-bordered textarea-lg w-full bg-base-200/50 focus:bg-base-100 transition-colors shadow-inner" 
-                        placeholder="Escribe tu pregunta aquí..."
+                        placeholder={isSessionLoaded && !userId ? "Debes iniciar sesión para enviar preguntas" : "Escribe tu pregunta aquí..."}
                         rows={4}
                         value={newQuestion}
                         onChange={(e) => setNewQuestion(e.target.value)}
                         required
+                        disabled={!userId}
                     ></textarea>
                     
-                    <div className="flex justify-end mt-2">
-                        <button type="submit" disabled={isSubmitting} className="btn btn-primary px-8 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                    <div className="flex justify-between items-center mt-2">
+                        <div>
+                            {isSessionLoaded && !userId && (
+                                <span className="text-sm text-error font-medium">Inicia sesión para poder enviar tus preguntas.</span>
+                            )}
+                        </div>
+                        <button type="submit" disabled={isSubmitting || !userId} className="btn btn-primary px-8 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
                             {isSubmitting ? <span className="loading loading-spinner loading-sm"></span> : <Icon icon="mdi:send" className="w-5 h-5 mr-2" />}
                             Enviar Pregunta
                         </button>

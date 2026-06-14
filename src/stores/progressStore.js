@@ -200,33 +200,57 @@ const useProgressStore = create((set, get) => ({
                             }));
                         }
                     } else {
-                        const newStreak = state.streak + 1;
-                        const newDate = now.toISOString();
-                        
-                        supabase.from('user_streaks').select('user_id').eq('user_id', state.userId).maybeSingle()
-                        .then(({ data, error }) => {
-                            if (error) console.error("Error fetching streak:", error);
+                        let isSameWeek = false;
+                        if (state.lastLessonDate && state.streak > 0) {
+                            const getWeekStart = (d) => {
+                                const date = new Date(d);
+                                let dDay = date.getDay();
+                                let dHours = date.getHours();
+                                let diffToSaturday = dDay === 6 ? 0 : dDay + 1;
+                                if (dDay === 6 && dHours < 11) diffToSaturday = 7;
+                                const ws = new Date(date);
+                                ws.setDate(date.getDate() - diffToSaturday);
+                                ws.setHours(11, 0, 0, 0);
+                                return ws.getTime();
+                            };
                             
-                            if (data) {
-                                supabase.from('user_streaks').update({
-                                    current_streak: newStreak,
-                                    last_lesson_date: newDate
-                                }).eq('user_id', state.userId).then(({error}) => {
-                                    if(error) console.error("Error updating streak", error);
-                                });
-                            } else {
-                                supabase.from('user_streaks').insert({
-                                    user_id: state.userId,
-                                    current_streak: newStreak,
-                                    last_lesson_date: newDate
-                                }).then(({error}) => {
-                                    if(error) console.error("Error inserting streak", error);
-                                });
+                            if (getWeekStart(now) === getWeekStart(new Date(state.lastLessonDate))) {
+                                isSameWeek = true;
                             }
-                        });
-                        
-                        // Actualizar el estado local de la racha inmediatamente
-                        setTimeout(() => set({ streak: newStreak, lastLessonDate: newDate }), 0);
+                        }
+
+                        if (isSameWeek) {
+                            console.log('Lección completada en la misma semana, la racha se mantiene.');
+                            // No actualizamos la racha en la base de datos ni en el estado
+                        } else {
+                            const newStreak = state.streak + 1;
+                            const newDate = now.toISOString();
+                            
+                            supabase.from('user_streaks').select('user_id').eq('user_id', state.userId).maybeSingle()
+                            .then(({ data, error }) => {
+                                if (error) console.error("Error fetching streak:", error);
+                                
+                                if (data) {
+                                    supabase.from('user_streaks').update({
+                                        current_streak: newStreak,
+                                        last_lesson_date: newDate
+                                    }).eq('user_id', state.userId).then(({error}) => {
+                                        if(error) console.error("Error updating streak", error);
+                                    });
+                                } else {
+                                    supabase.from('user_streaks').insert({
+                                        user_id: state.userId,
+                                        current_streak: newStreak,
+                                        last_lesson_date: newDate
+                                    }).then(({error}) => {
+                                        if(error) console.error("Error inserting streak", error);
+                                    });
+                                }
+                            });
+                            
+                            // Actualizar el estado local de la racha inmediatamente
+                            setTimeout(() => set({ streak: newStreak, lastLessonDate: newDate }), 0);
+                        }
                     }
                 }
             }

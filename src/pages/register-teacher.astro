@@ -6,6 +6,9 @@ const { cookies, redirect, url } = Astro;
 const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
 const errorMsg = url.searchParams.get("error");
+const prefillFirstName = url.searchParams.get("firstName") || "";
+const prefillLastNames = url.searchParams.get("lastNames") || "";
+const prefillEmail = url.searchParams.get("email") || "";
 
 if (accessToken && refreshToken) {
   return redirect("/dashboard");
@@ -21,15 +24,15 @@ if (accessToken && refreshToken) {
     
     {errorMsg && (
       <div class="toast toast-top toast-center z-50 w-full max-w-md" id="errorToast">
-        <div class="alert alert-error shadow-2xl flex justify-between rounded-lg">
+        <div class="alert bg-error text-white shadow-2xl flex justify-between rounded-lg border-none">
           <div class="flex items-start gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <div>
-              <h3 class="font-bold text-error-content">Error de Registro</h3>
-              <div class="text-sm mt-1 text-error-content/90">{errorMsg}</div>
+              <h3 class="font-bold text-white">Error de Registro</h3>
+              <div class="text-sm mt-1 text-white/90">{errorMsg}</div>
             </div>
           </div>
-          <button class="btn btn-ghost btn-sm btn-circle text-error-content" onclick="document.getElementById('errorToast').style.display='none'">✕</button>
+          <button class="btn btn-ghost btn-sm btn-circle text-white hover:bg-white/20" onclick="document.getElementById('errorToast').style.display='none'">✕</button>
         </div>
       </div>
     )}
@@ -46,21 +49,21 @@ if (accessToken && refreshToken) {
             <label class="label" for="firstName">
               <span class="label-text font-semibold">Nombre(s)</span>
             </label>
-            <input type="text" name="firstName" id="firstName" class="input input-bordered w-full" required />
+            <input type="text" name="firstName" id="firstName" class="input input-bordered w-full" value={prefillFirstName} required />
           </div>
 
           <div class="form-control">
             <label class="label" for="lastNames">
               <span class="label-text font-semibold">Apellidos</span>
             </label>
-            <input type="text" name="lastNames" id="lastNames" class="input input-bordered w-full" required />
+            <input type="text" name="lastNames" id="lastNames" class="input input-bordered w-full" value={prefillLastNames} required />
           </div>
 
           <div class="form-control">
             <label class="label" for="email">
               <span class="label-text font-semibold">Correo Electrónico</span>
             </label>
-            <input type="email" name="email" id="email" placeholder="tu@correo.com" class="input input-bordered w-full" required />
+            <input type="email" name="email" id="email" placeholder="tu@correo.com" class="input input-bordered w-full" value={prefillEmail} required />
           </div>
           
           <div class="form-control">
@@ -68,6 +71,13 @@ if (accessToken && refreshToken) {
               <span class="label-text font-semibold">Contraseña</span>
             </label>
             <input type="password" name="password" id="password" class="input input-bordered w-full" required minlength="6" />
+          </div>
+
+          <div class="form-control">
+            <label class="label" for="confirmPassword">
+              <span class="label-text font-semibold">Confirmar Contraseña</span>
+            </label>
+            <input type="password" name="confirmPassword" id="confirmPassword" class="input input-bordered w-full" required minlength="6" />
           </div>
 
           <div class="form-control mt-2 p-3 bg-base-200 rounded-lg">
