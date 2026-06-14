@@ -5,6 +5,13 @@ import Footer from '../../../components/Footer.astro';
 import LessonEditor from '../../../components/react/admin/LessonEditor';
 
 import { supabase } from '../../../utils/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
+);
 
 // This is admin area, we must check auth and role
 const { cookies } = Astro;
@@ -27,13 +34,13 @@ if (!user) {
     return Astro.redirect('/login');
 }
 
-const { data: profile } = await supabase
+const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
 
-if (!profile || profile.role !== 'teacher') {
+if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
     return Astro.redirect('/dashboard?error=Acceso+Denegado');
 }
 ---

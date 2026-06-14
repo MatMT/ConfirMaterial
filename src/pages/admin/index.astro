@@ -6,6 +6,7 @@ import Footer from '../../components/Footer.astro';
 import { createClient } from "@supabase/supabase-js";
 import StudentsTable from '../../components/react/admin/StudentsTable';
 import { Icon } from 'astro-icon/components';
+import { getActiveStreak } from '../../utils/streakHelper';
 
 // Inicializar cliente admin para saltar RLS
 const supabaseAdmin = createClient(
@@ -48,14 +49,26 @@ if (isAuthenticated) {
             .from('user_streaks')
             .select('*');
         
-        students = data.map(student => {
+        students = await Promise.all(data.map(async (student) => {
             const streak = streaksData?.find(s => s.user_id === student.id);
+            const rawStreak = streak?.current_streak || 0;
+            const lastDate = streak?.last_lesson_date || null;
+            const activeStreak = getActiveStreak(rawStreak, lastDate);
+            
+            if (rawStreak > 0 && activeStreak === 0) {
+                await supabaseAdmin
+                    .from('user_streaks')
+                    .update({ current_streak: 0 })
+                    .eq('user_id', student.id);
+            }
+
             return {
                 ...student,
-                streak: streak?.current_streak || 0,
-                last_connection: streak?.last_lesson_date || student.created_at
+                streak: activeStreak,
+                longestStreak: streak?.longest_streak || 0,
+                last_connection: lastDate || student.created_at
             };
-        });
+        }));
     }
 }
 ---

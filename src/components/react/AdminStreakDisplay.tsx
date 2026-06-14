@@ -3,11 +3,12 @@ import { Icon } from '@iconify/react';
 
 interface AdminStreakDisplayProps {
     streak: number;
+    longestStreak?: number;
     progressData: Record<string, any>; // El json de progreso del alumno
     lastLessonDate: string | null;
 }
 
-export default function AdminStreakDisplay({ streak, progressData, lastLessonDate }: AdminStreakDisplayProps) {
+export default function AdminStreakDisplay({ streak, longestStreak = 0, progressData, lastLessonDate }: AdminStreakDisplayProps) {
     // Recolectar fechas completadas
     const completedDates = useMemo(() => {
         const dates = new Set();
@@ -63,10 +64,16 @@ export default function AdminStreakDisplay({ streak, progressData, lastLessonDat
 
     return (
         <div className="flex flex-col items-center bg-base-100 p-6 rounded-3xl shadow-xl border border-base-200 max-w-sm mx-auto w-full">
-            <h3 className="font-bold text-2xl mb-2 flex items-center gap-2">
+            <h3 className="font-bold text-2xl mb-1 flex items-center gap-2">
                 <Icon icon="mdi:fire" className="text-orange-500 w-8 h-8" /> 
                 Racha: {streak} {streak === 1 ? 'semana' : 'semanas'}
             </h3>
+            {longestStreak > 0 && (
+                <div className="badge bg-red-500 text-white border-none gap-1 font-bold mb-3 shadow-sm py-3 px-4">
+                    <Icon icon="mdi:fire-circle" className="w-4 h-4 shrink-0" />
+                    Racha Máxima: {longestStreak} {longestStreak === 1 ? 'semana' : 'semanas'}
+                </div>
+            )}
             <p className="text-sm text-base-content/70 mb-6 text-center">
                 Última lección: {lastLessonDate ? new Date(lastLessonDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Nunca'}
             </p>

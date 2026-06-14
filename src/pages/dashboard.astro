@@ -37,6 +37,10 @@ if (user) {
     .eq("id", user.id)
     .single();
 
+  if (profileData && (profileData.role === "teacher" || profileData.role === "admin")) {
+    return redirect("/admin");
+  }
+
   profile = profileData || {
     first_name: user.user_metadata?.first_name || "",
     last_names: user.user_metadata?.last_names || "",

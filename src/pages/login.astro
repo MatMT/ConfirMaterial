@@ -2,6 +2,15 @@
 export const prerender = false;
 import BaseHead from "../components/BaseHead.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import { supabase } from "../utils/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+  auth: { autoRefreshToken: false, persistSession: false }
+});
 
 const { cookies, redirect, url } = Astro;
 const accessToken = cookies.get("sb-access-token");
@@ -13,6 +22,21 @@ const isTeacherRegistered =
 const errorMsg = url.searchParams.get("error");
 
 if (accessToken && refreshToken) {
+  await supabase.auth.setSession({
+    access_token: accessToken.value,
+    refresh_token: refreshToken.value,
+  });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (profile && (profile.role === 'teacher' || profile.role === 'admin')) {
+      return redirect("/admin");
+    }
+  }
   return redirect("/dashboard");
 }
 ---
@@ -58,39 +82,6 @@ if (accessToken && refreshToken) {
       }
 
       {
-        isTeacherRegistered && (
-          <dialog class="modal modal-open bg-black/60 backdrop-blur-sm z-[200]">
-            <div class="modal-box bg-base-100 max-w-lg p-8 animate-fade-down">
-                <div class="flex flex-col items-center text-center space-y-4">
-                    <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <h3 class="font-black text-2xl">¡Casi listo!</h3>
-                    <p class="text-base-content/80 text-lg">
-                        Hemos enviado un enlace de confirmación a tu correo electrónico.
-                    </p>
-                    <div class="bg-base-200 p-4 rounded-xl text-sm text-left w-full border border-base-300">
-                        <p class="font-semibold flex items-center gap-2 mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                            Paso obligatorio
-                        </p>
-                        <p class="text-base-content/70">
-                            Por favor, revisa tu bandeja de entrada o la carpeta de <strong class="text-base-content">Spam/Correo no deseado</strong>. Debes hacer clic en el enlace de confirmación en el correo antes de poder iniciar sesión en tu panel.
-                        </p>
-                    </div>
-                    
-                    <div class="modal-action w-full mt-6">
-                        <a href="/login" class="btn btn-primary w-full shadow-lg">Ya confirmé mi correo, Iniciar Sesión</a>
-                    </div>
-                </div>
-            </div>
-          </dialog>
-        )
-      }
-
-      {
         errorMsg && (
           <div class="alert alert-error shadow-2xl flex justify-between rounded-lg text-white border-none">
             <div class="flex items-start gap-3">
@@ -115,6 +106,40 @@ if (accessToken && refreshToken) {
         )
       }
     </div>
+
+    {
+      isTeacherRegistered && (
+        <dialog class="modal modal-open bg-black/60 backdrop-blur-sm z-[200]">
+          <div class="modal-box bg-base-100 max-w-lg p-8 animate-fade-down">
+              <div class="flex flex-col items-center text-center space-y-4">
+                  <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                  </div>
+                  <h3 class="font-black text-2xl">¡Casi listo!</h3>
+                  <p class="text-base-content/80 text-lg">
+                      Hemos enviado un enlace de confirmación a tu correo electrónico.
+                  </p>
+                  <div class="bg-base-200 p-4 rounded-xl text-sm text-left w-full border border-base-300">
+                      <p class="font-semibold flex items-center gap-2 mb-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                          Paso obligatorio
+                      </p>
+                      <p class="text-base-content/70">
+                          Por favor, revisa tu bandeja de entrada o la carpeta de <strong class="text-base-content">Spam/Correo no deseado</strong>. Debes hacer clic en el enlace de confirmación en el correo antes de poder iniciar sesión en tu panel.
+                      </p>
+                  </div>
+                  
+                  <div class="modal-action w-full mt-6">
+                      <a href="/login" class="btn btn-primary w-full shadow-lg">Ya confirmé mi correo, Iniciar Sesión</a>
+                  </div>
+              </div>
+          </div>
+        </dialog>
+      )
+    }
+
 
     <div
       class="card w-full max-w-sm shadow-2xl bg-base-100 animate-fade-down animate-duration-500"

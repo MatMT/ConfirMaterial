@@ -34,6 +34,14 @@ export default function StudentsTable({ students }) {
         </div>
       ),
     }),
+    columnHelper.accessor('longestStreak', {
+      header: 'Racha Máx.',
+      cell: info => (
+        <div className="flex items-center text-red-500 font-bold gap-1">
+          <Flame className="w-4 h-4 fill-current animate-pulse" /> {info.getValue()}
+        </div>
+      ),
+    }),
     columnHelper.display({
       id: 'actions',
       header: 'Acciones',

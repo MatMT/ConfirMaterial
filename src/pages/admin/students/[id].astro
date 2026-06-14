@@ -6,6 +6,7 @@ import Footer from '../../../components/Footer.astro';
 import { createClient } from "@supabase/supabase-js";
 import AdminStreakDisplay from '../../../components/react/AdminStreakDisplay.tsx';
 import { Icon } from 'astro-icon/components';
+import { getActiveStreak } from '../../../utils/streakHelper';
 
 // Inicializar cliente admin para saltar RLS
 const supabaseAdmin = createClient(
@@ -44,7 +45,18 @@ const { data: streakData } = await supabaseAdmin
     .from('user_streaks')
     .select('*')
     .eq('user_id', id)
-    .single();
+    .maybeSingle();
+
+const rawStreak = streakData?.current_streak || 0;
+const lastDate = streakData?.last_lesson_date || null;
+const activeStreak = getActiveStreak(rawStreak, lastDate);
+
+if (rawStreak > 0 && activeStreak === 0) {
+    await supabaseAdmin
+        .from('user_streaks')
+        .update({ current_streak: 0 })
+        .eq('user_id', id);
+}
 
 // Obtener las lecciones completadas
 const { data: progressData } = await supabaseAdmin
@@ -161,9 +173,10 @@ if (progressData) {
             <div class="md:w-[400px] shrink-0">
                 <AdminStreakDisplay 
                     client:load
-                    streak={streakData?.current_streak || 0}
+                    streak={activeStreak}
+                    longestStreak={streakData?.longest_streak || 0}
                     progressData={reconstructedProgress}
-                    lastLessonDate={streakData?.last_lesson_date || null}
+                    lastLessonDate={lastDate}
                 />
             </div>
 

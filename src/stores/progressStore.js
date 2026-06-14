@@ -6,6 +6,7 @@ const useProgressStore = create((set, get) => ({
         ? JSON.parse(localStorage.getItem('lessonProgress') || '{}')
         : {},
     streak: 0,
+    longestStreak: 0,
     lastLessonDate: null,
     userId: null,
     isInitialized: false,
@@ -87,6 +88,7 @@ const useProgressStore = create((set, get) => ({
 
                 let currentStreak = streakData ? streakData.current_streak : 0;
                 let lastLessonDate = streakData ? streakData.last_lesson_date : null;
+                let longestStreak = streakData ? streakData.longest_streak : 0;
 
                 // Verificar si la racha ha expirado
                 if (currentStreak > 0 && lastLessonDate) {
@@ -113,6 +115,7 @@ const useProgressStore = create((set, get) => ({
                 set({ 
                     progress: newProgress,
                     streak: currentStreak,
+                    longestStreak: longestStreak,
                     lastLessonDate: lastLessonDate,
                     isInitialized: true
                 });
@@ -225,14 +228,16 @@ const useProgressStore = create((set, get) => ({
                         } else {
                             const newStreak = state.streak + 1;
                             const newDate = now.toISOString();
+                            const newLongestStreak = Math.max(state.longestStreak, newStreak);
                             
-                            supabase.from('user_streaks').select('user_id').eq('user_id', state.userId).maybeSingle()
+                            supabase.from('user_streaks').select('user_id, longest_streak').eq('user_id', state.userId).maybeSingle()
                             .then(({ data, error }) => {
                                 if (error) console.error("Error fetching streak:", error);
                                 
                                 if (data) {
                                     supabase.from('user_streaks').update({
                                         current_streak: newStreak,
+                                        longest_streak: Math.max(data.longest_streak || 0, newStreak),
                                         last_lesson_date: newDate
                                     }).eq('user_id', state.userId).then(({error}) => {
                                         if(error) console.error("Error updating streak", error);
@@ -241,6 +246,7 @@ const useProgressStore = create((set, get) => ({
                                     supabase.from('user_streaks').insert({
                                         user_id: state.userId,
                                         current_streak: newStreak,
+                                        longest_streak: newStreak,
                                         last_lesson_date: newDate
                                     }).then(({error}) => {
                                         if(error) console.error("Error inserting streak", error);
@@ -249,7 +255,7 @@ const useProgressStore = create((set, get) => ({
                             });
                             
                             // Actualizar el estado local de la racha inmediatamente
-                            setTimeout(() => set({ streak: newStreak, lastLessonDate: newDate }), 0);
+                            setTimeout(() => set({ streak: newStreak, longestStreak: newLongestStreak, lastLessonDate: newDate }), 0);
                         }
                     }
                 }

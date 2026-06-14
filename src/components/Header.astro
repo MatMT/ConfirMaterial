@@ -5,6 +5,13 @@ import { Icon } from 'astro-icon/components';
 import StoreInitializer from './react/StoreInitializer';
 import StreakDisplay from './react/StreakDisplay';
 import { supabase } from '../utils/supabase';
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseAdmin = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
+);
 
 interface Props {
   isSticky?: boolean;
@@ -25,7 +32,7 @@ if (isLoggedIn) {
     const { data: { user } } = await supabase.auth.getUser(accessToken.value);
     if (user) {
       userProfile = { id: user.id }; // Garantizar que el ID siempre esté
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', user.id).single();
       if (profile) {
           userProfile = { ...userProfile, ...profile };
       }
@@ -46,9 +53,7 @@ if (isLoggedIn) {
         {isAdminMode ? (
           <>
             <li><HeaderLink href="/admin">👥 Alumnos</HeaderLink></li>
-            <li><HeaderLink href="/admin/n8n">⚙️ Webhooks (N8N)</HeaderLink></li>
             <li><HeaderLink href="/admin/lessons">📝 Editar Lecciones</HeaderLink></li>
-            <li><HeaderLink href="/admin/roadmap">🗺️ Ordenar Roadmap</HeaderLink></li>
           </>
         ) : (
           <>
@@ -69,9 +74,7 @@ if (isLoggedIn) {
       {isAdminMode ? (
         <>
           <li><HeaderLink href="/admin"><Icon name="mdi:account-group" class="w-4 h-4 mr-1"/> Alumnos</HeaderLink></li>
-          <li><HeaderLink href="/admin/n8n"><Icon name="mdi:api" class="w-4 h-4 mr-1"/> N8N</HeaderLink></li>
           <li><HeaderLink href="/admin/lessons"><Icon name="mdi:file-document-edit" class="w-4 h-4 mr-1"/> Lecciones</HeaderLink></li>
-          <li><HeaderLink href="/admin/roadmap"><Icon name="mdi:map-marker-path" class="w-4 h-4 mr-1"/> Roadmap</HeaderLink></li>
         </>
       ) : (
         <>

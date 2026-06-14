@@ -1,0 +1,210 @@
+---
+import BaseHead from '../../../../components/BaseHead.astro';
+import Header from '../../../../components/Header.astro';
+import Footer from '../../../../components/Footer.astro';
+import LessonEditor from '../../../../components/react/admin/LessonEditor';
+
+import { supabase } from '../../../../utils/supabase';
+import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
+
+const supabaseAdmin = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
+);
+
+// This is admin area, we must check auth and role
+const { cookies } = Astro;
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+    return Astro.redirect('/login');
+}
+
+// Set session
+await supabase.auth.setSession({
+  access_token: accessToken.value,
+  refresh_token: refreshToken.value,
+});
+
+const { data: { user } } = await supabase.auth.getUser();
+
+if (!user) {
+    return Astro.redirect('/login');
+}
+
+const { data: profile } = await supabaseAdmin
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
+    return Astro.redirect('/dashboard?error=Acceso+Denegado');
+}
+
+const { id: slug } = Astro.params;
+if (!slug) {
+    return Astro.redirect('/admin/lessons');
+}
+
+let initialData = null;
+
+try {
+    const mdxPath = path.resolve(`./src/content/lessons/${slug}.mdx`);
+    if (fs.existsSync(mdxPath)) {
+        const mdxContent = fs.readFileSync(mdxPath, 'utf-8');
+        
+        // Simple frontmatter parser
+        const fmMatch = mdxContent.match(/^---\r?\n([\s\S]+?)\r?\n---/);
+        if (fmMatch) {
+            const yaml = fmMatch[1];
+            const body = mdxContent.slice(fmMatch[0].length).trim();
+            const meta: Record<string, any> = {};
+            
+            yaml.split('\n').forEach(line => {
+                const parts = line.split(':');
+                if (parts.length >= 2) {
+                    const key = parts[0].trim();
+                    let value = parts.slice(1).join(':').trim();
+                    if (value.startsWith("'") && value.endsWith("'")) {
+                        value = value.slice(1, -1);
+                    }
+                    if (value.startsWith('"') && value.endsWith('"')) {
+                        value = value.slice(1, -1);
+                    }
+                    if (value === 'true') meta[key] = true;
+                    else if (value === 'false') meta[key] = false;
+                    else if (!isNaN(Number(value)) && value !== '') meta[key] = Number(value);
+                    else meta[key] = value;
+                }
+            });
+
+            const lessonId = meta.lessonId || slug;
+
+            // Load JSON file
+            let questionsJson: any = null;
+            const jsonPath = path.resolve(`./src/content/data/questions/${lessonId}.json`);
+            if (fs.existsSync(jsonPath)) {
+                questionsJson = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+            }
+
+            // Split body by horizontal rules (---) to isolate segments
+            const segments = body.split(/\r?\n---\r?\n/);
+            
+            // Segment 0: intro text (remove imports and heading)
+            let intro = '';
+            const segment0 = segments[0] || '';
+            const introIndex = segment0.indexOf("## 🌟 Introducción");
+            if (introIndex !== -1) {
+                intro = segment0.substring(introIndex + "## 🌟 Introducción".length).trim();
+            } else {
+                const cleanIntroIndex = segment0.indexOf("## Introducción");
+                if (cleanIntroIndex !== -1) {
+                    intro = segment0.substring(cleanIntroIndex + "## Introducción".length).trim();
+                }
+            }
+
+            // Segment length-2: conclusion (index: length-2 since length-1 contains LessonForms component)
+            let conclusion = '';
+            if (segments.length >= 3) {
+                const conclusionSegment = segments[segments.length - 2] || '';
+                const concIndex = conclusionSegment.indexOf("## 🛐 Conclusión");
+                if (concIndex !== -1) {
+                    conclusion = conclusionSegment.substring(concIndex + "## 🛐 Conclusión".length).trim();
+                } else {
+                    const cleanConcIndex = conclusionSegment.indexOf("## Conclusión");
+                    if (cleanConcIndex !== -1) {
+                        conclusion = conclusionSegment.substring(cleanConcIndex + "## Conclusión".length).trim();
+                    }
+                }
+            }
+
+            // Intermediate segments: paragraphs (from index 1 up to length-3)
+            const paragraphs = [];
+            const paragraphSegments = segments.slice(1, segments.length - 2);
+
+            for (let i = 0; i < paragraphSegments.length; i++) {
+                let pText = paragraphSegments[i].trim();
+                
+                // Remove header line (e.g. ### title)
+                const headingMatch = pText.match(/^###\s+[^\n]+\r?\n+/);
+                if (headingMatch) {
+                    pText = pText.slice(headingMatch[0].length).trim();
+                }
+                
+                // Remove <Question ... /> component
+                const questionTagIndex = pText.indexOf("<Question");
+                if (questionTagIndex !== -1) {
+                    pText = pText.slice(0, questionTagIndex).trim();
+                }
+
+                // Match with question details from JSON
+                const jsonQuestion = questionsJson?.questions?.[i];
+                let questionObj = { text: '', correctOption: '', incorrectOptions: ['', ''] };
+                
+                if (jsonQuestion) {
+                    const correctOpt = jsonQuestion.options?.find((o: any) => o.correct)?.text || '';
+                    const incorrectOpts = jsonQuestion.options?.filter((o: any) => !o.correct).map((o: any) => o.text) || ['', ''];
+                    
+                    questionObj = {
+                        text: jsonQuestion.text || '',
+                        correctOption: correctOpt,
+                        incorrectOptions: [incorrectOpts[0] || '', incorrectOpts[1] || '']
+                    };
+                }
+
+                paragraphs.push({
+                    text: pText,
+                    question: questionObj
+                });
+            }
+
+            initialData = {
+                id: lessonId,
+                slug,
+                title: meta.title || '',
+                description: meta.description || '',
+                author: meta.author || '',
+                date: meta.pubDate || '',
+                draft: meta.draft || false,
+                blocks: {
+                    intro,
+                    paragraphs,
+                    conclusion
+                }
+            };
+        }
+    }
+} catch (e) {
+    console.error("Error parsing lesson for edit:", e);
+}
+
+if (!initialData) {
+    return Astro.redirect('/admin/lessons');
+}
+---
+
+<html lang="es" data-theme="confirtheme">
+<head>
+    <BaseHead title={`Editar Lección | ${initialData.title}`} description="Editar lección existente" />
+</head>
+<body class="min-h-screen bg-base-100 flex flex-col">
+    <Header isAdminMode={true} />
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="mb-8 max-w-4xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-black mb-2">Editar Lección</h1>
+                <p class="text-base-content/70">Modifica los bloques de la lección. El sistema actualizará el MDX y el JSON correspondientes.</p>
+            </div>
+            <a href="/admin/lessons" class="btn btn-outline">Volver</a>
+        </div>
+
+        <LessonEditor client:only="react" initialData={initialData} />
+    </main>
+    <Footer />
+</body>
+</html>

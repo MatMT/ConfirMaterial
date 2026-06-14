@@ -1,6 +1,14 @@
 import type { APIRoute } from "astro";
 export const prerender = false;
 import { supabase } from "../../../utils/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+  auth: { autoRefreshToken: false, persistSession: false }
+});
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   let formData;
@@ -46,7 +54,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     maxAge: 60 * 60 * 24 * 30, // 30 dias
   });
 
-  const { data: profile } = await supabase
+  const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('role')
     .eq('id', data.user.id)

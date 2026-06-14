@@ -6,6 +6,13 @@ import { getCollection } from 'astro:content';
 import { Icon } from 'astro-icon/components';
 
 import { supabase } from '../../../utils/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
+);
 
 // This is admin area, we must check auth and role
 const { cookies } = Astro;
@@ -28,13 +35,13 @@ if (!user) {
     return Astro.redirect('/login');
 }
 
-const { data: profile } = await supabase
+const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
 
-if (!profile || profile.role !== 'teacher') {
+if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
     return Astro.redirect('/dashboard?error=Acceso+Denegado');
 }
 
@@ -66,9 +73,9 @@ const lessons = (await getCollection('lessons')).sort(
                 <table class="table w-full">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th class="hidden sm:table-cell">ID</th>
                             <th>Título</th>
-                            <th>Fecha</th>
+                            <th class="hidden md:table-cell">Fecha</th>
                             <th>Estado</th>
                             <th class="text-right">Acciones</th>
                         </tr>
@@ -76,9 +83,9 @@ const lessons = (await getCollection('lessons')).sort(
                     <tbody>
                         {lessons.map((lesson) => (
                             <tr class="hover">
-                                <td><span class="font-mono text-sm">{lesson.data.lessonId || lesson.slug}</span></td>
+                                <td class="hidden sm:table-cell"><span class="font-mono text-sm">{lesson.data.lessonId || lesson.id}</span></td>
                                 <td class="font-bold">{lesson.data.title}</td>
-                                <td>{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</td>
+                                <td class="hidden md:table-cell">{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</td>
                                 <td>
                                     {lesson.data.draft ? (
                                         <span class="badge badge-warning badge-sm">Borrador (Oculta)</span>
@@ -87,16 +94,16 @@ const lessons = (await getCollection('lessons')).sort(
                                     )}
                                 </td>
                                 <td class="text-right flex justify-end gap-2">
-                                    <a href={`/lessons/${lesson.slug}`} target="_blank" class="btn btn-ghost btn-xs btn-square" title="Ver lección">
+                                    <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-ghost btn-xs btn-square" title="Ver lección">
                                         <Icon name="mdi:eye" class="w-4 h-4" />
                                     </a>
-                                    <a href={`/admin/lessons/edit/${lesson.slug}`} class="btn btn-ghost btn-xs btn-square text-primary" title="Editar lección">
+                                    <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-ghost btn-xs btn-square text-primary" title="Editar lección">
                                         <Icon name="mdi:pencil" class="w-4 h-4" />
                                     </a>
                                     <button 
                                         class="btn btn-ghost btn-xs btn-square text-error" 
                                         title="Eliminar lección"
-                                        onclick={`if(confirm('¿Seguro que deseas eliminar esta lección? Esta acción es irreversible.')) deleteLesson('${lesson.data.lessonId}', '${lesson.slug}')`}
+                                        onclick={`if(confirm('¿Seguro que deseas eliminar esta lección? Esta acción es irreversible.')) deleteLesson('${lesson.data.lessonId}', '${lesson.id}')`}
                                     >
                                         <Icon name="mdi:trash-can" class="w-4 h-4" />
                                     </button>
