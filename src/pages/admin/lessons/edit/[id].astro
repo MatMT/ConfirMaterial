@@ -194,13 +194,13 @@ if (!initialData) {
 </head>
 <body class="min-h-screen bg-base-100 flex flex-col">
     <Header isAdminMode={true} />
-    <main class="flex-grow container mx-auto px-4 py-8">
-        <div class="mb-8 max-w-4xl mx-auto flex justify-between items-center">
+    <main class="flex-grow container mx-auto px-2 sm:px-4 py-8">
+        <div class="mb-8 max-w-4xl mx-auto flex justify-between items-center px-2 sm:px-0">
             <div>
-                <h1 class="text-3xl font-black mb-2">Editar Lección</h1>
-                <p class="text-base-content/70">Modifica los bloques de la lección. El sistema actualizará el MDX y el JSON correspondientes.</p>
+                <h1 class="text-2xl sm:text-3xl font-black mb-1 sm:mb-2">Editar Lección</h1>
+                <p class="text-base-content/70 text-xs sm:text-base">Modifica los bloques de la lección. El sistema actualizará el MDX y el JSON correspondientes.</p>
             </div>
-            <a href="/admin/lessons" class="btn btn-outline">Volver</a>
+            <a href="/admin/lessons" class="btn btn-outline btn-sm sm:btn-md">Volver</a>
         </div>
 
         <LessonEditor client:only="react" initialData={initialData} />

@@ -64,8 +64,8 @@ if (isLoggedIn) {
         )}
       </ul>
     </div>
-    <a href={isAdminMode ? "/admin" : "/"} class="btn btn-ghost text-xl font-bold text-primary">
-      {SITE_TITLE} {isAdminMode && <span class="text-xs ml-1 bg-primary/10 text-primary px-2 py-1 rounded-full uppercase tracking-wider">Admin</span>}
+    <a href={isAdminMode ? "/admin" : "/"} class="btn btn-ghost text-lg sm:text-xl font-bold text-primary px-2 sm:px-4">
+      {SITE_TITLE} {isAdminMode && <span class="text-[10px] sm:text-xs ml-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-wider hidden sm:inline-block">Admin</span>}
     </a>
   </div>
   
@@ -89,8 +89,9 @@ if (isLoggedIn) {
   <div class="navbar-end flex items-center">
     {!isAdminMode && isLoggedIn && <StreakDisplay client:only="react" />}
     {isAdminMode ? (
-      <a href="/" class="btn btn-outline btn-primary btn-sm rounded-full">
-        <Icon name="mdi:exit-run" class="h-4 w-4 mr-1" /> Salir Admin
+      <a href="/" class="btn btn-outline btn-primary btn-sm rounded-full gap-1 px-2.5 md:px-4">
+        <Icon name="mdi:exit-run" class="h-4 w-4" />
+        <span class="hidden md:inline">Salir Admin</span>
       </a>
     ) : isLoggedIn ? (
       <a href="/dashboard" class="btn btn-ghost btn-circle" aria-label="Perfil">

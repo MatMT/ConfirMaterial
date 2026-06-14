@@ -36,13 +36,15 @@ if (!user) {
 
 const { data: profile } = await supabaseAdmin
     .from('profiles')
-    .select('role')
+    .select('*')
     .eq('id', user.id)
     .single();
 
 if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
     return Astro.redirect('/dashboard?error=Acceso+Denegado');
 }
+
+const defaultAuthor = profile.full_name || profile.username || user.email?.split('@')[0] || 'Autor';
 ---
 
 <html lang="es" data-theme="confirtheme">
@@ -51,13 +53,13 @@ if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
 </head>
 <body class="min-h-screen bg-base-100 flex flex-col">
     <Header isAdminMode={true} />
-    <main class="flex-grow container mx-auto px-4 py-8">
-        <div class="mb-8">
+    <main class="flex-grow container mx-auto px-2 sm:px-4 py-8">
+        <div class="mb-8 px-2 sm:px-0">
             <h1 class="text-3xl font-black mb-2">Crear Nueva Lección</h1>
-            <p class="text-base-content/70">Completa los bloques a continuación. El sistema generará el archivo MDX y el JSON correspondientes automáticamente.</p>
+            <p class="text-base-content/70 text-sm sm:text-base">Completa los bloques a continuación. El sistema generará el archivo MDX y el JSON correspondientes automáticamente.</p>
         </div>
 
-        <LessonEditor client:only="react" />
+        <LessonEditor client:only="react" initialData={{ author: defaultAuthor }} />
     </main>
     <Footer />
 </body>

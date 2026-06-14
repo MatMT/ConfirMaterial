@@ -51,7 +51,7 @@ export async function fetchFromGitHub(path: string) {
 export async function saveToGitHub(path: string, content: string, message: string) {
     if (isDev) {
         const fullPath = getLocalPath(path);
-        await fs.mkdir(fullPath.substring(0, fullPath.lastIndexOf('/')), { recursive: true });
+        await fs.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.writeFile(fullPath, content, 'utf-8');
         return { commit: { sha: 'local-commit-sha' } };
     }
