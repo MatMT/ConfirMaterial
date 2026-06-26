@@ -212,6 +212,11 @@ export default function LessonEditor({ initialData = null }) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
+        const confirmMessage = "Los cambios tardarán entre 2 a 5 minutos en reflejarse debido a la actualización del sitio. ¿Estás seguro de que deseas guardar o agregar?";
+        if (!window.confirm(confirmMessage)) {
+            return;
+        }
+
         let finalDraftStatus = isDraft;
         if (hasEmptyFields) {
             finalDraftStatus = true;

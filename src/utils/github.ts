@@ -20,10 +20,10 @@ export const getGitHubConfig = (): GitHubConfig => {
 const isDev = import.meta.env ? import.meta.env.DEV : process.env.NODE_ENV === 'development';
 const getLocalPath = (p: string) => path.join(process.cwd(), p);
 
-export async function fetchFromGitHub(path: string) {
+export async function fetchFromGitHub(filePath: string) {
     if (isDev) {
         try {
-            const content = await fs.readFile(getLocalPath(path), 'utf-8');
+            const content = await fs.readFile(getLocalPath(filePath), 'utf-8');
             return { content: Buffer.from(content).toString('base64'), sha: 'local-sha' };
         } catch {
             return null;
@@ -31,7 +31,7 @@ export async function fetchFromGitHub(path: string) {
     }
 
     const config = getGitHubConfig();
-    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}?ref=${config.branch}`;
+    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${filePath}?ref=${config.branch}`;
     
     const response = await fetch(url, {
         headers: {
@@ -48,25 +48,33 @@ export async function fetchFromGitHub(path: string) {
     return await response.json();
 }
 
-export async function saveToGitHub(path: string, content: string, message: string) {
+export async function saveToGitHub(filePath: string, content: string, message: string) {
     if (isDev) {
-        const fullPath = getLocalPath(path);
+        const fullPath = getLocalPath(filePath);
         await fs.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.writeFile(fullPath, content, 'utf-8');
         return { commit: { sha: 'local-commit-sha' } };
     }
 
     const config = getGitHubConfig();
-    const existingFile = await fetchFromGitHub(path);
+    const existingFile = await fetchFromGitHub(filePath);
     const sha = existingFile ? existingFile.sha : undefined;
 
-    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`;
+    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${filePath}`;
     const base64Content = Buffer.from(content).toString('base64');
 
     const body: any = {
         message,
         content: base64Content,
-        branch: config.branch
+        branch: config.branch,
+        committer: {
+            name: 'confirmbot',
+            email: 'confirmbot@users.noreply.github.com'
+        },
+        author: {
+            name: 'confirmbot',
+            email: 'confirmbot@users.noreply.github.com'
+        }
     };
 
     if (sha) body.sha = sha;
@@ -85,10 +93,10 @@ export async function saveToGitHub(path: string, content: string, message: strin
     return await response.json();
 }
 
-export async function deleteFromGitHub(path: string, message: string) {
+export async function deleteFromGitHub(filePath: string, message: string) {
     if (isDev) {
         try {
-            await fs.unlink(getLocalPath(path));
+            await fs.unlink(getLocalPath(filePath));
         } catch (e) {
             console.error("Local delete error:", e);
         }
@@ -96,10 +104,10 @@ export async function deleteFromGitHub(path: string, message: string) {
     }
 
     const config = getGitHubConfig();
-    const existingFile = await fetchFromGitHub(path);
+    const existingFile = await fetchFromGitHub(filePath);
     if (!existingFile) throw new Error("File not found");
 
-    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`;
+    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${filePath}`;
     
     const response = await fetch(url, {
         method: 'DELETE',
@@ -111,7 +119,15 @@ export async function deleteFromGitHub(path: string, message: string) {
         body: JSON.stringify({
             message,
             sha: existingFile.sha,
-            branch: config.branch
+            branch: config.branch,
+            committer: {
+                name: 'confirmbot',
+                email: 'confirmbot@users.noreply.github.com'
+            },
+            author: {
+                name: 'confirmbot',
+                email: 'confirmbot@users.noreply.github.com'
+            }
         })
     });
 

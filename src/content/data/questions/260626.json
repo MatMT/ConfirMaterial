@@ -1,58 +1,58 @@
 {
-  "lessonId": 260626,
-  "title": "Prueba",
+  "lessonId": "260626",
+  "title": "La Eucaristía: comunión con Cristo y con los hermanos",
   "questions": [
     {
       "id": 0,
-      "text": "",
+      "text": "¿Qué recibimos cuando participamos en la Eucaristía y comulgamos?",
       "options": [
         {
-          "text": "",
-          "correct": false
-        },
-        {
-          "text": "",
+          "text": "El Cuerpo y la Sangre de Cristo, alimento para nuestra vida espiritual.",
           "correct": true
         },
         {
-          "text": "",
+          "text": "Solo un símbolo que recuerda a Jesús.",
+          "correct": false
+        },
+        {
+          "text": "Únicamente una bendición del sacerdote.",
           "correct": false
         }
       ]
     },
     {
       "id": 1,
-      "text": "",
+      "text": "¿En qué momento Jesús instituyó el sacramento de la Eucaristía?",
       "options": [
         {
-          "text": "",
+          "text": "En la Última Cena con sus apóstoles.",
           "correct": true
         },
         {
-          "text": "",
+          "text": "Durante su bautismo en el río Jordán.",
           "correct": false
         },
         {
-          "text": "",
+          "text": "Después de su resurrección, cuando se apareció a los discípulos.",
           "correct": false
         }
       ]
     },
     {
       "id": 2,
-      "text": "",
+      "text": "¿Cuál es el momento central y más importante de la celebración de la Santa Misa?",
       "options": [
         {
-          "text": "",
-          "correct": false
-        },
-        {
-          "text": "",
-          "correct": false
-        },
-        {
-          "text": "",
+          "text": "La consagración, cuando el pan y el vino se convierten en el Cuerpo y la Sangre de Cristo.",
           "correct": true
+        },
+        {
+          "text": "El canto de entrada con el que inicia la celebración.",
+          "correct": false
+        },
+        {
+          "text": "La procesión de salida al finalizar la Misa.",
+          "correct": false
         }
       ]
     }

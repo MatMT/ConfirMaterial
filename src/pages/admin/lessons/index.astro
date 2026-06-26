@@ -87,10 +87,16 @@ const lessonsWithInfo = lessons.map(lesson => ({
                 <h1 class="text-2xl sm:text-3xl font-black">Panel de Lecciones</h1>
                 <p class="text-base-content/70 text-xs sm:text-base">Crea, edita y gestiona el contenido de las lecciones.</p>
             </div>
-            <a href="/admin/lessons/new" class="btn btn-primary btn-sm sm:btn-md shrink-0">
-                <Icon name="mdi:plus" class="w-4 h-4 sm:w-5 sm:h-5 mr-0.5 sm:mr-1" />
-                Nueva Lección
-            </a>
+            <div class="flex gap-2">
+                <button onclick="window.location.reload()" class="btn btn-outline btn-sm sm:btn-md shrink-0">
+                    <Icon name="mdi:refresh" class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1" />
+                    <span class="hidden sm:inline">Recargar</span>
+                </button>
+                <a href="/admin/lessons/new" class="btn btn-primary btn-sm sm:btn-md shrink-0">
+                    <Icon name="mdi:plus" class="w-4 h-4 sm:w-5 sm:h-5 mr-0.5 sm:mr-1" />
+                    <span class="hidden sm:inline">Nueva</span>
+                </a>
+            </div>
         </div>
 
         <div class="bg-base-200 rounded-box p-2 sm:p-4 shadow-sm">
@@ -113,22 +119,21 @@ const lessonsWithInfo = lessons.map(lesson => ({
                                 <td><span class="font-mono text-sm">{lesson.data.lessonId || lesson.id}</span></td>
                                 <td class="font-bold">{lesson.data.title}</td>
                                 <td>{lesson.data.author || 'Sin autor'}</td>
-                                <td>{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</td>
+                                <td>
+                                    <div class="whitespace-nowrap">{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</div>
+                                    <div class="text-[10px] text-base-content/50 whitespace-nowrap" title={`Autor: ${lesson.fileInfo.author}`}>
+                                        <Icon name="mdi:clock-outline" class="w-3 h-3 inline mr-0.5" />
+                                        {lesson.fileInfo.date}
+                                    </div>
+                                </td>
                                 <td>
                                     {lesson.data.draft ? (
-                                        <span class="badge badge-warning badge-sm">Borrador (Oculta)</span>
+                                        <span class="badge badge-warning badge-sm whitespace-nowrap">Borrador (Oculta)</span>
                                     ) : (
-                                        <span class="badge badge-success badge-sm text-white">Publicada</span>
+                                        <span class="badge badge-success badge-sm text-white whitespace-nowrap">Publicada</span>
                                     )}
                                 </td>
                                 <td class="text-right flex justify-end gap-2">
-                                    <button 
-                                        class="btn btn-ghost btn-xs btn-square text-info" 
-                                        title="Ver último cambio"
-                                        onclick={`alert('Último cambio realizado por: ${lesson.fileInfo.author}\\nFecha: ${lesson.fileInfo.date}')`}
-                                    >
-                                        <Icon name="mdi:clock-outline" class="w-4 h-4" />
-                                    </button>
                                     <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-ghost btn-xs btn-square" title="Ver lección">
                                         <Icon name="mdi:eye" class="w-4 h-4" />
                                     </a>
@@ -176,15 +181,14 @@ const lessonsWithInfo = lessons.map(lesson => ({
                             )}
                         </div>
                         <div class="flex justify-between items-center border-t border-base-200/60 pt-2.5">
-                            <span class="text-[11px] text-base-content/55 font-medium">{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</span>
+                            <div>
+                                <div class="text-[11px] text-base-content/55 font-medium">{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</div>
+                                <div class="text-[9px] text-base-content/40" title={`Autor: ${lesson.fileInfo.author}`}>
+                                    <Icon name="mdi:clock-outline" class="w-2.5 h-2.5 inline mr-0.5" />
+                                    {lesson.fileInfo.date}
+                                </div>
+                            </div>
                             <div class="flex gap-1.5">
-                                <button 
-                                    class="btn btn-ghost btn-sm btn-square text-info" 
-                                    title="Ver último cambio"
-                                    onclick={`alert('Último cambio realizado por: ${lesson.fileInfo.author}\\nFecha: ${lesson.fileInfo.date}')`}
-                                >
-                                    <Icon name="mdi:clock-outline" class="w-4 h-4" />
-                                </button>
                                 <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-ghost btn-sm btn-square" title="Ver lección">
                                     <Icon name="mdi:eye" class="w-4 h-4 text-base-content/70" />
                                 </a>
