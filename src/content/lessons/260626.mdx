@@ -1,0 +1,73 @@
+---
+title: 'Prueba'
+description: ''
+pubDate: 'Jun 26, 2026'
+heroImage: '../../images/lessons/blog-placeholder-1.webp'
+lessonId: '260626'
+author: 'oscarmateoelias'
+totalQuestions: 3
+draft: true
+---
+
+import lessonData from '../data/questions/260626.json';
+import Question from "../../components/react/Question";
+import LessonForms from '../../components/react/LessonForm';
+
+## 🌟 Introducción
+
+
+
+---
+
+### Párrafo 1
+
+
+
+<Question
+    client:only="react"
+    lessonId={lessonData.lessonId}
+    questionData={lessonData.questions[0]}
+    totalQuestions={lessonData.questions.length}
+/>
+
+---
+
+### Párrafo 2
+
+
+
+<Question
+    client:only="react"
+    lessonId={lessonData.lessonId}
+    questionData={lessonData.questions[1]}
+    totalQuestions={lessonData.questions.length}
+/>
+
+---
+
+### Párrafo 3
+
+
+
+<Question
+    client:only="react"
+    lessonId={lessonData.lessonId}
+    questionData={lessonData.questions[2]}
+    totalQuestions={lessonData.questions.length}
+/>
+
+---
+
+## 🛐 Conclusión
+
+
+
+---
+
+<LessonForms
+    client:only="react"
+    lessonId={lessonData.lessonId}
+    formsUrl={lessonData.formsUrl}
+    totalQuestions={lessonData.questions.length}
+    nextLessonUrl="/lessons"
+/>
