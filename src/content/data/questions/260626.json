@@ -1,5 +1,5 @@
 {
-  "lessonId": "260626",
+  "lessonId": 260626,
   "title": "Prueba",
   "questions": [
     {
@@ -12,11 +12,11 @@
         },
         {
           "text": "",
-          "correct": false
+          "correct": true
         },
         {
           "text": "",
-          "correct": true
+          "correct": false
         }
       ]
     },
@@ -26,15 +26,15 @@
       "options": [
         {
           "text": "",
-          "correct": false
-        },
-        {
-          "text": "",
-          "correct": false
-        },
-        {
-          "text": "",
           "correct": true
+        },
+        {
+          "text": "",
+          "correct": false
+        },
+        {
+          "text": "",
+          "correct": false
         }
       ]
     },
@@ -44,15 +44,15 @@
       "options": [
         {
           "text": "",
+          "correct": false
+        },
+        {
+          "text": "",
+          "correct": false
+        },
+        {
+          "text": "",
           "correct": true
-        },
-        {
-          "text": "",
-          "correct": false
-        },
-        {
-          "text": "",
-          "correct": false
         }
       ]
     }
