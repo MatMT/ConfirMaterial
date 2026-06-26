@@ -3,7 +3,7 @@ import BaseHead from '../../../../components/BaseHead.astro';
 import Header from '../../../../components/Header.astro';
 import Footer from '../../../../components/Footer.astro';
 import LessonEditor from '../../../../components/react/admin/LessonEditor';
-
+import { Icon } from 'astro-icon/components';
 import { supabase } from '../../../../utils/supabase';
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
@@ -200,7 +200,13 @@ if (!initialData) {
                 <h1 class="text-2xl sm:text-3xl font-black mb-1 sm:mb-2">Editar Lección</h1>
                 <p class="text-base-content/70 text-xs sm:text-base">Modifica los bloques de la lección. El sistema actualizará el MDX y el JSON correspondientes.</p>
             </div>
-            <a href="/admin/lessons" class="btn btn-outline btn-sm sm:btn-md">Volver</a>
+            <div class="flex gap-2">
+                <button onclick="window.location.reload()" class="btn btn-outline btn-sm sm:btn-md shrink-0">
+                    <Icon name="mdi:refresh" class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1" />
+                    <span class="hidden sm:inline">Recargar</span>
+                </button>
+                <a href="/admin/lessons" class="btn btn-outline btn-sm sm:btn-md">Volver</a>
+            </div>
         </div>
 
         <LessonEditor client:only="react" initialData={initialData} />

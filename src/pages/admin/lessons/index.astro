@@ -4,8 +4,6 @@ import Header from '../../../components/Header.astro';
 import Footer from '../../../components/Footer.astro';
 import { getCollection } from 'astro:content';
 import { Icon } from 'astro-icon/components';
-import fs from 'node:fs';
-import { execSync } from 'node:child_process';
 
 import { supabase } from '../../../utils/supabase';
 import { createClient } from '@supabase/supabase-js';
@@ -50,29 +48,6 @@ if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
 const lessons = (await getCollection('lessons')).sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
-
-const getFileInfo = (id) => {
-    const filePath = `src/content/lessons/${id}.mdx`;
-    try {
-        const output = execSync(`git log -1 --format="%an|%cd" -- ${filePath}`).toString().trim();
-        if (output) {
-            const [author, date] = output.split('|');
-            return { author, date: new Date(date).toLocaleString('es-ES') };
-        }
-    } catch (e) {}
-    
-    try {
-        const stat = fs.statSync(filePath);
-        return { author: 'Sistema (Local)', date: new Date(stat.mtime).toLocaleString('es-ES') };
-    } catch (e) {
-        return { author: 'Desconocido', date: 'Desconocida' };
-    }
-};
-
-const lessonsWithInfo = lessons.map(lesson => ({
-    ...lesson,
-    fileInfo: getFileInfo(lesson.id)
-}));
 ---
 
 <html lang="es" data-theme="confirtheme">
@@ -100,31 +75,49 @@ const lessonsWithInfo = lessons.map(lesson => ({
         </div>
 
         <div class="bg-base-200 rounded-box p-2 sm:p-4 shadow-sm">
+            
+            {/* Search Input */}
+            <div class="mb-4">
+                <div class="join w-full sm:w-80">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Buscar lecciones por título, autor o ID..." 
+                        class="input input-bordered join-item w-full"
+                    />
+                    <button class="btn join-item btn-square" aria-label="Buscar">
+                        <Icon name="mdi:magnify" class="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
             {/* Desktop View: Table */}
             <div class="overflow-x-auto hidden md:block">
-                <table class="table w-full">
+                <table class="table w-full" id="lessonsTable">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Autor</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
+                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="id">ID <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
+                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="title">Título <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
+                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="author">Autor <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
+                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="date">Fecha <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
+                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="status">Estado <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
                             <th class="text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {lessonsWithInfo.map((lesson) => (
-                            <tr class="hover">
+                    <tbody id="lessonsTableBody">
+                        {lessons.map((lesson) => (
+                            <tr class="hover lesson-row" 
+                                data-id={lesson.data.lessonId || lesson.id} 
+                                data-title={lesson.data.title.toLowerCase()} 
+                                data-author={(lesson.data.author || 'Sin autor').toLowerCase()}
+                                data-date={new Date(lesson.data.pubDate).getTime()}
+                                data-status={lesson.data.draft ? 'borrador' : 'publicada'}
+                            >
                                 <td><span class="font-mono text-sm">{lesson.data.lessonId || lesson.id}</span></td>
                                 <td class="font-bold">{lesson.data.title}</td>
                                 <td>{lesson.data.author || 'Sin autor'}</td>
                                 <td>
                                     <div class="whitespace-nowrap">{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</div>
-                                    <div class="text-[10px] text-base-content/50 whitespace-nowrap" title={`Autor: ${lesson.fileInfo.author}`}>
-                                        <Icon name="mdi:clock-outline" class="w-3 h-3 inline mr-0.5" />
-                                        {lesson.fileInfo.date}
-                                    </div>
                                 </td>
                                 <td>
                                     {lesson.data.draft ? (
@@ -150,21 +143,30 @@ const lessonsWithInfo = lessons.map(lesson => ({
                                 </td>
                             </tr>
                         ))}
-                        {lessonsWithInfo.length === 0 && (
-                            <tr>
+                        {lessons.length === 0 && (
+                            <tr id="emptyRow">
                                 <td colspan="6" class="text-center py-8 text-base-content/50">
                                     No hay lecciones creadas todavía.
                                 </td>
                             </tr>
                         )}
+                        <tr id="noResultsRow" class="hidden">
+                            <td colspan="6" class="text-center py-8 text-base-content/50">
+                                No se encontraron lecciones que coincidan con la búsqueda.
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
             {/* Mobile View: Cards */}
-            <div class="grid grid-cols-1 gap-3 md:hidden">
-                {lessonsWithInfo.map((lesson) => (
-                    <div class="bg-base-100 p-3.5 rounded-xl border border-base-300 flex flex-col gap-3 shadow-sm">
+            <div class="grid grid-cols-1 gap-3 md:hidden" id="lessonsMobileList">
+                {lessons.map((lesson) => (
+                    <div class="bg-base-100 p-3.5 rounded-xl border border-base-300 flex flex-col gap-3 shadow-sm lesson-card"
+                         data-id={lesson.data.lessonId || lesson.id} 
+                         data-title={lesson.data.title.toLowerCase()} 
+                         data-author={(lesson.data.author || 'Sin autor').toLowerCase()}
+                    >
                         <div class="flex justify-between items-start gap-2">
                             <div>
                                 <span class="font-mono text-[10px] text-base-content/55 uppercase tracking-wider">ID: {lesson.data.lessonId || lesson.id}</span>
@@ -183,10 +185,6 @@ const lessonsWithInfo = lessons.map(lesson => ({
                         <div class="flex justify-between items-center border-t border-base-200/60 pt-2.5">
                             <div>
                                 <div class="text-[11px] text-base-content/55 font-medium">{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</div>
-                                <div class="text-[9px] text-base-content/40" title={`Autor: ${lesson.fileInfo.author}`}>
-                                    <Icon name="mdi:clock-outline" class="w-2.5 h-2.5 inline mr-0.5" />
-                                    {lesson.fileInfo.date}
-                                </div>
                             </div>
                             <div class="flex gap-1.5">
                                 <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-ghost btn-sm btn-square" title="Ver lección">
@@ -206,11 +204,14 @@ const lessonsWithInfo = lessons.map(lesson => ({
                         </div>
                     </div>
                 ))}
-                {lessonsWithInfo.length === 0 && (
+                {lessons.length === 0 && (
                     <div class="text-center py-8 text-base-content/50 bg-base-100 rounded-xl border border-base-300">
                         No hay lecciones creadas todavía.
                     </div>
                 )}
+                <div id="noResultsCard" class="hidden text-center py-8 text-base-content/50 bg-base-100 rounded-xl border border-base-300">
+                    No se encontraron lecciones que coincidan con la búsqueda.
+                </div>
             </div>
         </div>
     </main>
@@ -234,6 +235,90 @@ const lessonsWithInfo = lessons.map(lesson => ({
                 alert('Ocurrió un error de red.');
             }
         }
+
+        // Search and Sort Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            
+            // Search logic
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    
+                    // Filter table rows
+                    const rows = document.querySelectorAll('.lesson-row');
+                    let visibleRows = 0;
+                    rows.forEach(row => {
+                        const id = row.getAttribute('data-id') || '';
+                        const title = row.getAttribute('data-title') || '';
+                        const author = row.getAttribute('data-author') || '';
+                        
+                        if (id.includes(term) || title.includes(term) || author.includes(term)) {
+                            row.style.display = '';
+                            visibleRows++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    const noResultsRow = document.getElementById('noResultsRow');
+                    if (noResultsRow) {
+                        noResultsRow.style.display = (visibleRows === 0 && rows.length > 0) ? '' : 'none';
+                    }
+
+                    // Filter mobile cards
+                    const cards = document.querySelectorAll('.lesson-card');
+                    let visibleCards = 0;
+                    cards.forEach(card => {
+                        const id = card.getAttribute('data-id') || '';
+                        const title = card.getAttribute('data-title') || '';
+                        const author = card.getAttribute('data-author') || '';
+                        
+                        if (id.includes(term) || title.includes(term) || author.includes(term)) {
+                            card.style.display = '';
+                            visibleCards++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    const noResultsCard = document.getElementById('noResultsCard');
+                    if (noResultsCard) {
+                        noResultsCard.style.display = (visibleCards === 0 && cards.length > 0) ? 'block' : 'none';
+                    }
+                });
+            }
+
+            // Sort logic
+            const tableHeaders = document.querySelectorAll('th[data-sort]');
+            let currentSort = { column: 'date', asc: false };
+
+            tableHeaders.forEach(th => {
+                th.addEventListener('click', () => {
+                    const column = th.getAttribute('data-sort');
+                    const isAsc = currentSort.column === column ? !currentSort.asc : true;
+                    currentSort = { column, asc: isAsc };
+                    
+                    const tbody = document.getElementById('lessonsTableBody');
+                    const rows = Array.from(tbody.querySelectorAll('.lesson-row'));
+                    
+                    rows.sort((a, b) => {
+                        let valA = a.getAttribute(`data-${column}`);
+                        let valB = b.getAttribute(`data-${column}`);
+                        
+                        if (column === 'date' || column === 'id') {
+                            valA = Number(valA) || 0;
+                            valB = Number(valB) || 0;
+                            return isAsc ? valA - valB : valB - valA;
+                        } else {
+                            return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                        }
+                    });
+                    
+                    rows.forEach(row => tbody.appendChild(row));
+                });
+            });
+        });
     </script>
 </body>
 </html>

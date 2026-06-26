@@ -1,8 +1,28 @@
 import type { APIRoute } from 'astro';
 import { saveToGitHub, deleteFromGitHub } from '../../../utils/github';
+import { supabase } from '../../../utils/supabase';
 
-export const POST: APIRoute = async ({ request }) => {
+const checkAuth = async (cookies: any) => {
+    const accessToken = cookies.get("sb-access-token");
+    const refreshToken = cookies.get("sb-refresh-token");
+    if (!accessToken || !refreshToken) return false;
+
+    await supabase.auth.setSession({
+        access_token: accessToken.value,
+        refresh_token: refreshToken.value,
+    });
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    return !!user;
+};
+
+export const POST: APIRoute = async ({ request, cookies }) => {
     try {
+        const isAuth = await checkAuth(cookies);
+        if (!isAuth) {
+            return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
+        }
+
         const body = await request.json();
         const { id, title, description, author, draft, date, blocks, formsUrl } = body;
         
@@ -67,8 +87,13 @@ ${blocks.intro}
     }
 };
 
-export const DELETE: APIRoute = async ({ request }) => {
+export const DELETE: APIRoute = async ({ request, cookies }) => {
     try {
+        const isAuth = await checkAuth(cookies);
+        if (!isAuth) {
+            return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
         const slug = searchParams.get('slug');
