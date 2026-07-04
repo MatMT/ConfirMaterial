@@ -6,7 +6,10 @@ import Footer from '../../components/Footer.astro';
 import { createClient } from "@supabase/supabase-js";
 import StudentsTable from '../../components/react/admin/StudentsTable';
 import { Icon } from 'astro-icon/components';
-import { getActiveStreak } from '../../utils/streakHelper';
+import { getStreakStatus } from '../../utils/streakHelper';
+import { getCollection } from 'astro:content';
+import { fetchFromGitHub } from '../../utils/github';
+import HolidayToggle from '../../components/react/admin/HolidayToggle';
 
 // Inicializar cliente admin para saltar RLS
 const supabaseAdmin = createClient(
@@ -36,6 +39,23 @@ if (Astro.request.method === "POST") {
 
 const isAuthenticated = adminPinCookie === correctPin;
 
+let isHolidayMode = false;
+try {
+    const fileData = await fetchFromGitHub('src/content/data/settings.json');
+    if (fileData && fileData.content) {
+        const jsonStr = Buffer.from(fileData.content, 'base64').toString('utf-8');
+        const settings = JSON.parse(jsonStr);
+        isHolidayMode = !!settings.holidayMode;
+    }
+} catch (e) {}
+
+const allLessons = await getCollection('lessons', ({ data }) => !data.draft);
+let latestLessonDate = null;
+if (allLessons && allLessons.length > 0) {
+    const maxTime = Math.max(...allLessons.map(l => new Date(l.data.pubDate).getTime()));
+    latestLessonDate = new Date(maxTime).toISOString();
+}
+
 let students = [];
 if (isAuthenticated) {
     const { data, error } = await supabaseAdmin
@@ -53,9 +73,9 @@ if (isAuthenticated) {
             const streak = streaksData?.find(s => s.user_id === student.id);
             const rawStreak = streak?.current_streak || 0;
             const lastDate = streak?.last_lesson_date || null;
-            const activeStreak = getActiveStreak(rawStreak, lastDate);
+            const status = getStreakStatus(rawStreak, lastDate, latestLessonDate, isHolidayMode);
             
-            if (rawStreak > 0 && activeStreak === 0) {
+            if (rawStreak > 0 && status.streak === 0 && !status.isFrozen) {
                 await supabaseAdmin
                     .from('user_streaks')
                     .update({ current_streak: 0 })
@@ -64,7 +84,9 @@ if (isAuthenticated) {
 
             return {
                 ...student,
-                streak: activeStreak,
+                streak: status.streak,
+                isFrozen: status.isFrozen,
+                freezeReason: status.reason,
                 longestStreak: streak?.longest_streak || 0,
                 last_connection: lastDate || student.created_at
             };
@@ -117,6 +139,13 @@ if (isAuthenticated) {
                         <Icon name="mdi:account-plus-outline" class="w-5 h-5 mr-2" />
                         Crear Nuevo Alumno
                     </a>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-base-100 p-4 sm:p-6 rounded-3xl shadow-md border border-base-200">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base font-extrabold text-base-content/80">Control Global de Rachas:</span>
+                    </div>
+                    <HolidayToggle client:load initialHolidayMode={isHolidayMode} />
                 </div>
                 
                 <div className="bg-base-100 rounded-3xl shadow-2xl p-6 md:p-8 border border-base-200">

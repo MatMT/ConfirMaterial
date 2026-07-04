@@ -3,7 +3,7 @@ import useProgressStore from '../../stores/progressStore';
 import { Icon } from '@iconify/react';
 
 export default function StreakDisplay() {
-    const { streak, lastLessonDate, isInitialized, progress, testDangerMode, toggleTestDangerMode, initializeStore } = useProgressStore();
+    const { streak, lastLessonDate, isInitialized, isFrozen, freezeReason, progress, testDangerMode, toggleTestDangerMode, initializeStore } = useProgressStore();
     const [daysLeft, setDaysLeft] = useState(null);
     const [hasMaintainedThisWeek, setHasMaintainedThisWeek] = useState(false);
     const [deadlineDate, setDeadlineDate] = useState(null);
@@ -71,7 +71,7 @@ export default function StreakDisplay() {
 
     if (!isInitialized) return null;
 
-    const isDanger = testDangerMode || (daysLeft !== null && daysLeft <= 1 && streak > 0 && !hasMaintainedThisWeek);
+    const isDanger = !isFrozen && (testDangerMode || (daysLeft !== null && daysLeft <= 1 && streak > 0 && !hasMaintainedThisWeek));
 
     let fireColor = "text-gray-400 opacity-50";
     if (streak > 0) fireColor = "text-orange-400";
@@ -198,9 +198,13 @@ export default function StreakDisplay() {
 
     return (
         <div className="dropdown dropdown-hover dropdown-end">
-            <div tabIndex={0} role="button" className={`flex items-center gap-1 px-3 py-1.5 rounded-full cursor-pointer transition-colors mr-2 ${isDanger ? 'bg-red-100 border border-red-500 animate-pulse' : 'bg-base-200'}`}>
-                <Icon icon="mdi:fire" className={`w-5 h-5 transition-all duration-300 ${fireColor}`} />
-                <span className={`font-bold text-sm ${isDanger ? 'text-red-700' : ''}`}>{streak}</span>
+            <div tabIndex={0} role="button" className={`flex items-center gap-1 px-3 py-1.5 rounded-full cursor-pointer transition-colors mr-2 ${isFrozen ? 'bg-info/15 border border-info/50 text-info font-bold shadow-sm' : isDanger ? 'bg-red-100 border border-red-500 animate-pulse' : 'bg-base-200'}`}>
+                {isFrozen ? (
+                    <Icon icon="mdi:snowflake" className="w-5 h-5 text-info animate-spin" style={{ animationDuration: '10s' }} />
+                ) : (
+                    <Icon icon="mdi:fire" className={`w-5 h-5 transition-all duration-300 ${fireColor}`} />
+                )}
+                <span className={`font-bold text-sm ${isFrozen ? 'text-info' : isDanger ? 'text-red-700' : ''}`}>{streak}</span>
             </div> 
             
             <div tabIndex={0} className="dropdown-content z-[9999] p-4 shadow-2xl bg-base-100 rounded-2xl w-[calc(100vw-2rem)] sm:w-80 border border-base-200 cursor-default !fixed !left-1/2 !-translate-x-1/2 !top-20 sm:!absolute sm:!top-auto sm:!left-auto sm:!translate-x-0 sm:!right-0 sm:mt-2">
@@ -222,6 +226,25 @@ export default function StreakDisplay() {
                                 Completa tu repaso semanal de catequesis para mantener el fuego encendido.
                             </span>
                         </div>
+                        
+                        {/* Badge Congelado */}
+                        {isFrozen && (
+                            <div className="bg-info/15 border border-info/40 rounded-xl p-3 flex gap-3 items-start animate-fade-in">
+                                <div className="bg-info/20 p-1.5 rounded-lg shrink-0">
+                                    <Icon icon="mdi:snowflake" className="w-5 h-5 text-info" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-xs font-bold text-info">
+                                        {freezeReason === 'holiday' ? '❄️ Racha Congelada: Modo Vacaciones' : '❄️ Racha Congelada: Sin Nueva Lección'}
+                                    </span>
+                                    <span className="text-xs text-base-content/80 font-medium leading-relaxed mt-0.5">
+                                        {freezeReason === 'holiday'
+                                            ? 'Tu catequista ha activado el receso. Tu racha está protegida y no caducará.'
+                                            : 'Aún no se ha publicado la lección de esta semana. Tu racha no se perderá hasta que haya una nueva lección disponible.'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                         
                         {/* Badge 2 */}
                         <div className={`border rounded-xl p-3 flex gap-3 items-start ${hasMaintainedThisWeek ? 'bg-orange-500/10 border-orange-500/20' : 'bg-base-200/50 border-base-200'}`}>

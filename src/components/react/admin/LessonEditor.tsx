@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Icon } from '@iconify/react';
+import { Bold, Italic, Highlighter, Quote, List, ListOrdered, Info, FileText, Eraser, HelpCircle, Flag, Save } from 'lucide-react';
 
 interface ParagraphBlock {
     text: string;
@@ -92,7 +92,7 @@ const MarkdownToolbar = ({ textareaId, value, setValue }: { textareaId: string, 
                 title="Negrita"
                 onClick={() => insertMarkdown(textareaId, value, setValue, '**', '**')}
             >
-                <Icon icon="mdi:format-bold" className="w-4 h-4 text-primary" />
+                <Bold className="w-4 h-4 text-primary" />
                 <span className="hidden sm:inline">Negrita</span>
             </button>
             <button
@@ -101,7 +101,7 @@ const MarkdownToolbar = ({ textareaId, value, setValue }: { textareaId: string, 
                 title="Cursiva"
                 onClick={() => insertMarkdown(textareaId, value, setValue, '*', '*')}
             >
-                <Icon icon="mdi:format-italic" className="w-4 h-4 text-primary" />
+                <Italic className="w-4 h-4 text-primary" />
                 <span className="hidden sm:inline">Cursiva</span>
             </button>
             <button
@@ -110,7 +110,7 @@ const MarkdownToolbar = ({ textareaId, value, setValue }: { textareaId: string, 
                 title="Resaltar Texto"
                 onClick={() => insertMarkdown(textareaId, value, setValue, '<mark>', '</mark>')}
             >
-                <Icon icon="mdi:marker" className="w-4 h-4 text-primary" />
+                <Highlighter className="w-4 h-4 text-primary" />
                 <span className="hidden sm:inline">Resaltar</span>
             </button>
             <button
@@ -119,7 +119,7 @@ const MarkdownToolbar = ({ textareaId, value, setValue }: { textareaId: string, 
                 title="Cita / Destacado"
                 onClick={() => insertMarkdown(textareaId, value, setValue, '> "', '"')}
             >
-                <Icon icon="mdi:format-quote-close" className="w-4 h-4 text-primary" />
+                <Quote className="w-4 h-4 text-primary" />
                 <span className="hidden sm:inline">Cita</span>
             </button>
             <button
@@ -128,7 +128,7 @@ const MarkdownToolbar = ({ textareaId, value, setValue }: { textareaId: string, 
                 title="Lista de Viñetas"
                 onClick={() => insertList(textareaId, value, setValue, false)}
             >
-                <Icon icon="mdi:format-list-bulleted" className="w-4 h-4 text-primary" />
+                <List className="w-4 h-4 text-primary" />
                 <span className="hidden sm:inline">Lista</span>
             </button>
             <button
@@ -137,7 +137,7 @@ const MarkdownToolbar = ({ textareaId, value, setValue }: { textareaId: string, 
                 title="Lista Numerada"
                 onClick={() => insertList(textareaId, value, setValue, true)}
             >
-                <Icon icon="mdi:format-list-numbered" className="w-4 h-4 text-primary" />
+                <ListOrdered className="w-4 h-4 text-primary" />
                 <span className="hidden sm:inline">Numerada</span>
             </button>
         </div>
@@ -281,7 +281,7 @@ export default function LessonEditor({ initialData = null }) {
             {/* Cabecera / Metadatos */}
             <div className="space-y-4 bg-base-200/50 p-4 sm:p-6 rounded-box">
                 <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                    <Icon icon="mdi:information-outline" className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                    <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                     Información General
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -329,7 +329,7 @@ export default function LessonEditor({ initialData = null }) {
             {/* Introducción */}
             <div className="space-y-3 sm:space-y-4">
                 <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
-                    <Icon icon="mdi:format-text" className="w-5 h-5 text-secondary" />
+                    <FileText className="w-5 h-5 text-secondary" />
                     Introducción
                 </h3>
                 <div className="form-control">
@@ -353,7 +353,7 @@ export default function LessonEditor({ initialData = null }) {
                         <div className="absolute top-3 right-3 flex gap-2">
                             <div className="badge badge-primary text-[10px] sm:text-xs">Bloque {i + 1} / 3</div>
                             <button type="button" onClick={() => handleClearParagraph(i)} className="btn btn-xs btn-error btn-outline border-none btn-circle bg-error/10 hover:bg-error hover:text-white transition-colors" title="Limpiar bloque">
-                                <Icon icon="mdi:eraser" className="w-4 h-4" />
+                                <Eraser className="w-4 h-4" />
                             </button>
                         </div>
 
@@ -378,7 +378,7 @@ export default function LessonEditor({ initialData = null }) {
 
                             <div className="bg-base-200/50 p-3 sm:p-4 rounded-lg border-l-4 border-accent">
                                 <h4 className="font-bold mb-3 flex items-center gap-2 text-sm sm:text-base">
-                                    <Icon icon="mdi:help-circle" className="w-4.5 h-4.5 text-accent" />
+                                    <HelpCircle className="w-4 h-4 text-accent" />
                                     Pregunta Interactiva
                                 </h4>
                                 <div className="space-y-3">
@@ -409,7 +409,7 @@ export default function LessonEditor({ initialData = null }) {
             {/* Conclusión */}
             <div className="space-y-3 sm:space-y-4">
                 <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
-                    <Icon icon="mdi:flag-checkered" className="w-5 h-5 text-secondary" />
+                    <Flag className="w-5 h-5 text-secondary" />
                     Conclusión
                 </h3>
                 <div className="form-control">
@@ -433,7 +433,7 @@ export default function LessonEditor({ initialData = null }) {
                     {isSubmitting ? (
                         <span className="loading loading-spinner"></span>
                     ) : (
-                        <Icon icon="mdi:content-save" className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                        <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     )}
                     Guardar Lección
                 </button>

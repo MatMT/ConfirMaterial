@@ -8,6 +8,8 @@ const useProgressStore = create((set, get) => ({
     streak: 0,
     longestStreak: 0,
     lastLessonDate: null,
+    isFrozen: false,
+    freezeReason: null,
     userId: null,
     isInitialized: false,
     testDangerMode: false,
@@ -79,37 +81,34 @@ const useProgressStore = create((set, get) => ({
                     };
                 });
 
-                // Cargar rachas
-                const { data: streakData } = await supabase
-                    .from('user_streaks')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .maybeSingle();
+                // Cargar rachas consultando al endpoint seguro de evaluación (que verifica expiración y congelamiento)
+                let currentStreak = 0;
+                let longestStreak = 0;
+                let lastLessonDate = null;
+                let isFrozen = false;
+                let freezeReason = null;
 
-                let currentStreak = streakData ? streakData.current_streak : 0;
-                let lastLessonDate = streakData ? streakData.last_lesson_date : null;
-                let longestStreak = streakData ? streakData.longest_streak : 0;
-
-                // Verificar si la racha ha expirado
-                if (currentStreak > 0 && lastLessonDate) {
-                    const lDate = new Date(lastLessonDate);
-                    const daysToSaturday = 6 - lDate.getDay();
-                    
-                    const firstDeadline = new Date(lDate);
-                    firstDeadline.setDate(firstDeadline.getDate() + daysToSaturday);
-                    firstDeadline.setHours(11, 0, 0, 0);
-
-                    // La expiración es el sábado de la SIGUIENTE semana a las 11:00 AM
-                    const expirationDate = new Date(firstDeadline);
-                    expirationDate.setDate(expirationDate.getDate() + 7);
-
-                    const now = new Date();
-                    if (now.getTime() > expirationDate.getTime()) {
-                        console.log('La racha ha expirado. Reseteando a 0.');
-                        currentStreak = 0;
-                        // Actualizar en BD silenciosamente
-                        supabase.from('user_streaks').update({ current_streak: 0 }).eq('user_id', userId).then();
+                try {
+                    const res = await fetch(`/api/streak-status?userId=${userId}`);
+                    if (res.ok) {
+                        const sData = await res.json();
+                        currentStreak = sData.streak || 0;
+                        longestStreak = sData.longestStreak || 0;
+                        lastLessonDate = sData.lastLessonDate || null;
+                        isFrozen = sData.isFrozen || false;
+                        freezeReason = sData.reason || null;
+                    } else {
+                        // Fallback si falla el endpoint
+                        const { data: streakData } = await supabase.from('user_streaks').select('*').eq('user_id', userId).maybeSingle();
+                        currentStreak = streakData ? streakData.current_streak : 0;
+                        longestStreak = streakData ? streakData.longest_streak : 0;
+                        lastLessonDate = streakData ? streakData.last_lesson_date : null;
                     }
+                } catch (e) {
+                    const { data: streakData } = await supabase.from('user_streaks').select('*').eq('user_id', userId).maybeSingle();
+                    currentStreak = streakData ? streakData.current_streak : 0;
+                    longestStreak = streakData ? streakData.longest_streak : 0;
+                    lastLessonDate = streakData ? streakData.last_lesson_date : null;
                 }
 
                 set({ 
@@ -117,6 +116,8 @@ const useProgressStore = create((set, get) => ({
                     streak: currentStreak,
                     longestStreak: longestStreak,
                     lastLessonDate: lastLessonDate,
+                    isFrozen: isFrozen,
+                    freezeReason: freezeReason,
                     isInitialized: true
                 });
 

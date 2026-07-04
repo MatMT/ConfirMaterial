@@ -26,8 +26,6 @@ const isLoggedIn = !!accessToken;
 
 let userProfile = null;
 if (isLoggedIn) {
-  // Opcional: Obtener perfil del usuario para inicializar Zustand
-  // Como esto corre en SSR, le pasaremos los datos básicos si existen
   try {
     const { data: { user } } = await supabase.auth.getUser(accessToken.value);
     if (user) {
@@ -39,39 +37,26 @@ if (isLoggedIn) {
     }
   } catch (e) {}
 }
+
+const isCurrentAdminPage = isAdminMode || Astro.url.pathname.startsWith('/admin');
+const isTeacherOrAdmin = userProfile?.role === 'admin' || userProfile?.role === 'teacher';
 ---
 
 <header class={`navbar bg-base-100 shadow-sm ${isSticky ? 'sticky top-0 z-[100]' : 'relative z-[100]'}`}>
   <StoreInitializer client:only="react" user={userProfile} accessToken={accessToken?.value} refreshToken={refreshToken?.value} />
   
   <div class="navbar-start">
-    <div class="dropdown">
-      <div tabindex="0" role="button" class="btn btn-ghost md:hidden">
-        <Icon name="mdi:menu" class="h-6 w-6" />
-      </div>
-      <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-        {isAdminMode ? (
-          <>
-            <li><HeaderLink href="/admin">👥 Alumnos</HeaderLink></li>
-            <li><HeaderLink href="/admin/lessons">📝 Editar Lecciones</HeaderLink></li>
-          </>
-        ) : (
-          <>
-            <li><HeaderLink href="/">Inicio</HeaderLink></li>
-            <li><HeaderLink href="/lessons">Lecciones</HeaderLink></li>
-            <li><HeaderLink href="/more">Material</HeaderLink></li>
-          </>
-        )}
-      </ul>
-    </div>
-    <a href={isAdminMode ? "/admin" : "/"} class="btn btn-ghost text-lg sm:text-xl font-bold text-primary px-2 sm:px-4">
-      {SITE_TITLE} {isAdminMode && <span class="text-[10px] sm:text-xs ml-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-wider hidden sm:inline-block">Admin</span>}
+    <button id="mobile-menu-open-btn" class="btn btn-ghost md:hidden p-1 hover:bg-base-200 rounded-full" aria-label="Abrir menú de navegación">
+      <Icon name="mdi:menu" class="h-7 w-7 text-primary" />
+    </button>
+    <a href={isCurrentAdminPage ? "/admin" : "/"} class="btn btn-ghost text-lg sm:text-xl font-bold text-primary px-2 sm:px-4">
+      {SITE_TITLE} {isCurrentAdminPage && <span class="text-[10px] sm:text-xs ml-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-wider hidden sm:inline-block">Admin</span>}
     </a>
   </div>
   
   <div class="navbar-center hidden md:flex">
     <ul class="menu menu-horizontal px-1">
-      {isAdminMode ? (
+      {isCurrentAdminPage ? (
         <>
           <li><HeaderLink href="/admin"><Icon name="mdi:account-group" class="w-4 h-4 mr-1"/> Alumnos</HeaderLink></li>
           <li><HeaderLink href="/admin/lessons"><Icon name="mdi:file-document-edit" class="w-4 h-4 mr-1"/> Lecciones</HeaderLink></li>
@@ -86,15 +71,20 @@ if (isLoggedIn) {
     </ul>
   </div>
   
-  <div class="navbar-end flex items-center">
-    {!isAdminMode && isLoggedIn && <StreakDisplay client:only="react" />}
-    {isAdminMode ? (
-      <a href="/" class="btn btn-outline btn-primary btn-sm rounded-full gap-1 px-2.5 md:px-4">
-        <Icon name="mdi:exit-run" class="h-4 w-4" />
-        <span class="hidden md:inline">Salir Admin</span>
+  <div class="navbar-end flex items-center gap-2">
+    {!isTeacherOrAdmin && !isCurrentAdminPage && isLoggedIn && <StreakDisplay client:only="react" />}
+    {isCurrentAdminPage ? (
+      <a href="/" class="btn btn-outline btn-primary btn-sm rounded-full gap-1 px-2.5 md:px-4 shadow-sm hover:scale-105 transition-all">
+        <Icon name="mdi:web" class="h-4 w-4" />
+        <span class="hidden md:inline">Ver Sitio</span>
+      </a>
+    ) : isTeacherOrAdmin ? (
+      <a href="/admin" class="btn btn-primary btn-sm rounded-full gap-1 px-3 shadow-md hover:shadow-lg hover:scale-105 transition-all font-bold text-white">
+        <Icon name="mdi:shield-crown" class="h-4 w-4" />
+        <span class="hidden sm:inline">Panel Admin</span>
       </a>
     ) : isLoggedIn ? (
-      <a href="/dashboard" class="btn btn-ghost btn-circle" aria-label="Perfil">
+      <a href="/dashboard" class="btn btn-ghost btn-circle hover:scale-110 transition-transform" aria-label="Perfil">
         <Icon name="mdi:account-circle" class="h-8 w-8 text-primary" />
       </a>
     ) : (
@@ -104,6 +94,128 @@ if (isLoggedIn) {
     )}
   </div>
 </header>
+
+<!-- Fullscreen Mobile Navigation Drawer / Overlay -->
+<div id="mobile-menu-overlay" class="fixed inset-0 bg-base-100/95 dark:bg-base-100/98 backdrop-blur-2xl z-[500] flex flex-col justify-between p-6 md:hidden transition-all duration-300 opacity-0 pointer-events-none scale-95">
+  <!-- Top Bar -->
+  <div class="flex items-center justify-between border-b border-base-200/80 pb-4">
+    <a href={isCurrentAdminPage ? "/admin" : "/"} class="text-2xl font-black text-primary flex items-center gap-2">
+      {SITE_TITLE} {isCurrentAdminPage && <span class="badge badge-primary badge-sm font-bold tracking-wider">ADMIN</span>}
+    </a>
+    <button id="mobile-menu-close-btn" class="btn btn-ghost btn-circle text-base-content/80 hover:bg-base-200 hover:rotate-90 transition-all duration-300" aria-label="Cerrar menú">
+      <Icon name="mdi:close" class="h-8 w-8" />
+    </button>
+  </div>
+
+  <!-- Center Navigation Links -->
+  <nav class="flex-1 flex flex-col justify-center items-center my-8 w-full max-w-sm mx-auto">
+    <ul class="flex flex-col items-center gap-4 w-full">
+      {isCurrentAdminPage ? (
+        <>
+          <li class="w-full">
+            <HeaderLink href="/admin" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
+              <Icon name="mdi:account-group" class="w-7 h-7" />
+              <span>Alumnos</span>
+            </HeaderLink>
+          </li>
+          <li class="w-full">
+            <HeaderLink href="/admin/lessons" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
+              <Icon name="mdi:file-document-edit" class="w-7 h-7" />
+              <span>Lecciones</span>
+            </HeaderLink>
+          </li>
+        </>
+      ) : (
+        <>
+          <li class="w-full">
+            <HeaderLink href="/" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
+              <Icon name="mdi:home" class="w-7 h-7" />
+              <span>Inicio</span>
+            </HeaderLink>
+          </li>
+          <li class="w-full">
+            <HeaderLink href="/lessons" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
+              <Icon name="mdi:book-open-page-variant" class="w-7 h-7" />
+              <span>Lecciones</span>
+            </HeaderLink>
+          </li>
+          <li class="w-full">
+            <HeaderLink href="/more" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
+              <Icon name="mdi:folder-multiple" class="w-7 h-7" />
+              <span>Material</span>
+            </HeaderLink>
+          </li>
+        </>
+      )}
+    </ul>
+  </nav>
+
+  <!-- Bottom Actions -->
+  <div class="border-t border-base-200/80 pt-6 flex flex-col gap-3 items-center w-full max-w-sm mx-auto">
+    {isCurrentAdminPage ? (
+      <a href="/" class="btn btn-outline btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold gap-2 shadow-sm">
+        <Icon name="mdi:web" class="h-6 w-6" />
+        <span>Ver Sitio Web</span>
+      </a>
+    ) : isTeacherOrAdmin ? (
+      <a href="/admin" class="btn btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-lg shadow-primary/20">
+        <Icon name="mdi:shield-crown" class="h-6 w-6" />
+        <span>Ir al Panel Admin</span>
+      </a>
+    ) : isLoggedIn ? (
+      <a href="/dashboard" class="btn btn-outline btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold gap-2 shadow-sm">
+        <Icon name="mdi:account-circle" class="h-6 w-6" />
+        <span>Mi Perfil</span>
+      </a>
+    ) : (
+      <a href="/login" class="btn btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-lg shadow-primary/20">
+        <Icon name="mdi:login" class="h-6 w-6" />
+        <span>Iniciar Sesión</span>
+      </a>
+    )}
+    
+    <div class="text-center text-xs text-base-content/50 font-medium pt-2">
+      {SITE_TITLE} &copy; {new Date().getFullYear()}
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const openBtn = document.getElementById('mobile-menu-open-btn');
+    const closeBtn = document.getElementById('mobile-menu-close-btn');
+    const overlay = document.getElementById('mobile-menu-overlay');
+    const navLinks = document.querySelectorAll('.mobile-nav-link');
+
+    if (!openBtn || !closeBtn || !overlay) return;
+
+    const openMenu = () => {
+      overlay.classList.remove('pointer-events-none', 'opacity-0', 'scale-95');
+      overlay.classList.add('opacity-100', 'scale-100');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeMenu = () => {
+      overlay.classList.remove('opacity-100', 'scale-100');
+      overlay.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+      document.body.style.overflow = '';
+    };
+
+    openBtn.addEventListener('click', openMenu);
+    closeBtn.addEventListener('click', closeMenu);
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', closeMenu);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !overlay.classList.contains('pointer-events-none')) {
+        closeMenu();
+      }
+    });
+  });
+</script>
+
 <style is:global>
   .menu a {
     border: 1px solid transparent;
@@ -118,5 +230,10 @@ if (isLoggedIn) {
     font-weight: bold !important;
     background-color: transparent !important;
     text-decoration: none !important;
+  }
+  .mobile-nav-link.active {
+    background-color: var(--fallback-p,oklch(var(--p))) !important;
+    color: var(--fallback-pc,oklch(var(--pc))) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
 </style>

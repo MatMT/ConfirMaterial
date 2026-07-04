@@ -1,7 +1,11 @@
 ---
 export const prerender = false;
+import BaseHead from '../../../components/BaseHead.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
 import { supabase } from '../../../utils/supabase';
 import { createClient } from "@supabase/supabase-js";
+import { Icon } from 'astro-icon/components';
 
 // Verificar el PIN desde las cookies
 const adminPinCookie = Astro.cookies.get('admin-pin')?.value;
@@ -85,24 +89,23 @@ if (Astro.request.method === "POST") {
 }
 ---
 <!DOCTYPE html>
-<html lang="es" data-theme="lofi">
+<html lang="es" data-theme="confirtheme">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Alumno | Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <BaseHead title="Registrar Nuevo Alumno | Admin" description="Crear cuenta para nuevo estudiante" />
 </head>
-<body class="bg-base-200 min-h-screen">
+<body class="bg-base-200 min-h-screen flex flex-col font-sans">
     
-    <div class="navbar bg-base-100 shadow-sm mb-8">
-        <div class="flex-1">
-            <a href="/admin" class="btn btn-ghost text-xl">⬅️ Volver al Panel</a>
-        </div>
-    </div>
+    <Header isAdminMode={true} />
 
-    <main class="container mx-auto px-4 max-w-2xl pb-12">
-        <h1 class="text-3xl font-bold mb-8 text-center">Registrar Nuevo Alumno</h1>
+    <main class="container mx-auto px-4 max-w-2xl flex-grow py-12 animate-fade-up">
+        <div class="mb-8">
+            <a href="/admin" class="btn btn-ghost hover:bg-base-100 rounded-full px-6 font-bold">
+                <Icon name="mdi:arrow-left" class="w-5 h-5 mr-2" />
+                Volver al Panel
+            </a>
+        </div>
+        
+        <h1 class="text-3xl font-extrabold mb-8 text-center tracking-tight">Registrar Nuevo Alumno</h1>
 
         {error && (
             <div class="alert alert-error mb-6 shadow-md">
@@ -195,6 +198,7 @@ if (Astro.request.method === "POST") {
             </div>
         )}
     </main>
+    <Footer />
 
     <script>
         function generatePassword() {

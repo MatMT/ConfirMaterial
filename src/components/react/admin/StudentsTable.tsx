@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import DataTable from './DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Flame } from 'lucide-react';
+import { Flame, Snowflake } from 'lucide-react';
 
 const columnHelper = createColumnHelper();
 
@@ -28,11 +28,19 @@ export default function StudentsTable({ students }) {
     }),
     columnHelper.accessor('streak', {
       header: 'Racha',
-      cell: info => (
-        <div className="flex items-center text-orange-500 font-bold gap-1">
-          <Flame className="w-4 h-4 fill-current" /> {info.getValue()}
-        </div>
-      ),
+      cell: info => {
+        const isFrozen = info.row.original.isFrozen;
+        return (
+          <div className={`flex items-center font-bold gap-1 ${isFrozen ? 'text-info' : 'text-orange-500'}`}>
+            {isFrozen ? (
+              <Snowflake className="w-4 h-4 animate-spin" style={{ animationDuration: '8s' }} />
+            ) : (
+              <Flame className="w-4 h-4 fill-current" />
+            )}
+            {info.getValue()} {isFrozen && <span className="text-[10px] opacity-80">(❄️)</span>}
+          </div>
+        );
+      },
     }),
     columnHelper.accessor('longestStreak', {
       header: 'Racha Máx.',
