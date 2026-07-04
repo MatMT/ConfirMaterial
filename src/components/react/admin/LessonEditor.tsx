@@ -167,6 +167,89 @@ export default function LessonEditor({ initialData = null }) {
         return blocks.slice(0, 3);
     });
 
+    // LocalStorage Backup State
+    const storageKey = initialData?.id ? `confir_lesson_backup_${initialData.id}` : `confir_lesson_backup_new`;
+    const [hasBackup, setHasBackup] = useState(false);
+    const [backupData, setBackupData] = useState<any>(null);
+    const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+
+    // Detect backup on mount
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // Validar que tenga contenido significativo
+                if (parsed && (parsed.title || parsed.intro || parsed.conclusion || (parsed.paragraphs && parsed.paragraphs.some((p: any) => p.text || p.question?.text)))) {
+                    setBackupData(parsed);
+                    setHasBackup(true);
+                    if (parsed.lastSavedAt) {
+                        setLastSavedTime(parsed.lastSavedAt);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error al leer respaldo local:", e);
+        }
+    }, [storageKey]);
+
+    // Auto-save to localStorage
+    useEffect(() => {
+        if (isSubmitting) return;
+
+        // Si todos los campos están vacíos (al crear lección de cero), no guardar en backup
+        const isEmpty = !title.trim() && !description.trim() && !intro.trim() && !conclusion.trim() && paragraphs.every(p => !p.text.trim() && !p.question.text.trim());
+        if (isEmpty && !initialData?.id) return;
+
+        const timer = setTimeout(() => {
+            try {
+                const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const backupObject = {
+                    title,
+                    slug,
+                    description,
+                    author,
+                    date,
+                    isDraft,
+                    intro,
+                    conclusion,
+                    paragraphs,
+                    lastSavedAt: nowStr
+                };
+                localStorage.setItem(storageKey, JSON.stringify(backupObject));
+                setLastSavedTime(nowStr);
+            } catch (e) {
+                console.error("Error al guardar respaldo local:", e);
+            }
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [title, slug, description, author, date, isDraft, intro, conclusion, paragraphs, isSubmitting, storageKey, initialData]);
+
+    const handleRestoreBackup = () => {
+        if (!backupData) return;
+        if (backupData.title !== undefined) setTitle(backupData.title);
+        if (backupData.slug !== undefined) setSlug(backupData.slug);
+        if (backupData.description !== undefined) setDescription(backupData.description);
+        if (backupData.author !== undefined) setAuthor(backupData.author);
+        if (backupData.date !== undefined) setDate(backupData.date);
+        if (backupData.isDraft !== undefined) setIsDraft(backupData.isDraft);
+        if (backupData.intro !== undefined) setIntro(backupData.intro);
+        if (backupData.conclusion !== undefined) setConclusion(backupData.conclusion);
+        if (backupData.paragraphs !== undefined) setParagraphs(backupData.paragraphs);
+        
+        setHasBackup(false);
+        alert("📥 ¡Trabajo restaurado con éxito desde tu respaldo local!");
+    };
+
+    const handleDiscardBackup = () => {
+        try {
+            localStorage.removeItem(storageKey);
+        } catch (e) {}
+        setHasBackup(false);
+        setBackupData(null);
+    };
+
     const handleClearParagraph = (index: number) => {
         const newParagraphs = [...paragraphs];
         newParagraphs[index] = { text: '', question: { text: '', correctOption: '', incorrectOptions: ['', ''] } };
@@ -254,6 +337,9 @@ export default function LessonEditor({ initialData = null }) {
             const data = await response.json();
             
             if (data.success) {
+                try {
+                    localStorage.removeItem(storageKey);
+                } catch (e) {}
                 alert('¡Lección guardada exitosamente!');
                 window.location.href = '/admin/lessons';
             } else {
@@ -277,6 +363,29 @@ export default function LessonEditor({ initialData = null }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-base-100 p-2 sm:p-6 pb-24 sm:pb-32 rounded-box sm:shadow-md max-w-4xl mx-auto border-0 sm:border border-base-200 animate-fade-up">
+            
+            {/* Banner de Respaldo Encontrado */}
+            {hasBackup && (
+                <div className="alert bg-primary/10 border-2 border-primary/40 shadow-xl rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-down">
+                    <div className="flex items-start gap-3">
+                        <div className="text-2xl animate-bounce">💡</div>
+                        <div>
+                            <h3 className="font-bold text-primary text-base sm:text-lg">Respaldo Local Detectado</h3>
+                            <p className="text-xs sm:text-sm text-base-content/80 mt-0.5 leading-relaxed">
+                                Encontramos un borrador sin guardar en tu navegador{lastSavedTime ? ` (guardado a las ${lastSavedTime})` : ''}. ¿Deseas recuperar tu trabajo anterior o continuar de cero?
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button type="button" onClick={handleDiscardBackup} className="btn btn-ghost btn-sm text-error hover:bg-error/10 font-bold rounded-xl">
+                            🗑️ Descartar
+                        </button>
+                        <button type="button" onClick={handleRestoreBackup} className="btn btn-primary btn-sm font-bold shadow-md rounded-xl gap-1">
+                            📥 Restaurar Respaldo
+                        </button>
+                    </div>
+                </div>
+            )}
             
             {/* Cabecera / Metadatos */}
             <div className="space-y-4 bg-base-200/50 p-4 sm:p-6 rounded-box">
@@ -427,16 +536,30 @@ export default function LessonEditor({ initialData = null }) {
             </div>
 
             {/* Submit */}
-            <div className="pt-4 sm:pt-6 border-t border-base-300 flex justify-end gap-3 sticky bottom-2 sm:bottom-4 bg-base-100/90 backdrop-blur p-3 rounded-box shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] z-10">
-                <a href="/admin/lessons" className="btn btn-ghost btn-sm sm:btn-md">Cancelar</a>
-                <button type="submit" disabled={isSubmitting} className="btn btn-primary px-6 sm:px-8 btn-sm sm:btn-md">
-                    {isSubmitting ? (
-                        <span className="loading loading-spinner"></span>
+            <div className="pt-4 sm:pt-6 border-t border-base-300 flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-2 sm:bottom-4 bg-base-100/90 backdrop-blur p-3 sm:p-4 rounded-2xl shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.15)] z-10 border border-base-200">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-base-content/70 font-medium w-full sm:w-auto justify-center sm:justify-start">
+                    {lastSavedTime ? (
+                        <span className="flex items-center gap-2 text-success font-semibold animate-fade">
+                            <span className="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
+                            💾 Respaldo local guardado ({lastSavedTime})
+                        </span>
                     ) : (
-                        <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                        <span className="flex items-center gap-1.5 text-base-content/50">
+                            <span>💡 Respaldo automático local activo</span>
+                        </span>
                     )}
-                    Guardar Lección
-                </button>
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <a href="/admin/lessons" className="btn btn-ghost btn-sm sm:btn-md rounded-xl font-bold">Cancelar</a>
+                    <button type="submit" disabled={isSubmitting} className="btn btn-primary px-6 sm:px-8 btn-sm sm:btn-md font-bold shadow-lg rounded-xl">
+                        {isSubmitting ? (
+                            <span className="loading loading-spinner"></span>
+                        ) : (
+                            <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
+                        )}
+                        Guardar Lección
+                    </button>
+                </div>
             </div>
         </form>
     );
