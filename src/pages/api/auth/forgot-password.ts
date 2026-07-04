@@ -19,7 +19,13 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
     });
 
     if (error) {
-        return redirect(`/forgot-password?error=${encodeURIComponent("Error al enviar el correo: " + error.message)}`);
+        let msg = error.message;
+        if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("limit exceeded")) {
+            msg = "Has superado el límite de intentos de seguridad por hora. Por favor, espera entre 15 a 60 minutos antes de solicitar otro correo de recuperación.";
+        } else {
+            msg = "Error al enviar el correo: " + msg;
+        }
+        return redirect(`/forgot-password?error=${encodeURIComponent(msg)}`);
     }
 
     return redirect(`/forgot-password?sent=true`);
