@@ -7,12 +7,12 @@
       "text": "¿Qué es la oración? ",
       "options": [
         {
-          "text": "Hablar con Dios únicamente cuando tenemos problemas.",
-          "correct": false
-        },
-        {
           "text": "Mantener una relación de amistad y diálogo con Dios. ",
           "correct": true
+        },
+        {
+          "text": "Hablar con Dios únicamente cuando tenemos problemas.",
+          "correct": false
         },
         {
           "text": "Repetir oraciones sin pensar en su significado.",
@@ -25,16 +25,16 @@
       "text": "¿Qué nos ayuda a crecer en la oración? ",
       "options": [
         {
+          "text": "Ser constantes y dedicar un tiempo diario para hablar con Dios.",
+          "correct": true
+        },
+        {
           "text": "Esperar a sentir emociones intensas para comenzar a orar.",
           "correct": false
         },
         {
           "text": "Orar solamente los domingos durante la misa.",
           "correct": false
-        },
-        {
-          "text": "Ser constantes y dedicar un tiempo diario para hablar con Dios.",
-          "correct": true
         }
       ]
     },
@@ -43,12 +43,12 @@
       "text": "¿Qué acción favorece una buena vida de oración?",
       "options": [
         {
-          "text": "Orar únicamente cuando otras personas nos lo recuerdan.",
-          "correct": false
-        },
-        {
           "text": "Buscar un tiempo y un lugar para encontrarnos con Dios y escucharlo.",
           "correct": true
+        },
+        {
+          "text": "Orar únicamente cuando otras personas nos lo recuerdan.",
+          "correct": false
         },
         {
           "text": "Pensar que Dios solo escucha las oraciones largas.",
