@@ -362,7 +362,7 @@ export default function LessonEditor({ initialData = null }) {
     }, [paragraphs, intro, conclusion]);
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-base-100 p-2 sm:p-6 pb-24 sm:pb-32 rounded-box sm:shadow-md max-w-4xl mx-auto border-0 sm:border border-base-200 animate-fade-up">
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-base-100 p-6 sm:p-8 pb-24 sm:pb-32 rounded-3xl shadow-xl w-full border border-base-200 animate-fade-up">
             
             {/* Banner de Respaldo Encontrado */}
             {hasBackup && (
@@ -372,15 +372,16 @@ export default function LessonEditor({ initialData = null }) {
                         <div>
                             <h3 className="font-bold text-primary text-base sm:text-lg">Respaldo Local Detectado</h3>
                             <p className="text-xs sm:text-sm text-base-content/80 mt-0.5 leading-relaxed">
-                                Encontramos un borrador sin guardar en tu navegador{lastSavedTime ? ` (guardado a las ${lastSavedTime})` : ''}. ¿Deseas recuperar tu trabajo anterior o continuar de cero?
+                                Borrador sin guardar encontrado{lastSavedTime ? ` (${lastSavedTime})` : ''}. ¿Deseas restaurarlo?
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <button type="button" onClick={handleDiscardBackup} className="btn btn-ghost btn-sm text-error hover:bg-error/10 font-bold rounded-xl">
-                            🗑️ Descartar
+                    <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end shrink-0">
+                        <button type="button" onClick={handleDiscardBackup} className="btn btn-outline btn-error btn-sm font-bold rounded-xl gap-1.5 shadow-2xs hover:bg-error hover:text-white transition-all">
+                            <Eraser className="w-4 h-4" />
+                            Descartar
                         </button>
-                        <button type="button" onClick={handleRestoreBackup} className="btn btn-primary btn-sm font-bold shadow-md rounded-xl gap-1">
+                        <button type="button" onClick={handleRestoreBackup} className="btn btn-primary btn-sm font-bold shadow-md rounded-xl gap-1.5">
                             📥 Restaurar Respaldo
                         </button>
                     </div>
