@@ -64,7 +64,17 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   });
 
   if (error) {
-    return redirect("/register?error=" + encodeURIComponent(error.message));
+    let msg = error.message;
+    if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("limit exceeded")) {
+      msg = "Has superado el límite de intentos de registro por hora. Por favor, espera entre 15 a 60 minutos antes de registrar otra cuenta.";
+    } else if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists")) {
+      msg = "Este alumno ya se encuentra registrado en el sistema.";
+    } else if (msg.toLowerCase().includes("at least 6 characters")) {
+      msg = "La contraseña debe tener al menos 6 caracteres.";
+    } else {
+      msg = "Error al registrar: " + msg;
+    }
+    return redirect("/register?error=" + encodeURIComponent(msg));
   }
 
   // Crear el perfil recién creado

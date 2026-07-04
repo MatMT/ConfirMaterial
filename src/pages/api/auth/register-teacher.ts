@@ -56,7 +56,17 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   });
 
   if (error) {
-    return redirect(buildErrorUrl(error.message));
+    let msg = error.message;
+    if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("limit exceeded")) {
+      msg = "Has superado el límite de intentos de registro por hora. Por favor, espera entre 15 a 60 minutos antes de intentar crear otra cuenta.";
+    } else if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists")) {
+      msg = "Ya existe una cuenta registrada con este correo electrónico.";
+    } else if (msg.toLowerCase().includes("at least 6 characters")) {
+      msg = "La contraseña debe tener al menos 6 caracteres.";
+    } else {
+      msg = "Error al registrar la cuenta: " + msg;
+    }
+    return redirect(buildErrorUrl(msg));
   }
 
   // Crear perfil como teacher
