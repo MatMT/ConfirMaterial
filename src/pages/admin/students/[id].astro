@@ -198,7 +198,7 @@ const errorMsg = Astro.url.searchParams.get("error");
                             <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
                                 <Icon name="mdi:format-list-checks" class="w-6 h-6" />
                             </div>
-                            <h2 class="text-2xl font-bold">Registro de Lecciones (Base de Datos)</h2>
+                            <h2 class="text-2xl font-bold">Registro de Lecciones</h2>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="table table-zebra w-full">
@@ -221,7 +221,7 @@ const errorMsg = Astro.url.searchParams.get("error");
                                             <td class="text-base-content/80">{p.completed_at ? new Date(p.completed_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}</td>
                                         </tr>
                                     )) : (
-                                        <tr><td colSpan="3" class="text-center py-8 text-base-content/50 font-medium bg-base-200/30 rounded-b-lg">Aún no ha completado ninguna lección en la base de datos.</td></tr>
+                                        <tr><td colSpan="3" class="text-center py-8 text-base-content/50 font-medium bg-base-200/30 rounded-b-lg">Aún no ha completado ninguna lección  .</td></tr>
                                     )}
                                 </tbody>
                             </table>

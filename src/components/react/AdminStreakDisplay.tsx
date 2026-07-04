@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Icon } from '@iconify/react';
+import { Snowflake, Flame, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 interface AdminStreakDisplayProps {
     streak: number;
@@ -68,21 +68,21 @@ export default function AdminStreakDisplay({ streak, longestStreak = 0, progress
         <div className="flex flex-col items-center bg-base-100 p-6 rounded-3xl shadow-xl border border-base-200 max-w-sm mx-auto w-full">
             <h3 className="font-bold text-2xl mb-1 flex items-center gap-2">
                 {isFrozen ? (
-                    <Icon icon="mdi:snowflake" className="text-info w-8 h-8 animate-spin" style={{ animationDuration: '10s' }} />
+                    <Snowflake className="text-info w-8 h-8 animate-spin" style={{ animationDuration: '10s' }} />
                 ) : (
-                    <Icon icon="mdi:fire" className="text-orange-500 w-8 h-8" />
+                    <Flame className="text-orange-500 w-8 h-8" />
                 )}
                 Racha: {streak} {streak === 1 ? 'semana' : 'semanas'}
             </h3>
             {isFrozen && (
                 <div className="badge bg-info text-white border-none gap-1 font-bold mb-2 shadow-sm py-3 px-4">
-                    <Icon icon="mdi:snowflake" className="w-4 h-4 shrink-0" />
+                    <Snowflake className="w-4 h-4 shrink-0" />
                     Congelada ({freezeReason === 'holiday' ? 'Vacaciones' : 'Sin Nueva Lección'})
                 </div>
             )}
             {longestStreak > 0 && (
                 <div className="badge bg-red-500 text-white border-none gap-1 font-bold mb-3 shadow-sm py-3 px-4">
-                    <Icon icon="mdi:fire-circle" className="w-4 h-4 shrink-0" />
+                    <Flame className="w-4 h-4 shrink-0" />
                     Racha Máxima: {longestStreak} {longestStreak === 1 ? 'semana' : 'semanas'}
                 </div>
             )}
@@ -94,13 +94,13 @@ export default function AdminStreakDisplay({ streak, longestStreak = 0, progress
             <div className="w-full bg-base-200/50 p-4 rounded-xl shadow-inner">
                 <div className="flex justify-between items-center mb-4">
                     <button onClick={prevMonth} className="btn btn-sm btn-ghost btn-circle">
-                        <Icon icon="mdi:chevron-left" className="w-5 h-5" />
+                        <ChevronLeft className="w-5 h-5" />
                     </button>
                     <div className="text-center font-bold text-lg capitalize text-base-content">
                         {currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}
                     </div>
                     <button onClick={nextMonth} className="btn btn-sm btn-ghost btn-circle">
-                        <Icon icon="mdi:chevron-right" className="w-5 h-5" />
+                        <ChevronRight className="w-5 h-5" />
                     </button>
                 </div>
                 <div className="grid grid-cols-7 gap-2 text-center mb-2 px-1">
@@ -138,7 +138,7 @@ export default function AdminStreakDisplay({ streak, longestStreak = 0, progress
                                         `}>
                                             {isStreakWeek && isLastLesson && (
                                                 <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white z-10 flex items-center justify-center">
-                                                    <Icon icon="mdi:check" className="w-2.5 h-2.5 text-white" />
+                                                    <Check className="w-2.5 h-2.5 text-white" />
                                                 </div>
                                             )}
                                             {day}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import useProgressStore from '../../stores/progressStore';
-import { Icon } from '@iconify/react';
+import { Snowflake, Flame, ChevronLeft, ChevronRight, Check, Pencil, Calendar, AlertCircle } from 'lucide-react';
 
 export default function StreakDisplay() {
     const { streak, lastLessonDate, isInitialized, isFrozen, freezeReason, progress, testDangerMode, toggleTestDangerMode, initializeStore } = useProgressStore();
@@ -121,13 +121,13 @@ export default function StreakDisplay() {
             <div className="w-full bg-base-200/50 p-4 rounded-xl shadow-inner mb-4">
                 <div className="flex justify-between items-center mb-4">
                     <button onClick={prevMonth} className="btn btn-sm btn-ghost btn-circle">
-                        <Icon icon="mdi:chevron-left" className="w-5 h-5" />
+                        <ChevronLeft className="w-5 h-5" />
                     </button>
                     <div className="text-center font-bold text-base capitalize text-base-content">
                         {currentViewDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}
                     </div>
                     <button onClick={nextMonth} className="btn btn-sm btn-ghost btn-circle">
-                        <Icon icon="mdi:chevron-right" className="w-5 h-5" />
+                        <ChevronRight className="w-5 h-5" />
                     </button>
                 </div>
                 <div className="grid grid-cols-7 gap-1 text-center mb-2">
@@ -181,7 +181,7 @@ export default function StreakDisplay() {
                                         `}>
                                             {isStreakRow && isLastLessonDay && (
                                                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white z-10 flex items-center justify-center">
-                                                    <Icon icon="mdi:check" className="w-2 h-2 text-white" />
+                                                    <Check className="w-2 h-2 text-white" />
                                                 </div>
                                             )}
                                             {i}
@@ -200,9 +200,9 @@ export default function StreakDisplay() {
         <div className="dropdown dropdown-hover dropdown-end">
             <div tabIndex={0} role="button" className={`flex items-center gap-1 px-3 py-1.5 rounded-full cursor-pointer transition-colors mr-2 ${isFrozen ? 'bg-info/15 border border-info/50 text-info font-bold shadow-sm' : isDanger ? 'bg-red-100 border border-red-500 animate-pulse' : 'bg-base-200'}`}>
                 {isFrozen ? (
-                    <Icon icon="mdi:snowflake" className="w-5 h-5 text-info animate-spin" style={{ animationDuration: '10s' }} />
+                    <Snowflake className="w-5 h-5 text-info animate-spin" style={{ animationDuration: '10s' }} />
                 ) : (
-                    <Icon icon="mdi:fire" className={`w-5 h-5 transition-all duration-300 ${fireColor}`} />
+                    <Flame className={`w-5 h-5 transition-all duration-300 ${fireColor}`} />
                 )}
                 <span className={`font-bold text-sm ${isFrozen ? 'text-info' : isDanger ? 'text-red-700' : ''}`}>{streak}</span>
             </div> 
@@ -220,7 +220,7 @@ export default function StreakDisplay() {
                         {/* Badge 1 */}
                         <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 flex gap-3 items-start">
                             <div className="bg-primary/20 p-1.5 rounded-lg shrink-0">
-                                <Icon icon="mdi:pencil-outline" className="w-5 h-5 text-primary" />
+                                <Pencil className="w-5 h-5 text-primary" />
                             </div>
                             <span className="text-xs text-base-content/80 font-medium leading-relaxed">
                                 Completa tu repaso semanal de catequesis para mantener el fuego encendido.
@@ -231,7 +231,7 @@ export default function StreakDisplay() {
                         {isFrozen && (
                             <div className="bg-info/15 border border-info/40 rounded-xl p-3 flex gap-3 items-start animate-fade-in">
                                 <div className="bg-info/20 p-1.5 rounded-lg shrink-0">
-                                    <Icon icon="mdi:snowflake" className="w-5 h-5 text-info" />
+                                    <Snowflake className="w-5 h-5 text-info" />
                                 </div>
                                 <div className="flex flex-col text-left">
                                     <span className="text-xs font-bold text-info">
@@ -250,9 +250,9 @@ export default function StreakDisplay() {
                         <div className={`border rounded-xl p-3 flex gap-3 items-start ${hasMaintainedThisWeek ? 'bg-orange-500/10 border-orange-500/20' : 'bg-base-200/50 border-base-200'}`}>
                             <div className={`${hasMaintainedThisWeek ? 'bg-orange-500/20' : 'bg-base-300'} p-1.5 rounded-lg shrink-0`}>
                                 {hasMaintainedThisWeek ? (
-                                    <Icon icon="mdi:fire" className="w-5 h-5 text-orange-500" />
+                                    <Flame className="w-5 h-5 text-orange-500" />
                                 ) : (
-                                    <Icon icon="mdi:fire-alert" className="w-5 h-5 text-base-content/40" />
+                                    <Flame className="w-5 h-5 text-base-content/40" />
                                 )}
                             </div>
                             <span className={`text-xs font-medium leading-relaxed ${hasMaintainedThisWeek ? 'text-orange-700 dark:text-orange-400' : 'text-base-content/60'}`}>
@@ -265,7 +265,7 @@ export default function StreakDisplay() {
                         {/* Badge 3 */}
                         <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-3 flex gap-3 items-center">
                             <div className="bg-secondary/20 p-1.5 rounded-lg shrink-0">
-                                <Icon icon="mdi:calendar-clock" className="w-5 h-5 text-secondary" />
+                                <Calendar className="w-5 h-5 text-secondary" />
                             </div>
                             <span className="text-xs text-base-content/80 font-medium">
                                 Finaliza: {deadlineDate ? deadlineDate.toLocaleString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }) : '...'}
@@ -278,7 +278,7 @@ export default function StreakDisplay() {
             {toastMessage && (
                 <div className="toast toast-top toast-center z-[100]">
                     <div className="alert alert-warning shadow-lg max-w-md animate-fade-down">
-                        <Icon icon="mdi:alert-circle-outline" className="w-6 h-6 shrink-0" />
+                        <AlertCircle className="w-6 h-6 shrink-0" />
                         <div>
                             <h3 className="font-bold">¡Aviso del Maestro del Tiempo!</h3>
                             <div className="text-sm">{toastMessage}</div>

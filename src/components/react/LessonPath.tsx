@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import useProgressStore from '../../stores/progressStore';
-import { Icon } from '@iconify/react';
+import { CheckCircle2, Heart, Sparkles, Flame, Star, Sun, Lock, Shield, Target, Cloud } from 'lucide-react';
 
 interface LessonPathProps {
   lessons: any[];
@@ -31,15 +31,20 @@ function useInView(options = {}) {
   return [ref, isIntersecting] as const;
 }
 
-const religiousIcons = {
-  completed: ['mdi:dove', 'mdi:heart', 'mdi:church'],
-  current: ['mdi:cross', 'mdi:fire', 'mdi:star-four-points'],
-  locked: ['mdi:candle', 'mdi:lock-outline']
-};
-
-const getIcon = (type: 'completed' | 'current' | 'locked', index: number) => {
-  const icons = religiousIcons[type];
-  return icons[index % icons.length];
+const getIconComponent = (type: 'completed' | 'current' | 'locked', index: number) => {
+  if (type === 'completed') {
+    const icons = [CheckCircle2, Heart, Sparkles];
+    const IconComponent = icons[index % icons.length];
+    return <IconComponent className="w-10 h-10 sm:w-12 sm:h-12 text-primary-content" />;
+  }
+  if (type === 'current') {
+    const icons = [Flame, Star, Sun];
+    const IconComponent = icons[index % icons.length];
+    return <IconComponent className="w-12 h-12 sm:w-14 sm:h-14 text-accent-content animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />;
+  }
+  const icons = [Lock, Shield];
+  const IconComponent = icons[index % icons.length];
+  return <IconComponent className="w-8 h-8 sm:w-10 sm:h-10 text-base-content/40" />;
 };
 
 function LessonNode({ lesson, index, isCompleted, isCurrent, isLocked }) {
@@ -52,7 +57,6 @@ function LessonNode({ lesson, index, isCompleted, isCurrent, isLocked }) {
   if (offsetCycle === 3) translateX = "translate-x-16 sm:translate-x-28";
 
   const heroImage = lesson.data.heroImage;
-  const currentIcon = getIcon(isCompleted ? 'completed' : isCurrent ? 'current' : 'locked', index);
 
   return (
     <div 
@@ -104,13 +108,7 @@ function LessonNode({ lesson, index, isCompleted, isCurrent, isLocked }) {
 
           {/* Icono central */}
           <div className="relative z-10 text-white drop-shadow-md">
-            {isCompleted ? (
-              <Icon icon={currentIcon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary-content" />
-            ) : isCurrent ? (
-              <Icon icon={currentIcon} className="w-12 h-12 sm:w-14 sm:h-14 text-accent-content animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-            ) : (
-              <Icon icon={currentIcon} className="w-8 h-8 sm:w-10 sm:h-10 text-base-content/40" />
-            )}
+            {getIconComponent(isCompleted ? 'completed' : isCurrent ? 'current' : 'locked', index)}
           </div>
           
           {/* Borde brillante 3D */}
@@ -171,7 +169,7 @@ export default function LessonPath({ lessons }: LessonPathProps) {
           }}
           className="btn btn-primary shadow-lg shadow-primary/30 rounded-full h-14 flex items-center justify-center px-6 hover:scale-105 transition-all"
         >
-          <Icon icon="mdi:target" className="w-5 h-5 mr-2" />
+          <Target className="w-5 h-5 mr-2" />
           Mi Lección
         </button>
       </div>
@@ -220,8 +218,8 @@ export default function LessonPath({ lessons }: LessonPathProps) {
           Próximamente...
         </div>
         <div className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-dashed border-base-300 bg-base-100/50 backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.5)]">
-          <Icon icon="mdi:cloud-outline" className="absolute w-14 h-14 sm:w-16 sm:h-16 text-base-300/50" />
-          <Icon icon="mdi:lock-outline" className="w-8 h-8 sm:w-10 sm:h-10 text-base-content/30 z-10" />
+          <Cloud className="absolute w-14 h-14 sm:w-16 sm:h-16 text-base-300/50" />
+          <Lock className="w-8 h-8 sm:w-10 sm:h-10 text-base-content/30 z-10" />
         </div>
       </div>
     </div>

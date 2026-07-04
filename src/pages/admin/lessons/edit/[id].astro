@@ -192,20 +192,28 @@ if (!initialData) {
 <head>
     <BaseHead title={`Editar Lección | ${initialData.title}`} description="Editar lección existente" />
 </head>
-<body class="min-h-screen bg-base-100 flex flex-col">
+<body class="bg-base-200 min-h-screen flex flex-col font-sans">
     <Header isAdminMode={true} />
-    <main class="flex-grow container mx-auto px-2 sm:px-4 py-8">
-        <div class="mb-8 max-w-4xl mx-auto flex justify-between items-center px-2 sm:px-0">
+    <main class="container mx-auto px-4 max-w-5xl flex-grow py-12 animate-fade-up space-y-8">
+        {/* Top Header Card */}
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-base-100 p-8 rounded-3xl shadow-xl border border-base-200">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-black mb-1 sm:mb-2">Editar Lección</h1>
-                <p class="text-base-content/70 text-xs sm:text-base">Modifica los bloques de la lección. El sistema actualizará el MDX y el JSON correspondientes.</p>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm mb-3">
+                    <Icon name="mdi:pencil-outline" class="w-4 h-4" />
+                    Modo Administrador
+                </div>
+                <h1 class="text-3xl font-extrabold tracking-tight">Editar Lección</h1>
+                <p class="text-base-content/60 mt-1 text-base">Modifica los bloques de la lección. El sistema actualizará el MDX automáticamente.</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="window.location.reload()" class="btn btn-outline btn-sm sm:btn-md shrink-0">
-                    <Icon name="mdi:refresh" class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1" />
-                    <span class="hidden sm:inline">Recargar</span>
+            <div class="flex flex-wrap items-center gap-3 shrink-0">
+                <button onclick="window.location.reload()" class="btn btn-outline btn-base-300 shadow-sm hover:scale-105 transition-all rounded-full px-5">
+                    <Icon name="mdi:refresh" class="w-4 h-4 mr-1" />
+                    Recargar
                 </button>
-                <a href="/admin/lessons" class="btn btn-outline btn-sm sm:btn-md">Volver</a>
+                <a href="/admin/lessons" class="btn btn-outline btn-base-300 shadow-sm hover:scale-105 transition-all rounded-full px-6">
+                    <Icon name="mdi:arrow-left" class="w-4 h-4 mr-1" />
+                    Volver al Panel
+                </a>
             </div>
         </div>
 

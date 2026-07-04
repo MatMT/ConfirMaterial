@@ -54,104 +54,142 @@ const lessons = (await getCollection('lessons')).sort(
 <head>
     <BaseHead title="Panel de Lecciones" description="Administración de Lecciones" />
 </head>
-<body class="min-h-screen bg-base-100 flex flex-col">
+<body class="bg-base-200 min-h-screen flex flex-col font-sans">
     <Header isAdminMode={true} />
-    <main class="flex-grow container mx-auto px-2 sm:px-4 py-8 max-w-5xl">
-        <div class="flex justify-between items-center mb-6 sm:mb-8 px-2 sm:px-0 gap-4">
+    <main class="container mx-auto px-4 max-w-6xl flex-grow py-12 animate-fade-up space-y-8">
+        {/* Top Header Card */}
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-base-100 p-8 rounded-3xl shadow-xl border border-base-200">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-black">Panel de Lecciones</h1>
-                <p class="text-base-content/70 text-xs sm:text-base">Crea, edita y gestiona el contenido de las lecciones.</p>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm mb-4">
+                    <Icon name="mdi:book-open-page-variant-outline" class="w-4 h-4" />
+                    Modo Administrador
+                </div>
+                <h2 class="text-4xl font-extrabold tracking-tight">Panel de Lecciones</h2>
+                <p class="text-base-content/60 mt-2 text-lg">Crea, edita y gestiona el contenido de las lecciones semanales.</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="window.location.reload()" class="btn btn-outline btn-sm sm:btn-md shrink-0">
-                    <Icon name="mdi:refresh" class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1" />
-                    <span class="hidden sm:inline">Recargar</span>
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                <button onclick="window.location.reload()" class="btn btn-outline btn-base-300 shadow-sm hover:scale-105 transition-all rounded-full px-6">
+                    <Icon name="mdi:refresh" class="w-5 h-5 mr-1" />
+                    Recargar
                 </button>
-                <a href="/admin/lessons/new" class="btn btn-primary btn-sm sm:btn-md shrink-0">
-                    <Icon name="mdi:plus" class="w-4 h-4 sm:w-5 sm:h-5 mr-0.5 sm:mr-1" />
-                    <span class="hidden sm:inline">Nueva</span>
+                <a href="/admin/lessons/new" class="btn btn-primary shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all rounded-full px-8">
+                    <Icon name="mdi:plus-circle-outline" class="w-5 h-5 mr-2" />
+                    Crear Nueva Lección
                 </a>
             </div>
         </div>
 
-        <div class="bg-base-200 rounded-box p-2 sm:p-4 shadow-sm">
-            
-            {/* Search Input */}
-            <div class="mb-4">
-                <div class="join w-full sm:w-80">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        placeholder="Buscar lecciones por título, autor o ID..." 
-                        class="input input-bordered join-item w-full"
-                    />
-                    <button class="btn join-item btn-square" aria-label="Buscar">
-                        <Icon name="mdi:magnify" class="w-5 h-5" />
-                    </button>
+        {/* Main Content Card (Search & Table) */}
+        <div class="bg-base-100 rounded-3xl shadow-2xl p-6 md:p-8 border border-base-200">
+            {/* Search Input & Header */}
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-6 border-b border-base-200">
+                <div>
+                    <h3 class="text-xl font-bold text-base-content">Catálogo de Lecciones</h3>
+                    <p class="text-sm text-base-content/60">Total de lecciones registradas: <span class="font-bold text-primary">{lessons.length}</span></p>
+                </div>
+                <div class="w-full sm:w-80">
+                    <label class="input input-bordered flex items-center gap-2 w-full shadow-sm rounded-2xl bg-base-200/50 focus-within:bg-base-100 transition-colors">
+                        <Icon name="mdi:magnify" class="w-5 h-5 text-base-content/50 shrink-0" />
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Buscar por título, autor o ID..." 
+                            class="grow text-sm font-medium"
+                        />
+                    </label>
                 </div>
             </div>
 
             {/* Desktop View: Table */}
-            <div class="overflow-x-auto hidden md:block">
-                <table class="table w-full" id="lessonsTable">
-                    <thead>
+            <div class="overflow-x-auto hidden md:block rounded-2xl border border-base-200 shadow-sm">
+                <table class="table table-zebra w-full" id="lessonsTable">
+                    <thead class="bg-base-300 text-base-content text-sm">
                         <tr>
-                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="id">ID <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
-                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="title">Título <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
-                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="author">Autor <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
-                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="date">Fecha <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
-                            <th class="cursor-pointer hover:bg-base-300 transition-colors" data-sort="status">Estado <Icon name="mdi:swap-vertical" class="inline w-3 h-3" /></th>
-                            <th class="text-right">Acciones</th>
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="id">
+                                <div class="flex items-center gap-1.5 font-bold">ID <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
+                            </th>
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="title">
+                                <div class="flex items-center gap-1.5 font-bold">Título <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
+                            </th>
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="author">
+                                <div class="flex items-center gap-1.5 font-bold">Autor <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
+                            </th>
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="date">
+                                <div class="flex items-center gap-1.5 font-bold">Fecha <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
+                            </th>
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="status">
+                                <div class="flex items-center gap-1.5 font-bold">Estado <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
+                            </th>
+                            <th class="text-right font-bold py-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="lessonsTableBody">
                         {lessons.map((lesson) => (
-                            <tr class="hover lesson-row" 
+                            <tr class="hover lesson-row transition-colors" 
                                 data-id={lesson.data.lessonId || lesson.id} 
                                 data-title={lesson.data.title.toLowerCase()} 
                                 data-author={(lesson.data.author || 'Sin autor').toLowerCase()}
                                 data-date={new Date(lesson.data.pubDate).getTime()}
                                 data-status={lesson.data.draft ? 'borrador' : 'publicada'}
                             >
-                                <td><span class="font-mono text-sm">{lesson.data.lessonId || lesson.id}</span></td>
-                                <td class="font-bold">{lesson.data.title}</td>
-                                <td>{lesson.data.author || 'Sin autor'}</td>
+                                <td><span class="badge badge-ghost font-mono text-xs py-3 px-3 font-bold">{lesson.data.lessonId || lesson.id}</span></td>
                                 <td>
-                                    <div class="whitespace-nowrap">{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</div>
+                                    <a href={`/lessons/${lesson.id}`} target="_blank" class="font-bold text-base text-base-content hover:text-primary transition-colors block leading-snug">
+                                        {lesson.data.title}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="flex items-center gap-2 font-medium text-base-content/80">
+                                        <Icon name="mdi:account-circle-outline" class="w-4 h-4 text-primary shrink-0"/> 
+                                        {lesson.data.author || 'Sin autor'}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-sm font-medium text-base-content/70 whitespace-nowrap">
+                                        {new Date(lesson.data.pubDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </div>
                                 </td>
                                 <td>
                                     {lesson.data.draft ? (
-                                        <span class="badge badge-warning badge-sm whitespace-nowrap">Borrador (Oculta)</span>
+                                        <span class="badge badge-warning badge-md font-bold gap-1 shadow-sm whitespace-nowrap">
+                                            <Icon name="mdi:file-hidden" class="w-3.5 h-3.5"/> Borrador
+                                        </span>
                                     ) : (
-                                        <span class="badge badge-success badge-sm text-white whitespace-nowrap">Publicada</span>
+                                        <span class="badge badge-success badge-md text-white font-bold gap-1 shadow-sm whitespace-nowrap">
+                                            <Icon name="mdi:check-circle" class="w-3.5 h-3.5"/> Publicada
+                                        </span>
                                     )}
                                 </td>
-                                <td class="text-right flex justify-end gap-2">
-                                    <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-ghost btn-xs btn-square" title="Ver lección">
-                                        <Icon name="mdi:eye" class="w-4 h-4" />
-                                    </a>
-                                    <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-ghost btn-xs btn-square text-primary" title="Editar lección">
-                                        <Icon name="mdi:pencil" class="w-4 h-4" />
-                                    </a>
-                                    <button 
-                                        class="btn btn-ghost btn-xs btn-square text-error" 
-                                        title="Eliminar lección"
-                                        onclick={`if(confirm('¿Seguro que deseas eliminar esta lección? Esta acción es irreversible.')) deleteLesson('${lesson.data.lessonId}', '${lesson.id}')`}
-                                    >
-                                        <Icon name="mdi:trash-can" class="w-4 h-4" />
-                                    </button>
+                                <td class="text-right">
+                                    <div class="flex justify-end items-center gap-1.5">
+                                        <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-sm btn-ghost hover:bg-base-200 text-base-content/80 rounded-xl" title="Ver lección">
+                                            <Icon name="mdi:eye-outline" class="w-4 h-4" />
+                                            <span class="hidden lg:inline text-xs font-medium">Ver</span>
+                                        </a>
+                                        <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-sm btn-outline btn-primary rounded-xl font-bold" title="Editar lección">
+                                            <Icon name="mdi:pencil-outline" class="w-4 h-4" />
+                                            <span class="text-xs">Editar</span>
+                                        </a>
+                                        <button 
+                                            class="btn btn-sm btn-ghost hover:bg-error/15 text-error rounded-xl" 
+                                            title="Eliminar lección"
+                                            onclick={`if(confirm('¿Seguro que deseas eliminar esta lección? Esta acción es irreversible.')) deleteLesson('${lesson.data.lessonId}', '${lesson.id}')`}
+                                        >
+                                            <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                         {lessons.length === 0 && (
                             <tr id="emptyRow">
-                                <td colspan="6" class="text-center py-8 text-base-content/50">
+                                <td colspan="6" class="text-center py-12 text-base-content/50 font-medium">
                                     No hay lecciones creadas todavía.
                                 </td>
                             </tr>
                         )}
                         <tr id="noResultsRow" class="hidden">
-                            <td colspan="6" class="text-center py-8 text-base-content/50">
+                            <td colspan="6" class="text-center py-12 text-base-content/50 font-medium">
                                 No se encontraron lecciones que coincidan con la búsqueda.
                             </td>
                         </tr>
@@ -160,56 +198,59 @@ const lessons = (await getCollection('lessons')).sort(
             </div>
 
             {/* Mobile View: Cards */}
-            <div class="grid grid-cols-1 gap-3 md:hidden" id="lessonsMobileList">
+            <div class="grid grid-cols-1 gap-4 md:hidden" id="lessonsMobileList">
                 {lessons.map((lesson) => (
-                    <div class="bg-base-100 p-3.5 rounded-xl border border-base-300 flex flex-col gap-3 shadow-sm lesson-card"
+                    <div class="bg-base-100 p-5 rounded-2xl border border-base-200 shadow-sm flex flex-col gap-4 lesson-card hover:shadow-md transition-shadow"
                          data-id={lesson.data.lessonId || lesson.id} 
                          data-title={lesson.data.title.toLowerCase()} 
                          data-author={(lesson.data.author || 'Sin autor').toLowerCase()}
                     >
-                        <div class="flex justify-between items-start gap-2">
-                            <div>
-                                <span class="font-mono text-[10px] text-base-content/55 uppercase tracking-wider">ID: {lesson.data.lessonId || lesson.id}</span>
-                                <h3 class="font-bold text-sm text-base-content leading-tight mt-0.5">{lesson.data.title}</h3>
-                                <p class="text-xs text-base-content/70 mt-1 flex items-center gap-1">
-                                    <Icon name="mdi:account" class="w-3.5 h-3.5"/> 
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="space-y-1">
+                                <span class="badge badge-ghost font-mono text-[11px] font-bold uppercase tracking-wider">ID: {lesson.data.lessonId || lesson.id}</span>
+                                <h3 class="font-extrabold text-base text-base-content leading-snug">{lesson.data.title}</h3>
+                                <p class="text-xs text-base-content/70 flex items-center gap-1.5 pt-0.5 font-medium">
+                                    <Icon name="mdi:account-circle-outline" class="w-4 h-4 text-primary"/> 
                                     {lesson.data.author || 'Sin autor'}
                                 </p>
                             </div>
                             {lesson.data.draft ? (
-                                <span class="badge badge-warning badge-xs shrink-0">Borrador</span>
+                                <span class="badge badge-warning badge-sm font-bold shrink-0 shadow-sm">Borrador</span>
                             ) : (
-                                <span class="badge badge-success badge-xs text-white shrink-0">Publicada</span>
+                                <span class="badge badge-success badge-sm text-white font-bold shrink-0 shadow-sm">Publicada</span>
                             )}
                         </div>
-                        <div class="flex justify-between items-center border-t border-base-200/60 pt-2.5">
-                            <div>
-                                <div class="text-[11px] text-base-content/55 font-medium">{new Date(lesson.data.pubDate).toLocaleDateString('es-ES')}</div>
-                            </div>
-                            <div class="flex gap-1.5">
-                                <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-ghost btn-sm btn-square" title="Ver lección">
-                                    <Icon name="mdi:eye" class="w-4 h-4 text-base-content/70" />
+                        
+                        <div class="flex justify-between items-center border-t border-base-200/80 pt-3.5">
+                            <span class="text-xs text-base-content/60 font-medium flex items-center gap-1">
+                                <Icon name="mdi:calendar-blank-outline" class="w-3.5 h-3.5"/>
+                                {new Date(lesson.data.pubDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                            <div class="flex items-center gap-1.5">
+                                <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-sm btn-ghost rounded-xl" title="Ver lección">
+                                    <Icon name="mdi:eye-outline" class="w-4 h-4 text-base-content/70" />
                                 </a>
-                                <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-ghost btn-sm btn-square text-primary" title="Editar lección">
-                                    <Icon name="mdi:pencil" class="w-4 h-4" />
+                                <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-sm btn-outline btn-primary rounded-xl font-bold" title="Editar lección">
+                                    <Icon name="mdi:pencil-outline" class="w-4 h-4" />
+                                    <span class="text-xs">Editar</span>
                                 </a>
                                 <button 
-                                    class="btn btn-ghost btn-sm btn-square text-error" 
+                                    class="btn btn-sm btn-ghost hover:bg-error/15 text-error rounded-xl" 
                                     title="Eliminar lección"
                                     onclick={`if(confirm('¿Seguro que deseas eliminar esta lección? Esta acción es irreversible.')) deleteLesson('${lesson.data.lessonId}', '${lesson.id}')`}
                                 >
-                                    <Icon name="mdi:trash-can" class="w-4 h-4" />
+                                    <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
                     </div>
                 ))}
                 {lessons.length === 0 && (
-                    <div class="text-center py-8 text-base-content/50 bg-base-100 rounded-xl border border-base-300">
+                    <div class="text-center py-12 text-base-content/50 bg-base-100 rounded-2xl border border-base-200 font-medium">
                         No hay lecciones creadas todavía.
                     </div>
                 )}
-                <div id="noResultsCard" class="hidden text-center py-8 text-base-content/50 bg-base-100 rounded-xl border border-base-300">
+                <div id="noResultsCard" class="hidden text-center py-12 text-base-content/50 bg-base-100 rounded-2xl border border-base-200 font-medium">
                     No se encontraron lecciones que coincidan con la búsqueda.
                 </div>
             </div>

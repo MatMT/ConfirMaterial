@@ -74,19 +74,34 @@ const isTeacherOrAdmin = userProfile?.role === 'admin' || userProfile?.role === 
   <div class="navbar-end flex items-center gap-2">
     {!isTeacherOrAdmin && !isCurrentAdminPage && isLoggedIn && <StreakDisplay client:only="react" />}
     {isCurrentAdminPage ? (
-      <a href="/" class="btn btn-outline btn-primary btn-sm rounded-full gap-1 px-2.5 md:px-4 shadow-sm hover:scale-105 transition-all">
-        <Icon name="mdi:web" class="h-4 w-4" />
-        <span class="hidden md:inline">Ver Sitio</span>
-      </a>
+      <div class="flex items-center gap-2">
+        <a href="/" class="btn btn-outline btn-primary btn-sm rounded-full gap-1 px-2.5 md:px-4 shadow-sm hover:scale-105 transition-all" title="Ver Sitio Público">
+          <Icon name="mdi:web" class="h-4 w-4" />
+          <span class="hidden md:inline">Ver Sitio</span>
+        </a>
+        <a href="/api/auth/signout" class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error/10 hover:scale-110 transition-all" title="Cerrar Sesión">
+          <Icon name="mdi:logout" class="h-5 w-5" />
+        </a>
+      </div>
     ) : isTeacherOrAdmin ? (
-      <a href="/admin" class="btn btn-primary btn-sm rounded-full gap-1 px-3 shadow-md hover:shadow-lg hover:scale-105 transition-all font-bold text-white">
-        <Icon name="mdi:shield-crown" class="h-4 w-4" />
-        <span class="hidden sm:inline">Panel Admin</span>
-      </a>
+      <div class="flex items-center gap-2">
+        <a href="/admin" class="btn btn-primary btn-sm rounded-full gap-1 px-3 shadow-md hover:shadow-lg hover:scale-105 transition-all font-bold text-white">
+          <Icon name="mdi:shield-crown" class="h-4 w-4" />
+          <span class="hidden sm:inline">Panel Admin</span>
+        </a>
+        <a href="/api/auth/signout" class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error/10 hover:scale-110 transition-all" title="Cerrar Sesión">
+          <Icon name="mdi:logout" class="h-5 w-5" />
+        </a>
+      </div>
     ) : isLoggedIn ? (
-      <a href="/dashboard" class="btn btn-ghost btn-circle hover:scale-110 transition-transform" aria-label="Perfil">
-        <Icon name="mdi:account-circle" class="h-8 w-8 text-primary" />
-      </a>
+      <div class="flex items-center gap-1">
+        <a href="/dashboard" class="btn btn-ghost btn-circle hover:scale-110 transition-transform" aria-label="Perfil">
+          <Icon name="mdi:account-circle" class="h-8 w-8 text-primary" />
+        </a>
+        <a href="/api/auth/signout" class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error/10 hover:scale-110 transition-all" title="Cerrar Sesión">
+          <Icon name="mdi:logout" class="h-5 w-5" />
+        </a>
+      </div>
     ) : (
       <a href="/login" class="btn btn-outline btn-primary btn-sm rounded-full">
         <Icon name="mdi:login" class="h-4 w-4 mr-1" /> Entrar
@@ -109,39 +124,39 @@ const isTeacherOrAdmin = userProfile?.role === 'admin' || userProfile?.role === 
 
   <!-- Center Navigation Links -->
   <nav class="flex-1 flex flex-col justify-center items-center my-8 w-full max-w-sm mx-auto">
-    <ul class="flex flex-col items-center gap-4 w-full">
+    <ul class="flex flex-col items-center gap-3 w-full list-none p-0 m-0">
       {isCurrentAdminPage ? (
         <>
-          <li class="w-full">
-            <HeaderLink href="/admin" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
-              <Icon name="mdi:account-group" class="w-7 h-7" />
+          <li class="w-full list-none p-0 m-0">
+            <HeaderLink href="/admin" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm no-underline">
+              <Icon name="mdi:account-group" class="w-7 h-7 shrink-0" />
               <span>Alumnos</span>
             </HeaderLink>
           </li>
-          <li class="w-full">
-            <HeaderLink href="/admin/lessons" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
-              <Icon name="mdi:file-document-edit" class="w-7 h-7" />
+          <li class="w-full list-none p-0 m-0">
+            <HeaderLink href="/admin/lessons" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm no-underline">
+              <Icon name="mdi:file-document-edit" class="w-7 h-7 shrink-0" />
               <span>Lecciones</span>
             </HeaderLink>
           </li>
         </>
       ) : (
         <>
-          <li class="w-full">
-            <HeaderLink href="/" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
-              <Icon name="mdi:home" class="w-7 h-7" />
+          <li class="w-full list-none p-0 m-0">
+            <HeaderLink href="/" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm no-underline">
+              <Icon name="mdi:home" class="w-7 h-7 shrink-0" />
               <span>Inicio</span>
             </HeaderLink>
           </li>
-          <li class="w-full">
-            <HeaderLink href="/lessons" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
-              <Icon name="mdi:book-open-page-variant" class="w-7 h-7" />
+          <li class="w-full list-none p-0 m-0">
+            <HeaderLink href="/lessons" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm no-underline">
+              <Icon name="mdi:book-open-page-variant" class="w-7 h-7 shrink-0" />
               <span>Lecciones</span>
             </HeaderLink>
           </li>
-          <li class="w-full">
-            <HeaderLink href="/more" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm">
-              <Icon name="mdi:folder-multiple" class="w-7 h-7" />
+          <li class="w-full list-none p-0 m-0">
+            <HeaderLink href="/more" class="mobile-nav-link flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-base-200/60 hover:bg-primary hover:text-white text-xl font-bold transition-all shadow-sm no-underline">
+              <Icon name="mdi:folder-multiple" class="w-7 h-7 shrink-0" />
               <span>Material</span>
             </HeaderLink>
           </li>
@@ -153,23 +168,41 @@ const isTeacherOrAdmin = userProfile?.role === 'admin' || userProfile?.role === 
   <!-- Bottom Actions -->
   <div class="border-t border-base-200/80 pt-6 flex flex-col gap-3 items-center w-full max-w-sm mx-auto">
     {isCurrentAdminPage ? (
-      <a href="/" class="btn btn-outline btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold gap-2 shadow-sm">
-        <Icon name="mdi:web" class="h-6 w-6" />
-        <span>Ver Sitio Web</span>
-      </a>
+      <>
+        <a href="/" class="btn btn-outline btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold gap-2 shadow-sm no-underline">
+          <Icon name="mdi:web" class="h-6 w-6 shrink-0" />
+          <span>Ver Sitio Web</span>
+        </a>
+        <a href="/api/auth/signout" class="btn btn-error w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-md no-underline">
+          <Icon name="mdi:logout" class="h-6 w-6 shrink-0" />
+          <span>Cerrar Sesión</span>
+        </a>
+      </>
     ) : isTeacherOrAdmin ? (
-      <a href="/admin" class="btn btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-lg shadow-primary/20">
-        <Icon name="mdi:shield-crown" class="h-6 w-6" />
-        <span>Ir al Panel Admin</span>
-      </a>
+      <>
+        <a href="/admin" class="btn btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-lg shadow-primary/20 no-underline">
+          <Icon name="mdi:shield-crown" class="h-6 w-6 shrink-0" />
+          <span>Ir al Panel Admin</span>
+        </a>
+        <a href="/api/auth/signout" class="btn btn-error w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-md no-underline">
+          <Icon name="mdi:logout" class="h-6 w-6 shrink-0" />
+          <span>Cerrar Sesión</span>
+        </a>
+      </>
     ) : isLoggedIn ? (
-      <a href="/dashboard" class="btn btn-outline btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold gap-2 shadow-sm">
-        <Icon name="mdi:account-circle" class="h-6 w-6" />
-        <span>Mi Perfil</span>
-      </a>
+      <>
+        <a href="/dashboard" class="btn btn-outline btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold gap-2 shadow-sm no-underline">
+          <Icon name="mdi:account-circle" class="h-6 w-6 shrink-0" />
+          <span>Mi Perfil</span>
+        </a>
+        <a href="/api/auth/signout" class="btn btn-error w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-md no-underline">
+          <Icon name="mdi:logout" class="h-6 w-6 shrink-0" />
+          <span>Cerrar Sesión</span>
+        </a>
+      </>
     ) : (
-      <a href="/login" class="btn btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-lg shadow-primary/20">
-        <Icon name="mdi:login" class="h-6 w-6" />
+      <a href="/login" class="btn btn-primary w-full py-3 h-auto rounded-2xl text-lg font-bold text-white gap-2 shadow-lg shadow-primary/20 no-underline">
+        <Icon name="mdi:login" class="h-6 w-6 shrink-0" />
         <span>Iniciar Sesión</span>
       </a>
     )}
