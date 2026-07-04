@@ -4,6 +4,7 @@ import BaseHead from "../components/BaseHead.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { supabase } from "../utils/supabase";
 import { createClient } from "@supabase/supabase-js";
+import { isAdminMode } from "../utils/admin";
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -13,6 +14,11 @@ const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 const { cookies, redirect, url } = Astro;
+
+if (isAdminMode()) {
+  return redirect("/admin");
+}
+
 const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
 const credential = url.searchParams.get("credential");
