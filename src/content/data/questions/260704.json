@@ -25,15 +25,15 @@
       "text": "¿Qué nos ayuda a crecer en la oración? ",
       "options": [
         {
+          "text": "Orar solamente los domingos durante la misa.",
+          "correct": false
+        },
+        {
           "text": "Ser constantes y dedicar un tiempo diario para hablar con Dios.",
           "correct": true
         },
         {
           "text": "Esperar a sentir emociones intensas para comenzar a orar.",
-          "correct": false
-        },
-        {
-          "text": "Orar solamente los domingos durante la misa.",
           "correct": false
         }
       ]
