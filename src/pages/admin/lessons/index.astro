@@ -105,22 +105,22 @@ const lessons = (await getCollection('lessons')).sort(
                 <table class="table table-zebra w-full" id="lessonsTable">
                     <thead class="bg-base-300 text-base-content text-sm">
                         <tr>
-                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="id">
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4 w-24 whitespace-nowrap" data-sort="id">
                                 <div class="flex items-center gap-1.5 font-bold">ID <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
                             </th>
-                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="title">
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4 min-w-[260px]" data-sort="title">
                                 <div class="flex items-center gap-1.5 font-bold">Título <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
                             </th>
-                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="author">
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4 whitespace-nowrap min-w-[160px]" data-sort="author">
                                 <div class="flex items-center gap-1.5 font-bold">Autor <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
                             </th>
-                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="date">
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4 whitespace-nowrap" data-sort="date">
                                 <div class="flex items-center gap-1.5 font-bold">Fecha <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
                             </th>
-                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4" data-sort="status">
+                            <th class="cursor-pointer hover:bg-base-200 transition-colors select-none py-4 whitespace-nowrap" data-sort="status">
                                 <div class="flex items-center gap-1.5 font-bold">Estado <Icon name="mdi:swap-vertical" class="w-4 h-4 opacity-50" /></div>
                             </th>
-                            <th class="text-right font-bold py-4">Acciones</th>
+                            <th class="text-right font-bold py-4 whitespace-nowrap min-w-[200px]">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="lessonsTableBody">
@@ -132,46 +132,46 @@ const lessons = (await getCollection('lessons')).sort(
                                 data-date={new Date(lesson.data.pubDate).getTime()}
                                 data-status={lesson.data.draft ? 'borrador' : 'publicada'}
                             >
-                                <td><span class="badge badge-ghost font-mono text-xs py-3 px-3 font-bold">{lesson.data.lessonId || lesson.id}</span></td>
-                                <td>
+                                <td class="whitespace-nowrap"><span class="badge badge-ghost font-mono text-xs py-3 px-3 font-bold">{lesson.data.lessonId || lesson.id}</span></td>
+                                <td class="min-w-[260px]">
                                     <a href={`/lessons/${lesson.id}`} target="_blank" class="font-bold text-base text-base-content hover:text-primary transition-colors block leading-snug">
                                         {lesson.data.title}
                                     </a>
                                 </td>
-                                <td>
+                                <td class="whitespace-nowrap">
                                     <div class="flex items-center gap-2 font-medium text-base-content/80">
                                         <Icon name="mdi:account-circle-outline" class="w-4 h-4 text-primary shrink-0"/> 
-                                        {lesson.data.author || 'Sin autor'}
+                                        <span>{lesson.data.author || 'Sin autor'}</span>
                                     </div>
                                 </td>
-                                <td>
+                                <td class="whitespace-nowrap">
                                     <div class="text-sm font-medium text-base-content/70 whitespace-nowrap">
                                         {new Date(lesson.data.pubDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                                     </div>
                                 </td>
-                                <td>
+                                <td class="whitespace-nowrap">
                                     {lesson.data.draft ? (
-                                        <span class="badge badge-warning badge-md font-bold gap-1 shadow-sm whitespace-nowrap">
+                                        <span class="badge badge-warning badge-md font-bold gap-1.5 shadow-2xs px-3 py-3 whitespace-nowrap inline-flex items-center">
                                             <Icon name="mdi:file-hidden" class="w-3.5 h-3.5"/> Borrador
                                         </span>
                                     ) : (
-                                        <span class="badge badge-success badge-md text-white font-bold gap-1 shadow-sm whitespace-nowrap">
+                                        <span class="badge badge-success badge-md text-white font-bold gap-1.5 shadow-2xs px-3 py-3 whitespace-nowrap inline-flex items-center">
                                             <Icon name="mdi:check-circle" class="w-3.5 h-3.5"/> Publicada
                                         </span>
                                     )}
                                 </td>
-                                <td class="text-right">
-                                    <div class="flex justify-end items-center gap-1.5">
-                                        <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-sm btn-ghost hover:bg-base-200 text-base-content/80 rounded-xl" title="Ver lección">
-                                            <Icon name="mdi:eye-outline" class="w-4 h-4" />
+                                <td class="text-right whitespace-nowrap">
+                                    <div class="flex justify-end items-center gap-2">
+                                        <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-sm btn-outline btn-base-300 hover:bg-base-200 hover:border-base-300 text-base-content/80 rounded-xl font-medium gap-1.5 shadow-2xs" title="Ver lección">
+                                            <Icon name="mdi:eye-outline" class="w-4 h-4 text-base-content/70" />
                                             <span class="hidden lg:inline text-xs font-medium">Ver</span>
                                         </a>
-                                        <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-sm btn-outline btn-primary rounded-xl font-bold" title="Editar lección">
+                                        <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-sm btn-outline btn-primary rounded-xl font-bold gap-1.5 shadow-2xs hover:shadow-md transition-all" title="Editar lección">
                                             <Icon name="mdi:pencil-outline" class="w-4 h-4" />
                                             <span class="text-xs">Editar</span>
                                         </a>
                                         <button 
-                                            class="btn btn-sm btn-ghost hover:bg-error/15 text-error rounded-xl" 
+                                            class="btn btn-sm btn-ghost hover:bg-error/15 text-error rounded-xl ml-0.5" 
                                             title="Eliminar lección"
                                             onclick={`if(confirm('¿Seguro que deseas eliminar esta lección? Esta acción es irreversible.')) deleteLesson('${lesson.data.lessonId}', '${lesson.id}')`}
                                         >
@@ -200,7 +200,7 @@ const lessons = (await getCollection('lessons')).sort(
             {/* Mobile View: Cards */}
             <div class="grid grid-cols-1 gap-4 md:hidden" id="lessonsMobileList">
                 {lessons.map((lesson) => (
-                    <div class="bg-base-100 p-5 rounded-2xl border border-base-200 shadow-sm flex flex-col gap-4 lesson-card hover:shadow-md transition-shadow"
+                    <div class="bg-base-100 p-5 rounded-2xl border border-base-200 shadow-sm flex flex-col gap-4 lesson-card hover:shadow-md transition-all hover:border-primary/20"
                          data-id={lesson.data.lessonId || lesson.id} 
                          data-title={lesson.data.title.toLowerCase()} 
                          data-author={(lesson.data.author || 'Sin autor').toLowerCase()}
@@ -215,9 +215,9 @@ const lessons = (await getCollection('lessons')).sort(
                                 </p>
                             </div>
                             {lesson.data.draft ? (
-                                <span class="badge badge-warning badge-sm font-bold shrink-0 shadow-sm">Borrador</span>
+                                <span class="badge badge-warning badge-sm font-bold shrink-0 shadow-2xs">Borrador</span>
                             ) : (
-                                <span class="badge badge-success badge-sm text-white font-bold shrink-0 shadow-sm">Publicada</span>
+                                <span class="badge badge-success badge-sm text-white font-bold shrink-0 shadow-2xs">Publicada</span>
                             )}
                         </div>
                         
@@ -226,16 +226,17 @@ const lessons = (await getCollection('lessons')).sort(
                                 <Icon name="mdi:calendar-blank-outline" class="w-3.5 h-3.5"/>
                                 {new Date(lesson.data.pubDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
-                            <div class="flex items-center gap-1.5">
-                                <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-sm btn-ghost rounded-xl" title="Ver lección">
+                            <div class="flex items-center gap-2">
+                                <a href={`/lessons/${lesson.id}`} target="_blank" class="btn btn-sm btn-outline btn-base-300 hover:bg-base-200 hover:border-base-300 text-base-content/80 rounded-xl gap-1.5" title="Ver lección">
                                     <Icon name="mdi:eye-outline" class="w-4 h-4 text-base-content/70" />
+                                    <span class="text-xs font-medium">Ver</span>
                                 </a>
-                                <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-sm btn-outline btn-primary rounded-xl font-bold" title="Editar lección">
+                                <a href={`/admin/lessons/edit/${lesson.id}`} class="btn btn-sm btn-outline btn-primary rounded-xl font-bold gap-1.5" title="Editar lección">
                                     <Icon name="mdi:pencil-outline" class="w-4 h-4" />
                                     <span class="text-xs">Editar</span>
                                 </a>
                                 <button 
-                                    class="btn btn-sm btn-ghost hover:bg-error/15 text-error rounded-xl" 
+                                    class="btn btn-sm btn-ghost hover:bg-error/15 text-error rounded-xl ml-0.5" 
                                     title="Eliminar lección"
                                     onclick={`if(confirm('¿Seguro que deseas eliminar esta lección? Esta acción es irreversible.')) deleteLesson('${lesson.data.lessonId}', '${lesson.id}')`}
                                 >
