@@ -1,5 +1,5 @@
 {
-  "lessonId": "260711",
+  "lessonId": 260711,
   "title": "Un viaje de exploración hacia el Espíritu Santo",
   "questions": [
     {
@@ -25,12 +25,12 @@
       "text": "¿Qué ocurrió con los apóstoles al recibir al Espíritu Santo en Pentecostés?",
       "options": [
         {
-          "text": "Recibieron fortaleza para anunciar a Jesús sin miedo.",
-          "correct": true
-        },
-        {
           "text": "Decidieron regresar a sus antiguas ocupaciones.",
           "correct": false
+        },
+        {
+          "text": "Recibieron fortaleza para anunciar a Jesús sin miedo.",
+          "correct": true
         },
         {
           "text": "Dejaron de reunirse para orar.",
