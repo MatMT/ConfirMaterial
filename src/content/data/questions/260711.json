@@ -1,0 +1,61 @@
+{
+  "lessonId": "260711",
+  "title": "Un viaje de exploración hacia el Espíritu Santo",
+  "questions": [
+    {
+      "id": 0,
+      "text": "¿Quién es el Espíritu Santo? ",
+      "options": [
+        {
+          "text": "La tercera Persona de la Santísima Trinidad ",
+          "correct": true
+        },
+        {
+          "text": "Una energía que aparece cuando hacemos el bien.",
+          "correct": false
+        },
+        {
+          "text": "Un ángel enviado por Dios.",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "text": "¿Qué ocurrió con los apóstoles al recibir al Espíritu Santo en Pentecostés?",
+      "options": [
+        {
+          "text": "Recibieron fortaleza para anunciar a Jesús sin miedo.",
+          "correct": true
+        },
+        {
+          "text": "Decidieron regresar a sus antiguas ocupaciones.",
+          "correct": false
+        },
+        {
+          "text": "Dejaron de reunirse para orar.",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "¿Cuál de las siguientes opciones es un fruto del Espíritu Santo?",
+      "options": [
+        {
+          "text": "La piedad",
+          "correct": false
+        },
+        {
+          "text": "La paz",
+          "correct": true
+        },
+        {
+          "text": "El orgullo ",
+          "correct": false
+        }
+      ]
+    }
+  ],
+  "formsUrl": ""
+}
