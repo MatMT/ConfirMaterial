@@ -1,0 +1,61 @@
+{
+  "lessonId": "260722",
+  "title": "Los nombres y símbolos del Espíritu Santo",
+  "questions": [
+    {
+      "id": 0,
+      "text": "¿Qué significa la palabra «Paráclito», según el texto?",
+      "options": [
+        {
+          "text": "Aquel que es llamado junto a uno / Consolador. ",
+          "correct": true
+        },
+        {
+          "text": "Aquel que purifica con fuego.",
+          "correct": false
+        },
+        {
+          "text": "Aquel que se manifiesta como una paloma.",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "text": "¿Qué simboliza el «sello» dentro de los sacramentos como el Bautismo y la Confirmación?",
+      "options": [
+        {
+          "text": "Un carácter o marca imborrable en el creyente.",
+          "correct": true
+        },
+        {
+          "text": "La expulsión momentánea de los males físicos.",
+          "correct": false
+        },
+        {
+          "text": "Un castigo impuesto para corregir errores pasados.",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "¿Por qué el viento es utilizado como símbolo del Espíritu Santo?",
+      "options": [
+        {
+          "text": "Porque es una figura sólida que se puede tocar y moldear libremente.",
+          "correct": false
+        },
+        {
+          "text": "Porque solo puede verse cuando genera tormentas y tempestades.",
+          "correct": false
+        },
+        {
+          "text": "Porque representa una realidad inmaterial cuya fuerza e influjo da vida.",
+          "correct": true
+        }
+      ]
+    }
+  ],
+  "formsUrl": ""
+}
