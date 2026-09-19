@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Bold, Italic, Highlighter, Quote, List, ListOrdered, Info, FileText, Eraser, HelpCircle, Flag, Save } from 'lucide-react';
+import { 
+    Bold, Italic, Highlighter, Quote, List, ListOrdered, 
+    Info, FileText, Eraser, HelpCircle, Flag, Save, 
+    Rocket, Globe, Sparkles, AlertCircle, FileEdit 
+} from 'lucide-react';
 
 interface ParagraphBlock {
     text: string;
@@ -38,7 +42,6 @@ const insertMarkdown = (
     setTimeout(() => {
         textarea.focus();
         textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selectedText || 'texto').length);
-        // Trigger auto resize manually after programmatic value change
         textarea.style.height = 'auto';
         textarea.style.height = `${textarea.scrollHeight}px`;
     }, 0);
@@ -47,7 +50,7 @@ const insertMarkdown = (
 const insertList = (
     textareaId: string, 
     value: string, 
-    setValue: (val: string) => void,
+    setValue: (val: string) => void, 
     ordered: boolean = false
 ) => {
     const textarea = document.getElementById(textareaId) as HTMLTextAreaElement;
@@ -144,8 +147,27 @@ const MarkdownToolbar = ({ textareaId, value, setValue }: { textareaId: string, 
     );
 };
 
-export default function LessonEditor({ initialData = null }) {
+const generateDescriptionFromIntro = (text: string) => {
+    const plain = text
+        .replace(/#+\s/g, '')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/<.*?>/g, '')
+        .replace(/>\s/g, '')
+        .replace(/\r?\n/g, ' ')
+        .trim();
+    if (!plain) return '';
+    const firstPeriod = plain.indexOf('.');
+    if (firstPeriod > 20 && firstPeriod < 180) {
+        return plain.slice(0, firstPeriod + 1).trim();
+    }
+    return plain.length > 150 ? plain.slice(0, 147).trim() + '...' : plain;
+};
+
+export default function LessonEditor({ initialData = null }: { initialData?: any }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submittingAction, setSubmittingAction] = useState<'draft' | 'publish' | null>(null);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
     
     // Form state
     const [title, setTitle] = useState(initialData?.title || '');
@@ -153,8 +175,17 @@ export default function LessonEditor({ initialData = null }) {
     const [description, setDescription] = useState(initialData?.description || '');
     const [author, setAuthor] = useState(initialData?.author || '');
     const [date, setDate] = useState(initialData?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
-    const [isDraft, setIsDraft] = useState(initialData?.draft ?? false);
     
+    // Initial draft status: if existing lesson, use its draft status (default false); if new, starts as draft true until published
+    const [isDraft, setIsDraft] = useState<boolean>(() => {
+        if (initialData?.id) {
+            return initialData.draft ?? false;
+        }
+        return initialData?.draft ?? true;
+    });
+    
+    const isAlreadyPublished = initialData?.id && initialData?.draft === false;
+
     const [intro, setIntro] = useState(initialData?.blocks?.intro || '');
     const [conclusion, setConclusion] = useState(initialData?.blocks?.conclusion || '');
     
@@ -179,7 +210,6 @@ export default function LessonEditor({ initialData = null }) {
             const saved = localStorage.getItem(storageKey);
             if (saved) {
                 const parsed = JSON.parse(saved);
-                // Validar que tenga contenido significativo
                 if (parsed && (parsed.title || parsed.intro || parsed.conclusion || (parsed.paragraphs && parsed.paragraphs.some((p: any) => p.text || p.question?.text)))) {
                     setBackupData(parsed);
                     setHasBackup(true);
@@ -197,7 +227,6 @@ export default function LessonEditor({ initialData = null }) {
     useEffect(() => {
         if (isSubmitting) return;
 
-        // Si todos los campos están vacíos (al crear lección de cero), no guardar en backup
         const isEmpty = !title.trim() && !description.trim() && !intro.trim() && !conclusion.trim() && paragraphs.every(p => !p.text.trim() && !p.question.text.trim());
         if (isEmpty && !initialData?.id) return;
 
@@ -282,45 +311,44 @@ export default function LessonEditor({ initialData = null }) {
         return `${yy}${mm}${dd}`;
     };
 
-    const hasEmptyFields = !title.trim() || !description.trim() || !author.trim() || !date.trim() || !intro.trim() || !conclusion.trim() || paragraphs.some(p => !p.text.trim() || !p.question.text.trim() || !p.question.correctOption.trim() || p.question.incorrectOptions.some(opt => !opt.trim()));
-
-    useEffect(() => {
-        if (hasEmptyFields) {
-            setIsDraft(true);
-        } else if (!initialData?.id) {
-            setIsDraft(false);
-        }
-    }, [hasEmptyFields]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const validateForPublish = (): string[] => {
+        const errors: string[] = [];
+        if (!title.trim()) errors.push('Título de la lección');
+        if (!author.trim()) errors.push('Autor');
+        if (!date.trim()) errors.push('Fecha (pubDate)');
+        if (!intro.trim()) errors.push('Introducción');
         
-        const confirmMessage = "Los cambios tardarán entre 2 a 5 minutos en reflejarse debido a la actualización del sitio. ¿Estás seguro de que deseas guardar o agregar?";
-        if (!window.confirm(confirmMessage)) {
-            return;
-        }
+        paragraphs.forEach((p, i) => {
+            const num = i + 1;
+            if (!p.text.trim()) errors.push(`Párrafo ${num}: Falta el contenido`);
+            if (!p.question.text.trim()) errors.push(`Párrafo ${num}: Falta la pregunta`);
+            if (!p.question.correctOption.trim()) errors.push(`Párrafo ${num}: Falta la opción correcta`);
+            if (p.question.incorrectOptions.some(opt => !opt.trim())) {
+                errors.push(`Párrafo ${num}: Faltan opciones incorrectas`);
+            }
+        });
 
-        let finalDraftStatus = isDraft;
-        if (hasEmptyFields) {
-            finalDraftStatus = true;
-            setIsDraft(true);
-            alert('Algunos campos están vacíos. La lección se guardará automáticamente como BORRADOR.');
-        }
+        if (!conclusion.trim()) errors.push('Conclusión');
+        return errors;
+    };
 
+    const saveLesson = async (saveAsDraft: boolean, overrideDescription?: string) => {
         setIsSubmitting(true);
-        
+        setSubmittingAction(saveAsDraft ? 'draft' : 'publish');
+
         try {
             const id = initialData?.id || generateId();
             const finalSlug = slug.trim() || id;
-            
+            const finalDesc = overrideDescription !== undefined ? overrideDescription : description;
+
             const payload = {
                 id,
                 slug: finalSlug,
-                title,
-                description,
-                author,
-                date,
-                draft: finalDraftStatus,
+                title: title.trim(),
+                description: finalDesc.trim(),
+                author: author.trim(),
+                date: date.trim(),
+                draft: saveAsDraft,
                 blocks: {
                     intro,
                     paragraphs,
@@ -335,22 +363,73 @@ export default function LessonEditor({ initialData = null }) {
             });
 
             const data = await response.json();
-            
+
             if (data.success) {
                 try {
                     localStorage.removeItem(storageKey);
                 } catch (e) {}
-                alert('¡Lección guardada exitosamente!');
+                
+                setIsDraft(saveAsDraft);
+                alert(saveAsDraft 
+                    ? '📝 ¡Borrador guardado exitosamente!\n\nNo será visible para los alumnos hasta que decidas publicarla.' 
+                    : '🎉 ¡Lección publicada exitosamente!\n\nEstará visible para todos los alumnos en 2 a 5 minutos mientras Vercel actualiza el sitio.');
+                
                 window.location.href = '/admin/lessons';
             } else {
-                alert(`Error al guardar: ${data.error}`);
+                alert(`❌ Error al guardar: ${data.error}`);
             }
         } catch (err) {
             console.error(err);
-            alert('Error de red al guardar la lección.');
+            alert('❌ Error de red al comunicarse con el servidor.');
         } finally {
             setIsSubmitting(false);
+            setSubmittingAction(null);
         }
+    };
+
+    const handleSaveDraft = async () => {
+        if (!title.trim()) {
+            alert('⚠️ Por favor escribe al menos el título de la lección para poder identificar tu borrador.');
+            return;
+        }
+
+        const confirmMsg = initialData?.id
+            ? '📝 ¿Deseas guardar los cambios de este BORRADOR?\n\nSeguirá sin ser visible para los alumnos hasta que decidas publicarla.'
+            : '📝 ¿Deseas guardar esta lección como BORRADOR?\n\nNo será visible para los alumnos hasta que decidas publicarla.';
+
+        if (!window.confirm(confirmMsg)) return;
+
+        let finalDesc = description.trim();
+        if (!finalDesc && intro.trim()) {
+            finalDesc = generateDescriptionFromIntro(intro);
+        }
+
+        await saveLesson(true, finalDesc);
+    };
+
+    const handlePublish = async () => {
+        const errors = validateForPublish();
+        if (errors.length > 0) {
+            setValidationErrors(errors);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+        setValidationErrors([]);
+
+        // Si la descripción está vacía, autogenerar desde la intro para no bloquear
+        let finalDesc = description.trim();
+        if (!finalDesc) {
+            finalDesc = generateDescriptionFromIntro(intro) || title.trim();
+            setDescription(finalDesc);
+        }
+
+        const confirmMsg = isAlreadyPublished
+            ? '🚀 ¿Deseas actualizar la lección PUBLICADA?\n\nLos cambios se verán reflejados para todos los alumnos en 2 a 5 minutos.'
+            : '🚀 ¿Deseas PUBLICAR esta lección?\n\nEstará visible para todos los alumnos en el sitio web (tardará de 2 a 5 minutos en compilarse en Vercel).';
+
+        if (!window.confirm(confirmMsg)) return;
+
+        await saveLesson(false, finalDesc);
     };
 
     // Auto-resize initial layout execution if needed
@@ -362,8 +441,33 @@ export default function LessonEditor({ initialData = null }) {
     }, [paragraphs, intro, conclusion]);
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-base-100 p-6 sm:p-8 pb-24 sm:pb-32 rounded-3xl shadow-xl w-full border border-base-200 animate-fade-up">
+        <form onSubmit={e => e.preventDefault()} className="space-y-6 sm:space-y-8 bg-base-100 p-6 sm:p-8 pb-28 sm:pb-36 rounded-3xl shadow-xl w-full border border-base-200 animate-fade-up">
             
+            {/* Banner de Errores de Validación al Publicar */}
+            {validationErrors.length > 0 && (
+                <div className="alert alert-warning shadow-lg rounded-2xl p-4 sm:p-5 border-2 border-warning/40 animate-fade-down">
+                    <div className="flex items-start gap-3 w-full">
+                        <AlertCircle className="w-6 h-6 text-warning shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <h3 className="font-bold text-base sm:text-lg">
+                                No se puede publicar todavía: Faltan datos requeridos
+                            </h3>
+                            <p className="text-xs sm:text-sm text-base-content/80 mt-1">
+                                Para que los alumnos puedan estudiar la lección completa, debes completar los siguientes campos:
+                            </p>
+                            <ul className="list-disc list-inside mt-2 text-xs sm:text-sm font-medium space-y-1 bg-base-100/70 p-3 rounded-xl border border-warning/20">
+                                {validationErrors.map((err, i) => (
+                                    <li key={i} className="text-error font-semibold">{err}</li>
+                                ))}
+                            </ul>
+                            <div className="mt-3 text-xs text-base-content/70">
+                                💡 <strong>Tip:</strong> Si aún estás preparando el contenido, puedes presionar <strong>"Guardar Borrador"</strong> al final de la página para guardar tu progreso sin perderlo.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Banner de Respaldo Encontrado */}
             {hasBackup && (
                 <div className="alert bg-primary/10 border-2 border-primary/40 shadow-xl rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-down">
@@ -389,45 +493,123 @@ export default function LessonEditor({ initialData = null }) {
             )}
             
             {/* Cabecera / Metadatos */}
-            <div className="space-y-4 bg-base-200/50 p-4 sm:p-6 rounded-box">
-                <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                    <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                    Información General
-                </h2>
+            <div className="space-y-4 bg-base-200/50 p-4 sm:p-6 rounded-2xl border border-base-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-base-300">
+                    <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                        <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                        Información General
+                    </h2>
+                    <div className="flex items-center gap-2">
+                        {isDraft ? (
+                            <span className="badge badge-warning badge-sm sm:badge-md font-bold gap-1.5 py-3 px-3">
+                                <FileEdit className="w-3.5 h-3.5" /> Estado actual: Borrador
+                            </span>
+                        ) : (
+                            <span className="badge badge-success text-white badge-sm sm:badge-md font-bold gap-1.5 py-3 px-3">
+                                <Globe className="w-3.5 h-3.5" /> Estado actual: Publicada
+                            </span>
+                        )}
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="form-control">
-                        <label className="label"><span className="label-text font-semibold text-xs sm:text-sm">Título de la Lección</span></label>
-                        <input type="text" className="input input-bordered w-full text-sm sm:text-base" value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: El significado del Perdón" />
+                        <label className="label">
+                            <span className="label-text font-semibold text-xs sm:text-sm">
+                                Título de la Lección <span className="text-error">*</span>
+                            </span>
+                        </label>
+                        <input 
+                            type="text" 
+                            className="input input-bordered w-full text-sm sm:text-base" 
+                            value={title} 
+                            onChange={e => setTitle(e.target.value)} 
+                            placeholder="Ej: El significado del Perdón" 
+                        />
                     </div>
                     <div className="form-control">
-                        <label className="label"><span className="label-text font-semibold text-xs sm:text-sm">Autor</span></label>
-                        <input type="text" className="input input-bordered w-full text-sm sm:text-base" value={author} onChange={e => setAuthor(e.target.value)} />
+                        <label className="label">
+                            <span className="label-text font-semibold text-xs sm:text-sm">
+                                Autor <span className="text-error">*</span>
+                            </span>
+                        </label>
+                        <input 
+                            type="text" 
+                            className="input input-bordered w-full text-sm sm:text-base" 
+                            value={author} 
+                            onChange={e => setAuthor(e.target.value)} 
+                        />
                     </div>
                 </div>
                 
                 <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold text-xs sm:text-sm">Descripción corta</span></label>
+                    <div className="flex items-center justify-between pb-1">
+                        <label className="label py-0">
+                            <span className="label-text font-semibold text-xs sm:text-sm">
+                                Descripción corta <span className="text-base-content/50 font-normal">(resumen en listado)</span>
+                            </span>
+                        </label>
+                        {intro.trim() && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const generated = generateDescriptionFromIntro(intro);
+                                    if (generated) setDescription(generated);
+                                }}
+                                className="btn btn-ghost btn-xs text-primary font-bold gap-1 hover:bg-primary/10 normal-case"
+                                title="Generar resumen automático desde la introducción"
+                            >
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>Autogenerar desde introducción</span>
+                            </button>
+                        )}
+                    </div>
                     <textarea 
                         className="textarea textarea-bordered w-full text-sm sm:text-base min-h-[4rem] overflow-hidden" 
                         value={description} 
                         onChange={e => setDescription(e.target.value)} 
                         onInput={autoResize}
                         onFocus={autoResize}
-                        placeholder="Aparecerá en el resumen..."
+                        placeholder="Aparecerá en el resumen de lecciones (si se deja en blanco al publicar, se generará de la introducción)..."
                     />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="form-control">
-                        <label className="label"><span className="label-text font-semibold text-xs sm:text-sm">Fecha (pubDate)</span></label>
-                        <input type="text" className="input input-bordered w-full text-sm sm:text-base" value={date} onChange={e => setDate(e.target.value)} placeholder="Jun 14 2026" />
+                        <label className="label">
+                            <span className="label-text font-semibold text-xs sm:text-sm">
+                                Fecha (pubDate) <span className="text-error">*</span>
+                            </span>
+                        </label>
+                        <input 
+                            type="text" 
+                            className="input input-bordered w-full text-sm sm:text-base" 
+                            value={date} 
+                            onChange={e => setDate(e.target.value)} 
+                            placeholder="Sep 18 2026" 
+                        />
                     </div>
                     <div className="form-control flex flex-col justify-end pb-2">
-                        <label className={`cursor-pointer label justify-start gap-4 ${hasEmptyFields ? 'opacity-60' : ''}`}>
-                            <input type="checkbox" className="toggle toggle-warning toggle-sm sm:toggle-md" checked={isDraft} onChange={e => setIsDraft(e.target.checked)} disabled={hasEmptyFields} />
+                        <label className="cursor-pointer label justify-start gap-4">
+                            <input 
+                                type="checkbox" 
+                                className="toggle toggle-warning toggle-sm sm:toggle-md" 
+                                checked={isDraft} 
+                                onChange={e => setIsDraft(e.target.checked)} 
+                            />
                             <span className="label-text font-semibold text-xs sm:text-sm">
-                                Es borrador
-                                {hasEmptyFields && <span className="block text-[10px] text-warning font-normal mt-0.5">Faltan datos por llenar</span>}
+                                {isDraft ? (
+                                    <span className="text-warning font-bold flex items-center gap-1.5">
+                                        <FileEdit className="w-4 h-4" /> Guardar como Borrador
+                                    </span>
+                                ) : (
+                                    <span className="text-success font-bold flex items-center gap-1.5">
+                                        <Globe className="w-4 h-4" /> Marcar como Publicada
+                                    </span>
+                                )}
+                                <span className="block text-[11px] text-base-content/60 font-normal mt-0.5">
+                                    {isDraft ? 'No será visible para los alumnos' : 'Será visible en el listado de lecciones'}
+                                </span>
                             </span>
                         </label>
                     </div>
@@ -440,7 +622,7 @@ export default function LessonEditor({ initialData = null }) {
             <div className="space-y-3 sm:space-y-4">
                 <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
                     <FileText className="w-5 h-5 text-secondary" />
-                    Introducción
+                    Introducción <span className="text-error">*</span>
                 </h3>
                 <div className="form-control">
                     <MarkdownToolbar textareaId="intro-textarea" value={intro} setValue={setIntro} />
@@ -459,9 +641,9 @@ export default function LessonEditor({ initialData = null }) {
             {/* Párrafos y Preguntas */}
             <div className="space-y-6 sm:space-y-8">
                 {paragraphs.map((p, i) => (
-                    <div key={i} className="p-3 sm:p-6 border border-base-300 rounded-box bg-base-100 shadow-sm relative">
+                    <div key={i} className="p-3 sm:p-6 border border-base-300 rounded-2xl bg-base-100 shadow-sm relative">
                         <div className="absolute top-3 right-3 flex gap-2">
-                            <div className="badge badge-primary text-[10px] sm:text-xs">Bloque {i + 1} / 3</div>
+                            <div className="badge badge-primary text-[10px] sm:text-xs font-bold">Bloque {i + 1} / 3</div>
                             <button type="button" onClick={() => handleClearParagraph(i)} className="btn btn-xs btn-error btn-outline border-none btn-circle bg-error/10 hover:bg-error hover:text-white transition-colors" title="Limpiar bloque">
                                 <Eraser className="w-4 h-4" />
                             </button>
@@ -469,7 +651,11 @@ export default function LessonEditor({ initialData = null }) {
 
                         <div className="space-y-4 mt-6">
                             <div className="form-control">
-                                <label className="label"><span className="label-text font-semibold text-xs sm:text-sm">Contenido del Párrafo</span></label>
+                                <label className="label">
+                                    <span className="label-text font-semibold text-xs sm:text-sm">
+                                        Contenido del Párrafo {i + 1} <span className="text-error">*</span>
+                                    </span>
+                                </label>
                                 <MarkdownToolbar 
                                     textareaId={`paragraph-textarea-${i}`} 
                                     value={p.text} 
@@ -486,24 +672,50 @@ export default function LessonEditor({ initialData = null }) {
                                 />
                             </div>
 
-                            <div className="bg-base-200/50 p-3 sm:p-4 rounded-lg border-l-4 border-accent">
+                            <div className="bg-base-200/50 p-3 sm:p-4 rounded-xl border-l-4 border-accent">
                                 <h4 className="font-bold mb-3 flex items-center gap-2 text-sm sm:text-base">
                                     <HelpCircle className="w-4 h-4 text-accent" />
-                                    Pregunta Interactiva
+                                    Pregunta Interactiva <span className="text-error">*</span>
                                 </h4>
                                 <div className="space-y-3">
                                     <div className="form-control">
-                                        <input type="text" className="input input-bordered w-full font-medium text-sm sm:text-base" placeholder="Escribe la pregunta..." value={p.question.text} onChange={e => handleQuestionChange(i, 'text', e.target.value)} />
+                                        <input 
+                                            type="text" 
+                                            className="input input-bordered w-full font-medium text-sm sm:text-base" 
+                                            placeholder="Escribe la pregunta..." 
+                                            value={p.question.text} 
+                                            onChange={e => handleQuestionChange(i, 'text', e.target.value)} 
+                                        />
                                     </div>
                                     <div className="form-control">
-                                        <label className="label py-0.5"><span className="label-text text-success font-bold text-[10px] sm:text-xs uppercase tracking-wider">Opción Correcta</span></label>
-                                        <input type="text" className="input input-bordered input-success w-full bg-success/5 text-sm sm:text-base" placeholder="La respuesta correcta" value={p.question.correctOption} onChange={e => handleQuestionChange(i, 'correctOption', e.target.value)} />
+                                        <label className="label py-0.5">
+                                            <span className="label-text text-success font-bold text-[10px] sm:text-xs uppercase tracking-wider">
+                                                Opción Correcta <span className="text-error">*</span>
+                                            </span>
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            className="input input-bordered input-success w-full bg-success/5 text-sm sm:text-base" 
+                                            placeholder="La respuesta correcta" 
+                                            value={p.question.correctOption} 
+                                            onChange={e => handleQuestionChange(i, 'correctOption', e.target.value)} 
+                                        />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {p.question.incorrectOptions.map((opt, oIndex) => (
                                             <div key={oIndex} className="form-control">
-                                                <label className="label py-0.5"><span className="label-text text-error font-bold text-[10px] sm:text-xs uppercase tracking-wider">Opción Incorrecta {oIndex + 1}</span></label>
-                                                <input type="text" className="input input-bordered input-error w-full bg-error/5 text-sm sm:text-base" placeholder="Una respuesta falsa" value={opt} onChange={e => handleIncorrectOptionChange(i, oIndex, e.target.value)} />
+                                                <label className="label py-0.5">
+                                                    <span className="label-text text-error font-bold text-[10px] sm:text-xs uppercase tracking-wider">
+                                                        Opción Incorrecta {oIndex + 1} <span className="text-error">*</span>
+                                                    </span>
+                                                </label>
+                                                <input 
+                                                    type="text" 
+                                                    className="input input-bordered input-error w-full bg-error/5 text-sm sm:text-base" 
+                                                    placeholder="Una respuesta incorrecta" 
+                                                    value={opt} 
+                                                    onChange={e => handleIncorrectOptionChange(i, oIndex, e.target.value)} 
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -520,7 +732,7 @@ export default function LessonEditor({ initialData = null }) {
             <div className="space-y-3 sm:space-y-4">
                 <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
                     <Flag className="w-5 h-5 text-secondary" />
-                    Conclusión
+                    Conclusión <span className="text-error">*</span>
                 </h3>
                 <div className="form-control">
                     <MarkdownToolbar textareaId="conclusion-textarea" value={conclusion} setValue={setConclusion} />
@@ -536,29 +748,67 @@ export default function LessonEditor({ initialData = null }) {
                 </div>
             </div>
 
-            {/* Submit */}
-            <div className="pt-4 sm:pt-6 border-t border-base-300 flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-2 sm:bottom-4 bg-base-100/90 backdrop-blur p-3 sm:p-4 rounded-2xl shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.15)] z-10 border border-base-200">
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-base-content/70 font-medium w-full sm:w-auto justify-center sm:justify-start">
-                    {lastSavedTime ? (
-                        <span className="flex items-center gap-2 text-success font-semibold animate-fade">
-                            <span className="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
-                            💾 Respaldo local guardado ({lastSavedTime})
+            {/* Barra de Acciones Sticky Inferior */}
+            <div className="pt-4 sm:pt-6 border-t border-base-300 flex flex-col md:flex-row items-center justify-between gap-4 sticky bottom-2 sm:bottom-4 bg-base-100/95 backdrop-blur-md p-3 sm:p-4 rounded-2xl shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.15)] z-20 border border-base-200">
+                <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-base-content/70 font-medium w-full md:w-auto justify-center md:justify-start">
+                    {/* Badge de estado en el footer */}
+                    {isDraft ? (
+                        <span className="badge badge-warning badge-sm sm:badge-md font-bold gap-1.5 py-2.5 px-3">
+                            <FileEdit className="w-3.5 h-3.5" /> Modo Borrador
                         </span>
                     ) : (
-                        <span className="flex items-center gap-1.5 text-base-content/50">
-                            <span>💡 Respaldo automático local activo</span>
+                        <span className="badge badge-success text-white badge-sm sm:badge-md font-bold gap-1.5 py-2.5 px-3">
+                            <Globe className="w-3.5 h-3.5" /> Modo Público
+                        </span>
+                    )}
+
+                    {lastSavedTime ? (
+                        <span className="flex items-center gap-1.5 text-success font-semibold text-xs">
+                            <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                            💾 Respaldo local ({lastSavedTime})
+                        </span>
+                    ) : (
+                        <span className="text-base-content/50 text-xs hidden sm:inline">
+                            💡 Respaldo local activo
                         </span>
                     )}
                 </div>
-                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                    <a href="/admin/lessons" className="btn btn-ghost btn-sm sm:btn-md rounded-xl font-bold">Cancelar</a>
-                    <button type="submit" disabled={isSubmitting} className="btn btn-primary px-6 sm:px-8 btn-sm sm:btn-md font-bold shadow-lg rounded-xl">
-                        {isSubmitting ? (
-                            <span className="loading loading-spinner"></span>
+
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-end">
+                    <a href="/admin/lessons" className="btn btn-ghost btn-sm sm:btn-md rounded-xl font-bold">
+                        Cancelar
+                    </a>
+
+                    {/* Botón Guardar Borrador */}
+                    <button 
+                        type="button" 
+                        onClick={handleSaveDraft}
+                        disabled={isSubmitting} 
+                        className="btn btn-outline btn-warning btn-sm sm:btn-md font-bold rounded-xl gap-2 shadow-sm hover:text-white"
+                        title="Guardar borrador (no visible para alumnos)"
+                    >
+                        {isSubmitting && submittingAction === 'draft' ? (
+                            <span className="loading loading-spinner loading-xs"></span>
                         ) : (
-                            <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
+                            <Save className="w-4 h-4" />
                         )}
-                        Guardar Lección
+                        <span>Guardar Borrador</span>
+                    </button>
+
+                    {/* Botón Publicar Lección */}
+                    <button 
+                        type="button" 
+                        onClick={handlePublish}
+                        disabled={isSubmitting} 
+                        className="btn btn-primary btn-sm sm:btn-md font-bold shadow-lg rounded-xl gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform"
+                        title="Publicar lección para todos los alumnos"
+                    >
+                        {isSubmitting && submittingAction === 'publish' ? (
+                            <span className="loading loading-spinner loading-xs"></span>
+                        ) : (
+                            <Rocket className="w-4 h-4" />
+                        )}
+                        <span>{isAlreadyPublished ? 'Actualizar Lección' : 'Publicar Lección'}</span>
                     </button>
                 </div>
             </div>

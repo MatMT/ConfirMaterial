@@ -1,10 +1,32 @@
-import React, { useState } from 'react';
-import { Snowflake } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Snowflake, Sun, AlertTriangle } from 'lucide-react';
 
 export default function HolidayToggle({ initialHolidayMode }: { initialHolidayMode: boolean }) {
   const [isHolidayMode, setIsHolidayMode] = useState(initialHolidayMode);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Close dialog on Escape key
+  useEffect(() => {
+    if (!showModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !loading) {
+        setShowModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showModal, loading]);
+
+  // Focus cancel button on open for a11y
+  useEffect(() => {
+    if (showModal) {
+      setTimeout(() => {
+        cancelButtonRef.current?.focus();
+      }, 50);
+    }
+  }, [showModal]);
 
   const handleToggle = async () => {
     setLoading(true);
@@ -28,77 +50,117 @@ export default function HolidayToggle({ initialHolidayMode }: { initialHolidayMo
 
   return (
     <>
-      <div className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all shadow-sm ${isHolidayMode
-        ? 'bg-info/15 border-info/40 text-info font-bold shadow-info/10'
-        : 'bg-base-200/60 border-base-300 text-base-content/70 hover:bg-base-200'
-        }`}>
-        <Snowflake className={`w-5 h-5 shrink-0 ${isHolidayMode ? 'animate-spin text-info' : 'text-base-content/50'}`} style={{ animationDuration: '10s' }} />
-        <div className="flex flex-col text-left mr-1">
-          <span className="text-xs sm:text-sm font-extrabold leading-tight">
-            {isHolidayMode ? 'Modo Vacaciones: ACTIVO (❄️)' : 'Modo Vacaciones: Inactivo'}
-          </span>
-          <span className="text-[10px] sm:text-xs opacity-75 font-normal">
-            {isHolidayMode ? 'Rachas congeladas para todos.' : 'Rachas caducan normal.'}
-          </span>
+      <div className={`flex items-center justify-between sm:justify-start gap-3.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl border transition-all shadow-sm w-full sm:w-auto ${
+        isHolidayMode
+          ? 'bg-info/15 border-info/40 text-info font-bold shadow-info/10'
+          : 'bg-base-200/70 border-base-300 text-base-content/80'
+      }`}>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+            isHolidayMode ? 'bg-info/20 text-info' : 'bg-base-300 text-base-content/60'
+          }`}>
+            {isHolidayMode ? (
+              <Snowflake className="w-4 h-4 animate-spin" style={{ animationDuration: '10s' }} />
+            ) : (
+              <Sun className="w-4 h-4" />
+            )}
+          </div>
+          <div className="flex flex-col text-left">
+            <span id="holiday-switch-label" className="text-xs sm:text-sm font-extrabold leading-tight text-slate-900 dark:text-slate-100 truncate">
+              {isHolidayMode ? 'Modo Vacaciones: Activo' : 'Modo Vacaciones: Inactivo'}
+            </span>
+            <span className="text-[10px] sm:text-xs text-base-content/60 font-normal truncate">
+              {isHolidayMode ? 'Rachas congeladas (❄️)' : 'Rachas caducan normal'}
+            </span>
+          </div>
         </div>
+
+        {/* Accessible Switch Component (Radix-like WAI-ARIA Switch) */}
         <button
-          onClick={() => setShowModal(true)}
+          type="button"
+          role="switch"
+          aria-checked={isHolidayMode}
+          aria-labelledby="holiday-switch-label"
           disabled={loading}
-          className={`btn btn-xs sm:btn-sm ml-auto rounded-xl font-bold transition-all ${isHolidayMode ? 'btn-info text-white shadow-md hover:scale-105' : 'btn-outline btn-primary'
-            }`}
+          onClick={() => setShowModal(true)}
+          className={`relative inline-flex h-6 w-11 sm:h-7 sm:w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ml-auto sm:ml-2 ${
+            isHolidayMode ? 'bg-info' : 'bg-slate-300 dark:bg-slate-700'
+          }`}
         >
-          {loading ? (
-            <span className="loading loading-spinner loading-xs"></span>
-          ) : isHolidayMode ? (
-            '☀️ Descongelar'
-          ) : (
-            '❄️ Congelar Todo'
-          )}
+          <span className="sr-only">Alternar Modo Vacaciones</span>
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none inline-block h-5 w-5 sm:h-6 sm:w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+              isHolidayMode ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
         </button>
       </div>
 
-      {/* Modal de Confirmación */}
+      {/* Accessible AlertDialog de Confirmación */}
       {showModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade">
-          <div className="bg-base-100 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-base-200 text-left animate-fade-down">
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="holiday-dialog-title"
+          aria-describedby="holiday-dialog-desc"
+        >
+          <div 
+            className="bg-base-100 rounded-3xl p-5 sm:p-7 max-w-lg w-full shadow-2xl border border-base-200 text-left animate-fade-down"
+            role="alertdialog"
+          >
             <div className="flex items-center gap-3 mb-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isHolidayMode ? 'bg-primary/10 text-primary' : 'bg-info/10 text-info'}`}>
-                <Snowflake className={`w-6 h-6 ${!isHolidayMode ? 'animate-spin' : ''}`} style={{ animationDuration: '10s' }} />
+              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                isHolidayMode ? 'bg-primary/10 text-primary' : 'bg-info/10 text-info'
+              }`}>
+                {isHolidayMode ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Snowflake className="w-5 h-5 animate-spin" style={{ animationDuration: '10s' }} />
+                )}
               </div>
-              <h3 className="text-xl font-extrabold text-base-content">
-                {isHolidayMode ? '¿Desactivar Modo Vacaciones?' : '¿Activar Modo Vacaciones?'}
-              </h3>
+              <div>
+                <h3 id="holiday-dialog-title" className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                  {isHolidayMode ? '¿Desactivar Modo Vacaciones?' : '¿Activar Modo Vacaciones?'}
+                </h3>
+                <span className="text-xs text-base-content/60 font-medium">
+                  Afecta a todos los estudiantes de la plataforma
+                </span>
+              </div>
             </div>
 
-            <div className="space-y-3 text-sm text-base-content/80 my-6 leading-relaxed">
+            <div id="holiday-dialog-desc" className="space-y-3 text-xs sm:text-sm text-base-content/80 my-5 leading-relaxed">
               {isHolidayMode ? (
                 <>
                   <p>
-                    Al desactivar el Modo Vacaciones, el sistema <strong>volverá a evaluar las rachas de forma normal</strong> cada fin de semana.
+                    Al desactivar el Modo Vacaciones, las rachas de los alumnos <strong>volverán a evaluarse normalmente</strong> cada fin de semana.
                   </p>
-                  <div className="alert alert-warning text-xs py-3 px-4 rounded-2xl shadow-sm border border-warning/30">
-                    <span>⚠️ <strong>Aviso:</strong> Asegúrate de que ya haya lecciones disponibles para que los alumnos puedan continuar su progreso sin perder la racha.</span>
+                  <div className="alert alert-warning text-xs py-2.5 px-3.5 rounded-xl shadow-xs border border-warning/30 flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+                    <span>Asegúrate de que haya una nueva lección disponible antes de descongelar para que nadie pierda su racha.</span>
                   </div>
                 </>
               ) : (
                 <>
                   <p>
-                    Al activar esta opción, <strong>ningún estudiante perderá su racha</strong> durante este periodo (receso escolar o semanas sin lección nueva).
+                    Al activar el Modo Vacaciones, <strong>ningún estudiante perderá su racha</strong> durante este receso o periodo vacacional.
                   </p>
-                  <div className="bg-base-200/80 p-4 rounded-2xl border border-base-300 text-xs text-base-content/70 space-y-1">
-                    <strong className="text-base-content block text-sm">💡 Sin cambios en los registros:</strong>
-                    Esta acción <strong>NO modifica ni sobreescribe </strong>los registros de rachas de los alumnos. Únicamente activa una protección global para que se mantengan congeladas (❄️) y protegidas.
+                  <div className="bg-base-200/80 p-3.5 rounded-xl border border-base-300 text-xs text-base-content/70 space-y-1">
+                    <strong className="text-base-content block font-bold">💡 Protección segura de rachas:</strong>
+                    Esta acción protege a todos los alumnos congelando (❄️) sus rachas sin modificar sus registros individuales.
                   </div>
                 </>
               )}
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-base-200">
+            <div className="flex justify-end gap-2.5 pt-3.5 border-t border-base-200">
               <button
+                ref={cancelButtonRef}
                 type="button"
                 onClick={() => setShowModal(false)}
                 disabled={loading}
-                className="btn btn-ghost font-bold rounded-xl"
+                className="btn btn-ghost btn-sm sm:btn-md font-bold rounded-xl"
               >
                 Cancelar
               </button>
@@ -106,11 +168,13 @@ export default function HolidayToggle({ initialHolidayMode }: { initialHolidayMo
                 type="button"
                 onClick={handleToggle}
                 disabled={loading}
-                className={`btn font-bold px-6 rounded-xl shadow-md ${isHolidayMode ? 'btn-primary' : 'btn-info text-white'}`}
+                className={`btn btn-sm sm:btn-md font-bold px-5 rounded-xl shadow-md ${
+                  isHolidayMode ? 'btn-primary' : 'btn-info text-white'
+                }`}
               >
                 {loading ? (
                   <>
-                    <span className="loading loading-spinner loading-sm"></span>
+                    <span className="loading loading-spinner loading-xs"></span>
                     <span>Procesando...</span>
                   </>
                 ) : isHolidayMode ? (

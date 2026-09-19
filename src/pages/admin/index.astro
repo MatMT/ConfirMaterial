@@ -126,31 +126,43 @@ if (isAuthenticated) {
     
     <Header isAdminMode={true} />
 
-    <main class="container mx-auto px-4 max-w-6xl flex-grow py-12 animate-fade-up">
-        <div class="space-y-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-base-100 p-8 rounded-3xl shadow-xl border border-base-200">
-                <div>
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm mb-4">
-                        <Icon name="mdi:shield-check" class="w-4 h-4" />
+    <main class="container mx-auto px-4 max-w-6xl flex-grow py-4 sm:py-8 md:py-12 animate-fade-up">
+        <div class="space-y-4 sm:space-y-8">
+            <div class="flex flex-row justify-between items-center gap-3 bg-base-100 p-3.5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-lg border border-base-200 min-h-[72px] sm:min-h-0">
+                <div class="min-w-0 flex-1">
+                    <div class="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-xs md:text-sm mb-2 md:mb-3">
+                        <Icon name="mdi:shield-check" class="w-3.5 h-3.5 md:w-4 md:h-4" />
                         Modo Administrador
                     </div>
-                    <h2 class="text-4xl font-extrabold tracking-tight">Gestión de Alumnos</h2>
-                    <p class="text-base-content/60 mt-2 text-lg">Supervisa el progreso y las rachas de todos los estudiantes.</p>
+                    <div class="flex items-center gap-1.5 sm:hidden mb-0.5">
+                        <span class="badge badge-primary badge-xs font-bold text-[9px] py-0.5 px-1.5">Admin</span>
+                    </div>
+                    <h2 class="text-base sm:text-2xl md:text-4xl font-extrabold tracking-tight truncate text-slate-900 dark:text-slate-100">
+                        Gestión de Alumnos
+                    </h2>
+                    <p class="text-base-content/60 mt-1 text-sm md:text-lg hidden sm:block">
+                        Supervisa el progreso y las rachas de todos los estudiantes.
+                    </p>
                 </div>
-                <a href="/admin/students/new" class="btn btn-primary shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all rounded-full px-8">
-                    <Icon name="mdi:account-plus-outline" class="w-5 h-5 mr-2" />
-                    Crear Nuevo Alumno
+                <a 
+                    href="/admin/students/new" 
+                    class="btn btn-primary btn-sm sm:btn-md shadow-md hover:shadow-lg transition-all rounded-full px-3.5 sm:px-8 shrink-0 font-bold gap-1.5"
+                    aria-label="Crear Nuevo Alumno"
+                >
+                    <Icon name="mdi:account-plus-outline" class="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span class="hidden sm:inline">Crear Nuevo Alumno</span>
+                    <span class="sm:hidden text-xs">Nuevo</span>
                 </a>
             </div>
             
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-base-100 p-4 sm:p-6 rounded-3xl shadow-md border border-base-200">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 bg-base-100 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md border border-base-200">
                 <div class="flex items-center gap-2">
-                    <span class="text-base font-extrabold text-base-content/80">Control Global de Rachas:</span>
+                    <span class="text-sm sm:text-base font-extrabold text-base-content/80">Control Global de Rachas:</span>
                 </div>
                 <HolidayToggle client:load initialHolidayMode={isHolidayMode} />
             </div>
             
-            <div className="bg-base-100 rounded-3xl shadow-2xl p-6 md:p-8 border border-base-200">
+            <div class="bg-base-100 rounded-2xl sm:rounded-3xl shadow-xl p-3 sm:p-6 md:p-8 border border-base-200">
                 <StudentsTable client:load students={students} />
             </div>
         </div>

@@ -78,8 +78,10 @@ ${blocks.intro}
         // It could be `id.mdx` or we can let the UI specify a filename/slug. Let's use `slug` from body, or default to `id`.
         const slug = body.slug || id;
         
-        await saveToGitHub(`src/content/data/questions/${id}.json`, jsonContent, `Update questions for lesson ${id}`);
-        await saveToGitHub(`src/content/lessons/${slug}.mdx`, mdxContent, `Update content for lesson ${id}`);
+        const statusLabel = draft ? 'Borrador' : 'Publicada';
+        const lessonName = title ? `"${title}"` : `lección ${id}`;
+        await saveToGitHub(`src/content/data/questions/${id}.json`, jsonContent, `Preguntas: ${lessonName} (${id})`);
+        await saveToGitHub(`src/content/lessons/${slug}.mdx`, mdxContent, `Lección [${statusLabel}]: ${lessonName} (${id})`);
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (e: any) {
