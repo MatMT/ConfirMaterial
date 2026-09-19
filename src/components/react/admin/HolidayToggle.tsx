@@ -50,32 +50,28 @@ export default function HolidayToggle({ initialHolidayMode }: { initialHolidayMo
 
   return (
     <>
-      <div className={`flex items-center justify-between sm:justify-start gap-3.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl border transition-all shadow-sm w-full sm:w-auto ${
-        isHolidayMode
-          ? 'bg-info/15 border-info/40 text-info font-bold shadow-info/10'
-          : 'bg-base-200/70 border-base-300 text-base-content/80'
-      }`}>
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-            isHolidayMode ? 'bg-info/20 text-info' : 'bg-base-300 text-base-content/60'
+      <div className="flex items-center justify-between gap-3 w-full">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+            isHolidayMode ? 'bg-sky-100 text-sky-600' : 'bg-slate-100 text-slate-500'
           }`}>
             {isHolidayMode ? (
-              <Snowflake className="w-4 h-4 animate-spin" style={{ animationDuration: '10s' }} />
+              <Snowflake className="w-5 h-5 animate-spin" style={{ animationDuration: '10s' }} />
             ) : (
-              <Sun className="w-4 h-4" />
+              <Sun className="w-5 h-5" />
             )}
           </div>
-          <div className="flex flex-col text-left">
-            <span id="holiday-switch-label" className="text-xs sm:text-sm font-extrabold leading-tight text-slate-900 dark:text-slate-100 truncate">
-              {isHolidayMode ? 'Modo Vacaciones: Activo' : 'Modo Vacaciones: Inactivo'}
+          <div className="flex flex-col min-w-0 text-left">
+            <span id="holiday-switch-label" className="text-sm sm:text-base font-bold text-slate-800 leading-tight truncate">
+              {isHolidayMode ? 'Modo Vacaciones: Activo ❄️' : 'Modo Vacaciones: Inactivo'}
             </span>
-            <span className="text-[10px] sm:text-xs text-base-content/60 font-normal truncate">
-              {isHolidayMode ? 'Rachas congeladas (❄️)' : 'Rachas caducan normal'}
+            <span className="text-xs text-slate-500 font-medium truncate mt-0.5">
+              {isHolidayMode ? 'Rachas protegidas para todos' : 'Rachas caducan cada semana'}
             </span>
           </div>
         </div>
 
-        {/* Accessible Switch Component (Radix-like WAI-ARIA Switch) */}
+        {/* Accessible Switch Component (WAI-ARIA Switch) */}
         <button
           type="button"
           role="switch"
@@ -83,14 +79,14 @@ export default function HolidayToggle({ initialHolidayMode }: { initialHolidayMo
           aria-labelledby="holiday-switch-label"
           disabled={loading}
           onClick={() => setShowModal(true)}
-          className={`relative inline-flex h-6 w-11 sm:h-7 sm:w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ml-auto sm:ml-2 ${
-            isHolidayMode ? 'bg-info' : 'bg-slate-300 dark:bg-slate-700'
+          className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+            isHolidayMode ? 'bg-primary' : 'bg-slate-300'
           }`}
         >
           <span className="sr-only">Alternar Modo Vacaciones</span>
           <span
             aria-hidden="true"
-            className={`pointer-events-none inline-block h-5 w-5 sm:h-6 sm:w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+            className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
               isHolidayMode ? 'translate-x-5' : 'translate-x-0'
             }`}
           />
@@ -121,16 +117,16 @@ export default function HolidayToggle({ initialHolidayMode }: { initialHolidayMo
                 )}
               </div>
               <div>
-                <h3 id="holiday-dialog-title" className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                <h3 id="holiday-dialog-title" className="text-lg sm:text-xl font-extrabold text-slate-900">
                   {isHolidayMode ? '¿Desactivar Modo Vacaciones?' : '¿Activar Modo Vacaciones?'}
                 </h3>
-                <span className="text-xs text-base-content/60 font-medium">
+                <span className="text-xs text-slate-500 font-medium">
                   Afecta a todos los estudiantes de la plataforma
                 </span>
               </div>
             </div>
 
-            <div id="holiday-dialog-desc" className="space-y-3 text-xs sm:text-sm text-base-content/80 my-5 leading-relaxed">
+            <div id="holiday-dialog-desc" className="space-y-3 text-xs sm:text-sm text-slate-600 my-5 leading-relaxed">
               {isHolidayMode ? (
                 <>
                   <p>
@@ -146,8 +142,8 @@ export default function HolidayToggle({ initialHolidayMode }: { initialHolidayMo
                   <p>
                     Al activar el Modo Vacaciones, <strong>ningún estudiante perderá su racha</strong> durante este receso o periodo vacacional.
                   </p>
-                  <div className="bg-base-200/80 p-3.5 rounded-xl border border-base-300 text-xs text-base-content/70 space-y-1">
-                    <strong className="text-base-content block font-bold">💡 Protección segura de rachas:</strong>
+                  <div className="bg-base-200/80 p-3.5 rounded-xl border border-base-300 text-xs text-slate-600 space-y-1">
+                    <strong className="text-slate-800 block font-bold">💡 Protección segura de rachas:</strong>
                     Esta acción protege a todos los alumnos congelando (❄️) sus rachas sin modificar sus registros individuales.
                   </div>
                 </>

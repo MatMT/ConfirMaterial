@@ -73,7 +73,7 @@ export default function DataTable<T>({
             </div>
             <input
               type="text"
-              className="input input-bordered w-full pl-10 pr-9 text-sm rounded-xl bg-base-100 border-base-300 focus:border-primary focus:outline-none shadow-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+              className="input input-bordered w-full pl-10 pr-9 text-sm rounded-xl bg-base-100 border-base-300 focus:border-primary focus:outline-none shadow-xs text-slate-800 placeholder:text-slate-400"
               placeholder={placeholder}
               value={globalFilter ?? ''}
               onChange={e => setGlobalFilter(e.target.value)}
@@ -84,7 +84,7 @@ export default function DataTable<T>({
                 type="button"
                 onClick={() => setGlobalFilter('')}
                 aria-label="Limpiar búsqueda"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -220,11 +220,11 @@ export default function DataTable<T>({
       </div>
 
       {/* Accessible Pagination (WCAG AA) */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-1 pt-2">
-        <div className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
-          Página <span className="font-bold text-slate-900 dark:text-slate-100">{table.getState().pagination.pageIndex + 1}</span> de <span className="font-bold text-slate-900 dark:text-slate-100">{table.getPageCount() || 1}</span>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-1 pt-2 pb-8 sm:pb-2">
+        <div className="text-xs sm:text-sm font-medium text-slate-600">
+          Página <span className="font-bold text-slate-800">{table.getState().pagination.pageIndex + 1}</span> de <span className="font-bold text-slate-800">{table.getPageCount() || 1}</span>
           {data.length > 0 && (
-            <span className="text-slate-500 dark:text-slate-400 ml-1">
+            <span className="text-slate-500 ml-1">
               ({data.length} {data.length === 1 ? 'resultado' : 'resultados'})
             </span>
           )}
@@ -232,7 +232,7 @@ export default function DataTable<T>({
         <nav aria-label="Navegación de páginas" className="flex items-center gap-1.5">
           <button
             type="button"
-            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 active:bg-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
             aria-label="Ir a la primera página"
@@ -242,7 +242,7 @@ export default function DataTable<T>({
           </button>
           <button
             type="button"
-            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 active:bg-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
             aria-label="Ir a la página anterior"
@@ -252,7 +252,7 @@ export default function DataTable<T>({
           </button>
           <button
             type="button"
-            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 active:bg-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
             aria-label="Ir a la página siguiente"
@@ -262,7 +262,7 @@ export default function DataTable<T>({
           </button>
           <button
             type="button"
-            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 active:bg-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
             aria-label="Ir a la última página"

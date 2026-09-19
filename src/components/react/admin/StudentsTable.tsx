@@ -20,13 +20,13 @@ const getInitials = (fullName: string, firstName?: string, lastName?: string) =>
 
 const getAvatarColor = (initials: string) => {
   const palettes = [
-    'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200 border-blue-200 dark:border-blue-800',
-    'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-200 border-purple-200 dark:border-purple-800',
-    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800',
-    'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border-amber-200 dark:border-amber-800',
-    'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-200 border-rose-200 dark:border-rose-800',
-    'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800',
-    'bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-200 border-teal-200 dark:border-teal-800',
+    'bg-blue-100 text-blue-800 border-blue-200',
+    'bg-purple-100 text-purple-800 border-purple-200',
+    'bg-emerald-100 text-emerald-800 border-emerald-200',
+    'bg-amber-100 text-amber-900 border-amber-200',
+    'bg-rose-100 text-rose-800 border-rose-200',
+    'bg-indigo-100 text-indigo-800 border-indigo-200',
+    'bg-teal-100 text-teal-800 border-teal-200',
   ];
   const hash = (initials.charCodeAt(0) || 0) + (initials.charCodeAt(1) || 0);
   return palettes[hash % palettes.length];
@@ -60,21 +60,21 @@ export default function StudentsTable({ students = [] }: { students: any[] }) {
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border ${getAvatarColor(initials)}`}>
               {initials}
             </div>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">{name}</span>
+            <span className="font-bold text-slate-800">{name}</span>
           </div>
         );
       },
     }),
     columnHelper.accessor('credential', {
       header: 'Credencial',
-      cell: info => <div className="badge badge-ghost font-mono text-xs font-semibold">{info.getValue() || '—'}</div>,
+      cell: info => <div className="badge badge-ghost font-mono text-xs font-semibold text-slate-700">{info.getValue() || '—'}</div>,
     }),
     columnHelper.accessor('last_connection', {
       header: 'Última Conexión',
       cell: info => {
         const val = info.getValue();
         return (
-          <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+          <span className="text-xs text-slate-600 font-medium">
             {formatConnectionDate(val)}
           </span>
         );
@@ -89,15 +89,15 @@ export default function StudentsTable({ students = [] }: { students: any[] }) {
         return (
           <div className={`inline-flex items-center font-bold gap-1 px-2.5 py-1 rounded-full text-xs border ${
             isFrozen
-              ? 'bg-info/10 text-info border-info/30'
+              ? 'bg-sky-50 text-sky-700 border-sky-200'
               : val > 0
-              ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50'
-              : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
+              ? 'bg-orange-50 text-orange-700 border-orange-200'
+              : 'bg-slate-100 text-slate-500 border-slate-200'
           }`}>
             {isFrozen ? (
-              <Snowflake className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '8s' }} />
+              <Snowflake className="w-3.5 h-3.5 text-sky-500 animate-spin" style={{ animationDuration: '8s' }} />
             ) : (
-              <Flame className={`w-3.5 h-3.5 ${val > 0 ? 'fill-current' : ''}`} />
+              <Flame className={`w-3.5 h-3.5 ${val > 0 ? 'text-orange-500 fill-orange-500' : 'text-slate-400'}`} />
             )}
             <span>{val}</span>
             {isFrozen && <span className="text-[10px] opacity-80">(❄️)</span>}
@@ -108,7 +108,7 @@ export default function StudentsTable({ students = [] }: { students: any[] }) {
     columnHelper.accessor('longestStreak', {
       header: 'Racha Máx.',
       cell: info => (
-        <div className="inline-flex items-center text-slate-700 dark:text-slate-300 font-bold gap-1 text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+        <div className="inline-flex items-center text-amber-800 font-bold gap-1 text-xs px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200/80">
           <span>🏆</span>
           <span>{info.getValue() || 0}</span>
         </div>
@@ -165,7 +165,7 @@ export default function StudentsTable({ students = [] }: { students: any[] }) {
       <a
         key={student.id}
         href={`/admin/students/${student.id}`}
-        className="group bg-base-100 p-3.5 sm:p-4 rounded-2xl border border-base-200 hover:border-primary/40 shadow-xs hover:shadow-md transition-all flex items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.99]"
+        className="group bg-base-100 p-3.5 sm:p-4 rounded-2xl border border-base-200/90 hover:border-primary/40 shadow-xs hover:shadow-md transition-all flex items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.99]"
         aria-label={`Ver progreso de ${fullName}`}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -179,44 +179,44 @@ export default function StudentsTable({ students = [] }: { students: any[] }) {
 
           {/* Información del Estudiante */}
           <div className="min-w-0 flex-1 space-y-1">
-            {/* Nombre Completo */}
-            <h3 className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 truncate group-hover:text-primary transition-colors leading-snug">
+            {/* Nombre Completo con alto contraste */}
+            <h3 className="font-bold text-sm sm:text-base text-slate-800 truncate group-hover:text-primary transition-colors leading-snug">
               {fullName}
             </h3>
 
-            {/* Metadatos en una sola línea horizontal */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 truncate">
-              <span className="font-mono font-medium">{credential}</span>
-              <span className="text-slate-300 dark:text-slate-600">•</span>
+            {/* Metadatos en una sola línea horizontal subordinada */}
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 truncate">
+              <span className="font-mono font-semibold text-slate-600">{credential}</span>
+              <span className="text-slate-300">•</span>
               <span className="truncate">Conectado: {lastConnection}</span>
             </div>
 
-            {/* Rachas: Chips compactos en línea */}
+            {/* Rachas: Chips compactos y claros en línea */}
             <div className="flex items-center gap-2 pt-0.5">
               {/* Racha actual */}
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border transition-colors ${
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border transition-colors ${
                 student.isFrozen
-                  ? 'bg-info/10 text-info border-info/30'
+                  ? 'bg-sky-50 text-sky-700 border-sky-200'
                   : currentStreak > 0
-                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50'
-                  : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
+                  ? 'bg-orange-50 text-orange-700 border-orange-200'
+                  : 'bg-slate-100 text-slate-500 border-slate-200'
               }`}>
                 {student.isFrozen ? (
                   <>
-                    <Snowflake className="w-3 h-3 text-info" />
+                    <Snowflake className="w-3.5 h-3.5 text-sky-500 animate-spin" />
                     <span>{currentStreak}</span>
                   </>
                 ) : (
                   <>
-                    <span>🔥</span>
+                    <Flame className={`w-3.5 h-3.5 ${currentStreak > 0 ? 'text-orange-500 fill-orange-500' : 'text-slate-400'}`} />
                     <span>{currentStreak}</span>
                   </>
                 )}
               </span>
 
               {/* Racha máxima */}
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
-                <span>🏆</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/80">
+                <span className="text-xs">🏆</span>
                 <span>{maxStreak}</span>
               </span>
             </div>

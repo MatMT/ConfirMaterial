@@ -127,38 +127,35 @@ if (isAuthenticated) {
     <Header isAdminMode={true} />
 
     <main class="container mx-auto px-4 max-w-6xl flex-grow py-4 sm:py-8 md:py-12 animate-fade-up">
-        <div class="space-y-4 sm:space-y-8">
-            <div class="flex flex-row justify-between items-center gap-3 bg-base-100 p-3.5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-lg border border-base-200 min-h-[72px] sm:min-h-0">
-                <div class="min-w-0 flex-1">
-                    <div class="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-xs md:text-sm mb-2 md:mb-3">
-                        <Icon name="mdi:shield-check" class="w-3.5 h-3.5 md:w-4 md:h-4" />
-                        Modo Administrador
+            {/* Card Header Superior */}
+            <div class="flex items-center justify-between gap-3 bg-base-100 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-base-200">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
+                            <Icon name="mdi:shield-check" class="w-3.5 h-3.5" />
+                            Modo Administrador
+                        </span>
                     </div>
-                    <div class="flex items-center gap-1.5 sm:hidden mb-0.5">
-                        <span class="badge badge-primary badge-xs font-bold text-[9px] py-0.5 px-1.5">Admin</span>
-                    </div>
-                    <h2 class="text-base sm:text-2xl md:text-4xl font-extrabold tracking-tight truncate text-slate-900 dark:text-slate-100">
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-800">
                         Gestión de Alumnos
-                    </h2>
-                    <p class="text-base-content/60 mt-1 text-sm md:text-lg hidden sm:block">
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">
                         Supervisa el progreso y las rachas de todos los estudiantes.
                     </p>
                 </div>
                 <a 
                     href="/admin/students/new" 
-                    class="btn btn-primary btn-sm sm:btn-md shadow-md hover:shadow-lg transition-all rounded-full px-3.5 sm:px-8 shrink-0 font-bold gap-1.5"
+                    class="btn btn-primary btn-sm sm:btn-md shadow-sm hover:shadow-md transition-all rounded-xl px-3.5 sm:px-6 font-bold gap-1.5 shrink-0"
                     aria-label="Crear Nuevo Alumno"
                 >
-                    <Icon name="mdi:account-plus-outline" class="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Icon name="mdi:account-plus-outline" class="w-4 h-4" />
                     <span class="hidden sm:inline">Crear Nuevo Alumno</span>
                     <span class="sm:hidden text-xs">Nuevo</span>
                 </a>
             </div>
             
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 bg-base-100 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md border border-base-200">
-                <div class="flex items-center gap-2">
-                    <span class="text-sm sm:text-base font-extrabold text-base-content/80">Control Global de Rachas:</span>
-                </div>
+            {/* Control Global de Rachas Card */}
+            <div class="bg-base-100 p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border border-base-200">
                 <HolidayToggle client:load initialHolidayMode={isHolidayMode} />
             </div>
             
