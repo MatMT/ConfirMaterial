@@ -1,5 +1,5 @@
 {
-  "lessonId": "260918",
+  "lessonId": 260918,
   "title": "Maria, madre de Cristo y de la Iglesia",
   "questions": [
     {
@@ -11,12 +11,12 @@
           "correct": false
         },
         {
-          "text": "Que solamente debemos aceptar lo que nos resulte fácil.",
-          "correct": false
-        },
-        {
           "text": "Que podemos confiar en Dios aunque no conozcamos todo lo que sucederá. Bb ",
           "correct": true
+        },
+        {
+          "text": "Que solamente debemos aceptar lo que nos resulte fácil.",
+          "correct": false
         }
       ]
     },
@@ -25,11 +25,11 @@
       "text": "¿Por qué María es reconocida como Madre de la Iglesia?",
       "options": [
         {
-          "text": "Porque fue la primera catequista.",
+          "text": "Porque reemplaza a Jesús como Salvador.",
           "correct": false
         },
         {
-          "text": "Porque reemplaza a Jesús como Salvador.",
+          "text": "Porque fue la primera catequista.",
           "correct": false
         },
         {
@@ -43,16 +43,16 @@
       "text": "¿Qué significa para nosotros la frase de María “Hagan lo que él les diga”?.",
       "options": [
         {
-          "text": "Que María nos invita a escuchar y seguir a Jesús.",
-          "correct": true
+          "text": "Que la oración no es necesaria.",
+          "correct": false
         },
         {
           "text": "Que María quiere ocupar el lugar de Jesús.",
           "correct": false
         },
         {
-          "text": "Que la oración no es necesaria.",
-          "correct": false
+          "text": "Que María nos invita a escuchar y seguir a Jesús.",
+          "correct": true
         }
       ]
     }
