@@ -56,31 +56,46 @@ const lessons = (await getCollection('lessons')).sort(
 </head>
 <body class="bg-base-200 min-h-screen flex flex-col font-sans">
     <Header isAdminMode={true} />
-    <main class="container mx-auto px-4 max-w-6xl flex-grow py-12 animate-fade-up space-y-8">
-        {/* Top Header Card */}
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-base-100 p-8 rounded-3xl shadow-xl border border-base-200">
-            <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm mb-4">
-                    <Icon name="mdi:book-open-page-variant-outline" class="w-4 h-4" />
-                    Modo Administrador
+    <main class="container mx-auto px-4 max-w-6xl flex-grow py-4 sm:py-8 md:py-12 animate-fade-up space-y-4 sm:space-y-8">
+        {/* Top Header Card Compacto */}
+        <div class="flex items-center justify-between gap-3 bg-base-100 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-base-200">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
+                        <Icon name="mdi:book-open-page-variant-outline" class="w-3.5 h-3.5" />
+                        Modo Administrador
+                    </span>
                 </div>
-                <h2 class="text-4xl font-extrabold tracking-tight">Panel de Lecciones</h2>
-                <p class="text-base-content/60 mt-2 text-lg">Crea, edita y gestiona el contenido de las lecciones semanales.</p>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-800">
+                    Panel de Lecciones
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">
+                    Crea, edita y gestiona el contenido de las lecciones semanales.
+                </p>
             </div>
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-                <button onclick="window.location.reload()" class="btn btn-outline btn-base-300 shadow-sm hover:scale-105 transition-all rounded-full px-6">
-                    <Icon name="mdi:refresh" class="w-5 h-5 mr-1" />
-                    Recargar
+            <div class="flex items-center gap-2 shrink-0">
+                <button 
+                    onclick="window.location.reload()" 
+                    class="btn btn-ghost btn-sm btn-circle text-slate-400 hover:text-slate-700" 
+                    title="Recargar lecciones"
+                    aria-label="Recargar"
+                >
+                    <Icon name="mdi:refresh" class="w-4 h-4" />
                 </button>
-                <a href="/admin/lessons/new" class="btn btn-primary shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all rounded-full px-8">
-                    <Icon name="mdi:plus-circle-outline" class="w-5 h-5 mr-2" />
-                    Crear Nueva Lección
+                <a 
+                    href="/admin/lessons/new" 
+                    class="btn btn-primary btn-sm sm:btn-md shadow-sm hover:shadow-md transition-all rounded-xl px-3.5 sm:px-6 font-bold gap-1.5"
+                    aria-label="Crear Nueva Lección"
+                >
+                    <Icon name="mdi:plus-circle-outline" class="w-4 h-4" />
+                    <span class="hidden sm:inline">Nueva Lección</span>
+                    <span class="sm:hidden text-xs">Nueva</span>
                 </a>
             </div>
         </div>
 
         {/* Main Content Card (Search & Table) */}
-        <div class="bg-base-100 rounded-3xl shadow-2xl p-6 md:p-8 border border-base-200">
+        <div class="bg-base-100 rounded-2xl sm:rounded-3xl shadow-xl p-3.5 sm:p-6 md:p-8 border border-base-200">
             {/* Search Input & Header */}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-6 border-b border-base-200">
                 <div>

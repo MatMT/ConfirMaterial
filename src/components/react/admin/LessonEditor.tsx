@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Bold, Italic, Highlighter, Quote, List, ListOrdered, 
-    Info, FileText, Eraser, HelpCircle, Flag, Save, 
-    Rocket, Globe, Sparkles, AlertCircle, FileEdit 
+    FileText, Eraser, HelpCircle, Flag, Save, 
+    Rocket, Sparkles, AlertCircle, CheckCircle2, 
+    ChevronRight, ChevronLeft 
 } from 'lucide-react';
 
 interface ParagraphBlock {
@@ -88,59 +89,59 @@ const insertList = (
 
 const MarkdownToolbar = ({ textareaId, value, setValue }: { textareaId: string, value: string, setValue: (val: string) => void }) => {
     return (
-        <div className="flex flex-wrap gap-1 mb-0 bg-base-200 p-1 rounded-t-xl border border-base-300 border-b-0 w-full">
+        <div className="flex flex-wrap gap-1 mb-0 bg-base-200/80 p-1 rounded-t-xl border border-base-300 border-b-0 w-full">
             <button
                 type="button"
-                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-base-content/85 hover:bg-base-300"
+                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-slate-700 hover:bg-base-300"
                 title="Negrita"
                 onClick={() => insertMarkdown(textareaId, value, setValue, '**', '**')}
             >
-                <Bold className="w-4 h-4 text-primary" />
+                <Bold className="w-3.5 h-3.5 text-primary" />
                 <span className="hidden sm:inline">Negrita</span>
             </button>
             <button
                 type="button"
-                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-base-content/85 hover:bg-base-300"
+                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-slate-700 hover:bg-base-300"
                 title="Cursiva"
                 onClick={() => insertMarkdown(textareaId, value, setValue, '*', '*')}
             >
-                <Italic className="w-4 h-4 text-primary" />
+                <Italic className="w-3.5 h-3.5 text-primary" />
                 <span className="hidden sm:inline">Cursiva</span>
             </button>
             <button
                 type="button"
-                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-base-content/85 hover:bg-base-300"
+                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-slate-700 hover:bg-base-300"
                 title="Resaltar Texto"
                 onClick={() => insertMarkdown(textareaId, value, setValue, '<mark>', '</mark>')}
             >
-                <Highlighter className="w-4 h-4 text-primary" />
+                <Highlighter className="w-3.5 h-3.5 text-primary" />
                 <span className="hidden sm:inline">Resaltar</span>
             </button>
             <button
                 type="button"
-                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-base-content/85 hover:bg-base-300"
-                title="Cita / Destacado"
+                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-slate-700 hover:bg-base-300"
+                title="Cita"
                 onClick={() => insertMarkdown(textareaId, value, setValue, '> "', '"')}
             >
-                <Quote className="w-4 h-4 text-primary" />
+                <Quote className="w-3.5 h-3.5 text-primary" />
                 <span className="hidden sm:inline">Cita</span>
             </button>
             <button
                 type="button"
-                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-base-content/85 hover:bg-base-300"
-                title="Lista de Viñetas"
+                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-slate-700 hover:bg-base-300"
+                title="Lista"
                 onClick={() => insertList(textareaId, value, setValue, false)}
             >
-                <List className="w-4 h-4 text-primary" />
+                <List className="w-3.5 h-3.5 text-primary" />
                 <span className="hidden sm:inline">Lista</span>
             </button>
             <button
                 type="button"
-                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-base-content/85 hover:bg-base-300"
-                title="Lista Numerada"
+                className="btn btn-xs btn-ghost gap-1 font-bold normal-case text-slate-700 hover:bg-base-300"
+                title="Numerada"
                 onClick={() => insertList(textareaId, value, setValue, true)}
             >
-                <ListOrdered className="w-4 h-4 text-primary" />
+                <ListOrdered className="w-3.5 h-3.5 text-primary" />
                 <span className="hidden sm:inline">Numerada</span>
             </button>
         </div>
@@ -165,8 +166,11 @@ const generateDescriptionFromIntro = (text: string) => {
 };
 
 export default function LessonEditor({ initialData = null }: { initialData?: any }) {
+    // Stepper Wizard state: 1: General + Intro, 2: Bloques, 3: Cierre + Publicación
+    const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+    const [activeBlockIndex, setActiveBlockIndex] = useState(0);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submittingAction, setSubmittingAction] = useState<'draft' | 'publish' | null>(null);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     
     // Form state
@@ -176,12 +180,12 @@ export default function LessonEditor({ initialData = null }: { initialData?: any
     const [author, setAuthor] = useState(initialData?.author || '');
     const [date, setDate] = useState(initialData?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
     
-    // Initial draft status: if existing lesson, use its draft status (default false); if new, starts as draft true until published
+    // Single draft status state
     const [isDraft, setIsDraft] = useState<boolean>(() => {
         if (initialData?.id) {
             return initialData.draft ?? false;
         }
-        return initialData?.draft ?? true;
+        return false; // Por defecto publicada para nuevas lecciones
     });
     
     const isAlreadyPublished = initialData?.id && initialData?.draft === false;
@@ -232,7 +236,7 @@ export default function LessonEditor({ initialData = null }: { initialData?: any
 
         const timer = setTimeout(() => {
             try {
-                const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const backupObject = {
                     title,
                     slug,
@@ -313,28 +317,27 @@ export default function LessonEditor({ initialData = null }: { initialData?: any
 
     const validateForPublish = (): string[] => {
         const errors: string[] = [];
-        if (!title.trim()) errors.push('Título de la lección');
-        if (!author.trim()) errors.push('Autor');
-        if (!date.trim()) errors.push('Fecha (pubDate)');
-        if (!intro.trim()) errors.push('Introducción');
+        if (!title.trim()) errors.push('Título de la lección (Paso 1)');
+        if (!author.trim()) errors.push('Autor (Paso 1)');
+        if (!date.trim()) errors.push('Fecha (Paso 1)');
+        if (!intro.trim()) errors.push('Introducción (Paso 1)');
         
         paragraphs.forEach((p, i) => {
             const num = i + 1;
-            if (!p.text.trim()) errors.push(`Párrafo ${num}: Falta el contenido`);
-            if (!p.question.text.trim()) errors.push(`Párrafo ${num}: Falta la pregunta`);
-            if (!p.question.correctOption.trim()) errors.push(`Párrafo ${num}: Falta la opción correcta`);
+            if (!p.text.trim()) errors.push(`Bloque ${num}: Falta el contenido (Paso 2)`);
+            if (!p.question.text.trim()) errors.push(`Bloque ${num}: Falta la pregunta interactiva (Paso 2)`);
+            if (!p.question.correctOption.trim()) errors.push(`Bloque ${num}: Falta la opción correcta (Paso 2)`);
             if (p.question.incorrectOptions.some(opt => !opt.trim())) {
-                errors.push(`Párrafo ${num}: Faltan opciones incorrectas`);
+                errors.push(`Bloque ${num}: Faltan opciones incorrectas (Paso 2)`);
             }
         });
 
-        if (!conclusion.trim()) errors.push('Conclusión');
+        if (!conclusion.trim()) errors.push('Conclusión (Paso 3)');
         return errors;
     };
 
     const saveLesson = async (saveAsDraft: boolean, overrideDescription?: string) => {
         setIsSubmitting(true);
-        setSubmittingAction(saveAsDraft ? 'draft' : 'publish');
 
         try {
             const id = initialData?.id || generateId();
@@ -371,7 +374,7 @@ export default function LessonEditor({ initialData = null }: { initialData?: any
                 
                 setIsDraft(saveAsDraft);
                 alert(saveAsDraft 
-                    ? '📝 ¡Borrador guardado exitosamente!\n\nNo será visible para los alumnos hasta que decidas publicarla.' 
+                    ? '📝 ¡Borrador guardado exitosamente!\n\nNo será visible para los alumnos hasta que decidas publicarlo.' 
                     : '🎉 ¡Lección publicada exitosamente!\n\nEstará visible para todos los alumnos en 2 a 5 minutos mientras Vercel actualiza el sitio.');
                 
                 window.location.href = '/admin/lessons';
@@ -383,86 +386,128 @@ export default function LessonEditor({ initialData = null }: { initialData?: any
             alert('❌ Error de red al comunicarse con el servidor.');
         } finally {
             setIsSubmitting(false);
-            setSubmittingAction(null);
         }
     };
 
-    const handleSaveDraft = async () => {
-        if (!title.trim()) {
-            alert('⚠️ Por favor escribe al menos el título de la lección para poder identificar tu borrador.');
-            return;
+    const handleSubmitAction = async () => {
+        if (isDraft) {
+            // Guardar como borrador
+            if (!title.trim()) {
+                alert('⚠️ Por favor escribe al menos el título de la lección para identificar el borrador.');
+                setCurrentStep(1);
+                return;
+            }
+            const confirmMsg = '📝 ¿Deseas guardar esta lección como BORRADOR?\n\nNo será visible para los alumnos hasta que decidas publicarla.';
+            if (!window.confirm(confirmMsg)) return;
+
+            let finalDesc = description.trim();
+            if (!finalDesc && intro.trim()) {
+                finalDesc = generateDescriptionFromIntro(intro);
+            }
+            await saveLesson(true, finalDesc);
+        } else {
+            // Publicar
+            const errors = validateForPublish();
+            if (errors.length > 0) {
+                setValidationErrors(errors);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            setValidationErrors([]);
+
+            let finalDesc = description.trim();
+            if (!finalDesc) {
+                finalDesc = generateDescriptionFromIntro(intro) || title.trim();
+                setDescription(finalDesc);
+            }
+
+            const confirmMsg = isAlreadyPublished
+                ? '🚀 ¿Deseas actualizar la lección PUBLICADA?\n\nLos cambios estarán visibles para los alumnos en 2 a 5 minutos.'
+                : '🚀 ¿Deseas PUBLICAR esta lección?\n\nEstará visible para todos los alumnos en el sitio (2 a 5 minutos de compilación).';
+
+            if (!window.confirm(confirmMsg)) return;
+
+            await saveLesson(false, finalDesc);
         }
-
-        const confirmMsg = initialData?.id
-            ? '📝 ¿Deseas guardar los cambios de este BORRADOR?\n\nSeguirá sin ser visible para los alumnos hasta que decidas publicarla.'
-            : '📝 ¿Deseas guardar esta lección como BORRADOR?\n\nNo será visible para los alumnos hasta que decidas publicarla.';
-
-        if (!window.confirm(confirmMsg)) return;
-
-        let finalDesc = description.trim();
-        if (!finalDesc && intro.trim()) {
-            finalDesc = generateDescriptionFromIntro(intro);
-        }
-
-        await saveLesson(true, finalDesc);
     };
 
-    const handlePublish = async () => {
-        const errors = validateForPublish();
-        if (errors.length > 0) {
-            setValidationErrors(errors);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
-        setValidationErrors([]);
-
-        // Si la descripción está vacía, autogenerar desde la intro para no bloquear
-        let finalDesc = description.trim();
-        if (!finalDesc) {
-            finalDesc = generateDescriptionFromIntro(intro) || title.trim();
-            setDescription(finalDesc);
-        }
-
-        const confirmMsg = isAlreadyPublished
-            ? '🚀 ¿Deseas actualizar la lección PUBLICADA?\n\nLos cambios se verán reflejados para todos los alumnos en 2 a 5 minutos.'
-            : '🚀 ¿Deseas PUBLICAR esta lección?\n\nEstará visible para todos los alumnos en el sitio web (tardará de 2 a 5 minutos en compilarse en Vercel).';
-
-        if (!window.confirm(confirmMsg)) return;
-
-        await saveLesson(false, finalDesc);
-    };
-
-    // Auto-resize initial layout execution if needed
+    // Auto-resize initial layout
     useEffect(() => {
         document.querySelectorAll('textarea').forEach((textarea) => {
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
         });
-    }, [paragraphs, intro, conclusion]);
+    }, [paragraphs, intro, conclusion, currentStep, activeBlockIndex]);
 
     return (
-        <form onSubmit={e => e.preventDefault()} className="space-y-6 sm:space-y-8 bg-base-100 p-6 sm:p-8 pb-28 sm:pb-36 rounded-3xl shadow-xl w-full border border-base-200 animate-fade-up">
+        <div className="space-y-4 bg-base-100 p-4 sm:p-6 pb-28 rounded-2xl sm:rounded-3xl shadow-sm border border-base-200">
             
+            {/* 1. Stepper Visual en 3 Pasos */}
+            <div className="flex items-center justify-between p-1.5 bg-base-200/60 rounded-2xl border border-base-200 gap-1 select-none">
+                <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className={`flex items-center justify-center gap-1.5 flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                        currentStep === 1
+                            ? 'bg-white text-primary shadow-xs'
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
+                        currentStep === 1 ? 'bg-primary text-white' : 'bg-slate-300 text-slate-700'
+                    }`}>1</span>
+                    <span className="truncate">General</span>
+                </button>
+
+                <span className="text-slate-300 text-xs">─</span>
+
+                <button
+                    type="button"
+                    onClick={() => setCurrentStep(2)}
+                    className={`flex items-center justify-center gap-1.5 flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                        currentStep === 2
+                            ? 'bg-white text-primary shadow-xs'
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
+                        currentStep === 2 ? 'bg-primary text-white' : 'bg-slate-300 text-slate-700'
+                    }`}>2</span>
+                    <span className="truncate">Bloques</span>
+                </button>
+
+                <span className="text-slate-300 text-xs">─</span>
+
+                <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    className={`flex items-center justify-center gap-1.5 flex-1 py-2 px-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                        currentStep === 3
+                            ? 'bg-white text-primary shadow-xs'
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
+                        currentStep === 3 ? 'bg-primary text-white' : 'bg-slate-300 text-slate-700'
+                    }`}>3</span>
+                    <span className="truncate">Cierre</span>
+                </button>
+            </div>
+
             {/* Banner de Errores de Validación al Publicar */}
             {validationErrors.length > 0 && (
-                <div className="alert alert-warning shadow-lg rounded-2xl p-4 sm:p-5 border-2 border-warning/40 animate-fade-down">
-                    <div className="flex items-start gap-3 w-full">
-                        <AlertCircle className="w-6 h-6 text-warning shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <h3 className="font-bold text-base sm:text-lg">
-                                No se puede publicar todavía: Faltan datos requeridos
-                            </h3>
-                            <p className="text-xs sm:text-sm text-base-content/80 mt-1">
-                                Para que los alumnos puedan estudiar la lección completa, debes completar los siguientes campos:
-                            </p>
-                            <ul className="list-disc list-inside mt-2 text-xs sm:text-sm font-medium space-y-1 bg-base-100/70 p-3 rounded-xl border border-warning/20">
+                <div className="alert alert-warning shadow-sm rounded-2xl p-4 border border-warning/40 animate-fade-down">
+                    <div className="flex items-start gap-2.5 w-full">
+                        <AlertCircle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                        <div className="flex-1 text-xs sm:text-sm">
+                            <h4 className="font-bold text-slate-900">
+                                Falta completar campos para publicar:
+                            </h4>
+                            <ul className="list-disc list-inside mt-1.5 font-medium space-y-0.5 text-error">
                                 {validationErrors.map((err, i) => (
-                                    <li key={i} className="text-error font-semibold">{err}</li>
+                                    <li key={i}>{err}</li>
                                 ))}
                             </ul>
-                            <div className="mt-3 text-xs text-base-content/70">
-                                💡 <strong>Tip:</strong> Si aún estás preparando el contenido, puedes presionar <strong>"Guardar Borrador"</strong> al final de la página para guardar tu progreso sin perderlo.
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -470,249 +515,236 @@ export default function LessonEditor({ initialData = null }: { initialData?: any
 
             {/* Banner de Respaldo Encontrado */}
             {hasBackup && (
-                <div className="alert bg-primary/10 border-2 border-primary/40 shadow-xl rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-down">
-                    <div className="flex items-start gap-3">
-                        <div className="text-2xl animate-bounce">💡</div>
-                        <div>
-                            <h3 className="font-bold text-primary text-base sm:text-lg">Respaldo Local Detectado</h3>
-                            <p className="text-xs sm:text-sm text-base-content/80 mt-0.5 leading-relaxed">
-                                Borrador sin guardar encontrado{lastSavedTime ? ` (${lastSavedTime})` : ''}. ¿Deseas restaurarlo?
-                            </p>
-                        </div>
+                <div className="alert bg-primary/5 border border-primary/20 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3 text-xs sm:text-sm">
+                    <div className="flex items-center gap-2 text-slate-700 font-medium truncate">
+                        <span>💡</span>
+                        <span className="truncate">Borrador local detectado{lastSavedTime ? ` (${lastSavedTime})` : ''}</span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end shrink-0">
-                        <button type="button" onClick={handleDiscardBackup} className="btn btn-outline btn-error btn-sm font-bold rounded-xl gap-1.5 shadow-2xs hover:bg-error hover:text-white transition-all">
-                            <Eraser className="w-4 h-4" />
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button type="button" onClick={handleDiscardBackup} className="btn btn-ghost btn-xs text-error font-bold">
                             Descartar
                         </button>
-                        <button type="button" onClick={handleRestoreBackup} className="btn btn-primary btn-sm font-bold shadow-md rounded-xl gap-1.5">
-                            📥 Restaurar Respaldo
+                        <button type="button" onClick={handleRestoreBackup} className="btn btn-primary btn-xs font-bold rounded-lg">
+                            Restaurar
                         </button>
                     </div>
                 </div>
             )}
-            
-            {/* Cabecera / Metadatos */}
-            <div className="space-y-4 bg-base-200/50 p-4 sm:p-6 rounded-2xl border border-base-200">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-base-300">
-                    <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                        <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                        Información General
-                    </h2>
-                    <div className="flex items-center gap-2">
-                        {isDraft ? (
-                            <span className="badge badge-warning badge-sm sm:badge-md font-bold gap-1.5 py-3 px-3">
-                                <FileEdit className="w-3.5 h-3.5" /> Estado actual: Borrador
-                            </span>
-                        ) : (
-                            <span className="badge badge-success text-white badge-sm sm:badge-md font-bold gap-1.5 py-3 px-3">
-                                <Globe className="w-3.5 h-3.5" /> Estado actual: Publicada
-                            </span>
-                        )}
-                    </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* ──────── PASO 1: INFORMACIÓN GENERAL + INTRODUCCIÓN ──────── */}
+            {currentStep === 1 && (
+                <div className="space-y-4 animate-fade">
                     <div className="form-control">
-                        <label className="label">
-                            <span className="label-text font-semibold text-xs sm:text-sm">
+                        <label className="label py-1">
+                            <span className="label-text font-bold text-xs sm:text-sm text-slate-700">
                                 Título de la Lección <span className="text-error">*</span>
                             </span>
                         </label>
                         <input 
                             type="text" 
-                            className="input input-bordered w-full text-sm sm:text-base" 
+                            className="input input-bordered w-full text-sm rounded-xl" 
                             value={title} 
                             onChange={e => setTitle(e.target.value)} 
                             placeholder="Ej: El significado del Perdón" 
                         />
                     </div>
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text font-semibold text-xs sm:text-sm">
-                                Autor <span className="text-error">*</span>
-                            </span>
-                        </label>
-                        <input 
-                            type="text" 
-                            className="input input-bordered w-full text-sm sm:text-base" 
-                            value={author} 
-                            onChange={e => setAuthor(e.target.value)} 
-                        />
-                    </div>
-                </div>
-                
-                <div className="form-control">
-                    <div className="flex items-center justify-between pb-1">
-                        <label className="label py-0">
-                            <span className="label-text font-semibold text-xs sm:text-sm">
-                                Descripción corta <span className="text-base-content/50 font-normal">(resumen en listado)</span>
-                            </span>
-                        </label>
-                        {intro.trim() && (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const generated = generateDescriptionFromIntro(intro);
-                                    if (generated) setDescription(generated);
-                                }}
-                                className="btn btn-ghost btn-xs text-primary font-bold gap-1 hover:bg-primary/10 normal-case"
-                                title="Generar resumen automático desde la introducción"
-                            >
-                                <Sparkles className="w-3.5 h-3.5" />
-                                <span>Autogenerar desde introducción</span>
-                            </button>
-                        )}
-                    </div>
-                    <textarea 
-                        className="textarea textarea-bordered w-full text-sm sm:text-base min-h-[4rem] overflow-hidden" 
-                        value={description} 
-                        onChange={e => setDescription(e.target.value)} 
-                        onInput={autoResize}
-                        onFocus={autoResize}
-                        placeholder="Aparecerá en el resumen de lecciones (si se deja en blanco al publicar, se generará de la introducción)..."
-                    />
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text font-semibold text-xs sm:text-sm">
-                                Fecha (pubDate) <span className="text-error">*</span>
-                            </span>
-                        </label>
-                        <input 
-                            type="text" 
-                            className="input input-bordered w-full text-sm sm:text-base" 
-                            value={date} 
-                            onChange={e => setDate(e.target.value)} 
-                            placeholder="Sep 18 2026" 
-                        />
-                    </div>
-                    <div className="form-control flex flex-col justify-end pb-2">
-                        <label className="cursor-pointer label justify-start gap-4">
-                            <input 
-                                type="checkbox" 
-                                className="toggle toggle-warning toggle-sm sm:toggle-md" 
-                                checked={isDraft} 
-                                onChange={e => setIsDraft(e.target.checked)} 
-                            />
-                            <span className="label-text font-semibold text-xs sm:text-sm">
-                                {isDraft ? (
-                                    <span className="text-warning font-bold flex items-center gap-1.5">
-                                        <FileEdit className="w-4 h-4" /> Guardar como Borrador
-                                    </span>
-                                ) : (
-                                    <span className="text-success font-bold flex items-center gap-1.5">
-                                        <Globe className="w-4 h-4" /> Marcar como Publicada
-                                    </span>
-                                )}
-                                <span className="block text-[11px] text-base-content/60 font-normal mt-0.5">
-                                    {isDraft ? 'No será visible para los alumnos' : 'Será visible en el listado de lecciones'}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="form-control">
+                            <label className="label py-1">
+                                <span className="label-text font-bold text-xs sm:text-sm text-slate-700">
+                                    Autor <span className="text-error">*</span>
                                 </span>
+                            </label>
+                            <input 
+                                type="text" 
+                                className="input input-bordered w-full text-sm rounded-xl" 
+                                value={author} 
+                                onChange={e => setAuthor(e.target.value)} 
+                            />
+                        </div>
+                        <div className="form-control">
+                            <label className="label py-1">
+                                <span className="label-text font-bold text-xs sm:text-sm text-slate-700">
+                                    Fecha (pubDate) <span className="text-error">*</span>
+                                </span>
+                            </label>
+                            <input 
+                                type="text" 
+                                className="input input-bordered w-full text-sm rounded-xl" 
+                                value={date} 
+                                onChange={e => setDate(e.target.value)} 
+                                placeholder="Sep 18 2026" 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-control">
+                        <div className="flex items-center justify-between py-1">
+                            <label className="label py-0">
+                                <span className="label-text font-bold text-xs sm:text-sm text-slate-700">
+                                    Descripción corta
+                                </span>
+                            </label>
+                            {intro.trim() && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const gen = generateDescriptionFromIntro(intro);
+                                        if (gen) setDescription(gen);
+                                    }}
+                                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 py-0.5"
+                                    title="Generar resumen desde la introducción"
+                                >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>✨ Autogenerar</span>
+                                </button>
+                            )}
+                        </div>
+                        <textarea 
+                            className="textarea textarea-bordered w-full text-sm min-h-[4rem] rounded-xl overflow-hidden" 
+                            value={description} 
+                            onChange={e => setDescription(e.target.value)} 
+                            onInput={autoResize}
+                            onFocus={autoResize}
+                            placeholder="Resumen para el catálogo (opcional, se autogenera si se deja vacío)..."
+                        />
+                    </div>
+
+                    {/* Introducción */}
+                    <div className="space-y-2 pt-2 border-t border-base-200">
+                        <label className="label py-0">
+                            <span className="label-text font-bold text-xs sm:text-sm text-slate-700 flex items-center gap-1.5">
+                                <FileText className="w-4 h-4 text-primary" />
+                                Introducción de la Lección <span className="text-error">*</span>
                             </span>
                         </label>
+                        <div className="form-control">
+                            <MarkdownToolbar textareaId="intro-textarea" value={intro} setValue={setIntro} />
+                            <textarea 
+                                id="intro-textarea" 
+                                className="textarea textarea-bordered w-full min-h-[7rem] rounded-t-none rounded-b-xl text-sm overflow-hidden" 
+                                value={intro} 
+                                onChange={e => setIntro(e.target.value)} 
+                                onInput={autoResize}
+                                onFocus={autoResize}
+                                placeholder="Escribe la introducción en Markdown..."
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            <div className="divider text-xs uppercase tracking-widest text-base-content/40">Contenido</div>
+            {/* ──────── PASO 2: BLOQUES DE APRENDIZAJE ──────── */}
+            {currentStep === 2 && (
+                <div className="space-y-4 animate-fade">
+                    {/* Selector de Pestañas de Bloque */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-base-200">
+                        {paragraphs.map((p, idx) => {
+                            const isActive = activeBlockIndex === idx;
+                            const isFilled = !!(p.text.trim() && p.question.text.trim() && p.question.correctOption.trim());
+                            return (
+                                <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => setActiveBlockIndex(idx)}
+                                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all shrink-0 select-none ${
+                                        isActive
+                                            ? 'bg-primary text-white border-primary shadow-xs'
+                                            : isFilled
+                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                                            : 'bg-base-200/80 text-slate-600 border-base-300 hover:bg-base-300'
+                                    }`}
+                                >
+                                    <span>Bloque {idx + 1}</span>
+                                    {isFilled && <span className="text-[11px]">✓</span>}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-            {/* Introducción */}
-            <div className="space-y-3 sm:space-y-4">
-                <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-secondary" />
-                    Introducción <span className="text-error">*</span>
-                </h3>
-                <div className="form-control">
-                    <MarkdownToolbar textareaId="intro-textarea" value={intro} setValue={setIntro} />
-                    <textarea 
-                        id="intro-textarea" 
-                        className="textarea textarea-bordered w-full min-h-[8rem] rounded-t-none text-sm sm:text-base overflow-hidden" 
-                        value={intro} 
-                        onChange={e => setIntro(e.target.value)} 
-                        onInput={autoResize}
-                        onFocus={autoResize}
-                        placeholder="Puedes usar formato Markdown (**, *, >, etc.)"
-                    />
-                </div>
-            </div>
-
-            {/* Párrafos y Preguntas */}
-            <div className="space-y-6 sm:space-y-8">
-                {paragraphs.map((p, i) => (
-                    <div key={i} className="p-3 sm:p-6 border border-base-300 rounded-2xl bg-base-100 shadow-sm relative">
-                        <div className="absolute top-3 right-3 flex gap-2">
-                            <div className="badge badge-primary text-[10px] sm:text-xs font-bold">Bloque {i + 1} / 3</div>
-                            <button type="button" onClick={() => handleClearParagraph(i)} className="btn btn-xs btn-error btn-outline border-none btn-circle bg-error/10 hover:bg-error hover:text-white transition-colors" title="Limpiar bloque">
-                                <Eraser className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4 mt-6">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-semibold text-xs sm:text-sm">
-                                        Contenido del Párrafo {i + 1} <span className="text-error">*</span>
+                    {/* Bloque Activo */}
+                    {(() => {
+                        const i = activeBlockIndex;
+                        const p = paragraphs[i];
+                        return (
+                            <div className="space-y-4 pt-1">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                        Contenido del Bloque {i + 1} de 3 <span className="text-error">*</span>
                                     </span>
-                                </label>
-                                <MarkdownToolbar 
-                                    textareaId={`paragraph-textarea-${i}`} 
-                                    value={p.text} 
-                                    setValue={(val) => handleParagraphChange(i, 'text', val)} 
-                                />
-                                <textarea 
-                                    id={`paragraph-textarea-${i}`} 
-                                    className="textarea textarea-bordered w-full min-h-[6rem] rounded-t-none text-sm sm:text-base overflow-hidden" 
-                                    value={p.text} 
-                                    onChange={e => handleParagraphChange(i, 'text', e.target.value)} 
-                                    onInput={autoResize}
-                                    onFocus={autoResize}
-                                    placeholder="Texto del párrafo en Markdown..."
-                                />
-                            </div>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => handleClearParagraph(i)} 
+                                        className="btn btn-ghost btn-xs text-error font-medium gap-1"
+                                        title="Limpiar este bloque"
+                                    >
+                                        <Eraser className="w-3.5 h-3.5" />
+                                        <span>Limpiar bloque</span>
+                                    </button>
+                                </div>
 
-                            <div className="bg-base-200/50 p-3 sm:p-4 rounded-xl border-l-4 border-accent">
-                                <h4 className="font-bold mb-3 flex items-center gap-2 text-sm sm:text-base">
-                                    <HelpCircle className="w-4 h-4 text-accent" />
-                                    Pregunta Interactiva <span className="text-error">*</span>
-                                </h4>
-                                <div className="space-y-3">
+                                <div className="form-control">
+                                    <MarkdownToolbar 
+                                        textareaId={`paragraph-textarea-${i}`} 
+                                        value={p.text} 
+                                        setValue={(val) => handleParagraphChange(i, 'text', val)} 
+                                    />
+                                    <textarea 
+                                        id={`paragraph-textarea-${i}`} 
+                                        className="textarea textarea-bordered w-full min-h-[6rem] rounded-t-none rounded-b-xl text-sm overflow-hidden" 
+                                        value={p.text} 
+                                        onChange={e => handleParagraphChange(i, 'text', e.target.value)} 
+                                        onInput={autoResize}
+                                        onFocus={autoResize}
+                                        placeholder="Escribe el contenido del párrafo en Markdown..."
+                                    />
+                                </div>
+
+                                {/* Pregunta Interactiva Asociada al Bloque */}
+                                <div className="p-3.5 sm:p-4 rounded-2xl bg-base-200/60 border border-base-300/80 space-y-3">
+                                    <h4 className="font-bold text-xs sm:text-sm text-slate-800 flex items-center gap-1.5">
+                                        <HelpCircle className="w-4 h-4 text-primary" />
+                                        Pregunta Interactiva del Bloque {i + 1} <span className="text-error">*</span>
+                                    </h4>
+
                                     <div className="form-control">
                                         <input 
                                             type="text" 
-                                            className="input input-bordered w-full font-medium text-sm sm:text-base" 
-                                            placeholder="Escribe la pregunta..." 
+                                            className="input input-bordered w-full text-sm rounded-xl bg-white" 
+                                            placeholder="Escribe la pregunta interactiva..." 
                                             value={p.question.text} 
                                             onChange={e => handleQuestionChange(i, 'text', e.target.value)} 
                                         />
                                     </div>
+
                                     <div className="form-control">
                                         <label className="label py-0.5">
-                                            <span className="label-text text-success font-bold text-[10px] sm:text-xs uppercase tracking-wider">
-                                                Opción Correcta <span className="text-error">*</span>
+                                            <span className="label-text text-emerald-700 font-bold text-[11px] uppercase tracking-wider">
+                                                ✓ Opción Correcta <span className="text-error">*</span>
                                             </span>
                                         </label>
                                         <input 
                                             type="text" 
-                                            className="input input-bordered input-success w-full bg-success/5 text-sm sm:text-base" 
-                                            placeholder="La respuesta correcta" 
+                                            className="input input-bordered input-success w-full bg-emerald-50/60 text-sm rounded-xl" 
+                                            placeholder="Respuesta correcta" 
                                             value={p.question.correctOption} 
                                             onChange={e => handleQuestionChange(i, 'correctOption', e.target.value)} 
                                         />
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                         {p.question.incorrectOptions.map((opt, oIndex) => (
                                             <div key={oIndex} className="form-control">
                                                 <label className="label py-0.5">
-                                                    <span className="label-text text-error font-bold text-[10px] sm:text-xs uppercase tracking-wider">
-                                                        Opción Incorrecta {oIndex + 1} <span className="text-error">*</span>
+                                                    <span className="label-text text-rose-700 font-bold text-[11px] uppercase tracking-wider">
+                                                        ✕ Opción Incorrecta {oIndex + 1} <span className="text-error">*</span>
                                                     </span>
                                                 </label>
                                                 <input 
                                                     type="text" 
-                                                    className="input input-bordered input-error w-full bg-error/5 text-sm sm:text-base" 
-                                                    placeholder="Una respuesta incorrecta" 
+                                                    className="input input-bordered input-error w-full bg-rose-50/50 text-sm rounded-xl" 
+                                                    placeholder={`Respuesta incorrecta ${oIndex + 1}`} 
                                                     value={opt} 
                                                     onChange={e => handleIncorrectOptionChange(i, oIndex, e.target.value)} 
                                                 />
@@ -720,98 +752,197 @@ export default function LessonEditor({ initialData = null }: { initialData?: any
                                         ))}
                                     </div>
                                 </div>
+
+                                {/* Botones de Navegación Rápida entre Bloques */}
+                                <div className="flex items-center justify-between pt-1">
+                                    {activeBlockIndex > 0 ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveBlockIndex(activeBlockIndex - 1)}
+                                            className="btn btn-ghost btn-xs text-slate-600 font-bold gap-1"
+                                        >
+                                            <ChevronLeft className="w-3.5 h-3.5" />
+                                            <span>Bloque {activeBlockIndex}</span>
+                                        </button>
+                                    ) : <div />}
+
+                                    {activeBlockIndex < 2 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveBlockIndex(activeBlockIndex + 1)}
+                                            className="btn btn-ghost btn-xs text-primary font-bold gap-1 ml-auto"
+                                        >
+                                            <span>Bloque {activeBlockIndex + 2}</span>
+                                            <ChevronRight className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
+                        );
+                    })()}
+                </div>
+            )}
+
+            {/* ──────── PASO 3: CIERRE Y PUBLICACIÓN ──────── */}
+            {currentStep === 3 && (
+                <div className="space-y-4 animate-fade">
+                    {/* Conclusión */}
+                    <div className="space-y-2">
+                        <label className="label py-0">
+                            <span className="label-text font-bold text-xs sm:text-sm text-slate-700 flex items-center gap-1.5">
+                                <Flag className="w-4 h-4 text-primary" />
+                                Conclusión de la Lección <span className="text-error">*</span>
+                            </span>
+                        </label>
+                        <div className="form-control">
+                            <MarkdownToolbar textareaId="conclusion-textarea" value={conclusion} setValue={setConclusion} />
+                            <textarea 
+                                id="conclusion-textarea" 
+                                className="textarea textarea-bordered w-full min-h-[7rem] rounded-t-none rounded-b-xl text-sm overflow-hidden" 
+                                value={conclusion} 
+                                onChange={e => setConclusion(e.target.value)} 
+                                onInput={autoResize}
+                                onFocus={autoResize}
+                                placeholder="Escribe la conclusión y cierre en Markdown..."
+                            />
                         </div>
                     </div>
-                ))}
-            </div>
 
-            <div className="divider text-xs uppercase tracking-widest text-base-content/40">Cierre</div>
+                    {/* Selector Único de Estado (Sin redundancias) */}
+                    <div className="p-4 bg-base-100 rounded-2xl border border-base-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h4 className="font-bold text-sm sm:text-base text-slate-800">
+                                Estado al Guardar
+                            </h4>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                {isDraft 
+                                    ? '🟡 Borrador: Oculto para alumnos (ideal si aún falta revisar)' 
+                                    : '🟢 Publicada: Visible para todos los alumnos del curso'}
+                            </p>
+                        </div>
+                        <div className="join bg-base-200/80 p-1 rounded-xl border border-base-300 shrink-0 self-start sm:self-auto">
+                            <button
+                                type="button"
+                                onClick={() => setIsDraft(true)}
+                                className={`join-item btn btn-sm rounded-lg font-bold border-none transition-all ${
+                                    isDraft ? 'bg-warning text-white shadow-xs' : 'btn-ghost text-slate-600'
+                                }`}
+                            >
+                                Borrador
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsDraft(false)}
+                                className={`join-item btn btn-sm rounded-lg font-bold border-none transition-all ${
+                                    !isDraft ? 'bg-success text-white shadow-xs' : 'btn-ghost text-slate-600'
+                                }`}
+                            >
+                                Publicada
+                            </button>
+                        </div>
+                    </div>
 
-            {/* Conclusión */}
-            <div className="space-y-3 sm:space-y-4">
-                <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
-                    <Flag className="w-5 h-5 text-secondary" />
-                    Conclusión <span className="text-error">*</span>
-                </h3>
-                <div className="form-control">
-                    <MarkdownToolbar textareaId="conclusion-textarea" value={conclusion} setValue={setConclusion} />
-                    <textarea 
-                        id="conclusion-textarea" 
-                        className="textarea textarea-bordered w-full min-h-[6rem] rounded-t-none text-sm sm:text-base overflow-hidden" 
-                        value={conclusion} 
-                        onChange={e => setConclusion(e.target.value)} 
-                        onInput={autoResize}
-                        onFocus={autoResize}
-                        placeholder="Cierre y resumen de la lección..."
-                    />
+                    {/* Resumen Rápido Previo */}
+                    <div className="p-3.5 bg-base-200/40 rounded-2xl border border-base-200 text-xs space-y-1 text-slate-600">
+                        <div className="font-bold text-slate-800 text-xs sm:text-sm mb-1 flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-primary" />
+                            Resumen de la Lección
+                        </div>
+                        <div><strong>Título:</strong> {title || '(Sin título)'}</div>
+                        <div><strong>Autor:</strong> {author || '(Sin autor)'}</div>
+                        <div><strong>Bloques completados:</strong> {paragraphs.filter(p => p.text.trim() && p.question.text.trim()).length} de 3</div>
+                        <div><strong>Estado final:</strong> {isDraft ? '🟡 Guardar como Borrador' : '🟢 Publicar en el sitio'}</div>
+                    </div>
                 </div>
-            </div>
+            )}
 
-            {/* Barra de Acciones Sticky Inferior */}
-            <div className="pt-4 sm:pt-6 border-t border-base-300 flex flex-col md:flex-row items-center justify-between gap-4 sticky bottom-2 sm:bottom-4 bg-base-100/95 backdrop-blur-md p-3 sm:p-4 rounded-2xl shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.15)] z-20 border border-base-200">
-                <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-base-content/70 font-medium w-full md:w-auto justify-center md:justify-start">
-                    {/* Badge de estado en el footer */}
-                    {isDraft ? (
-                        <span className="badge badge-warning badge-sm sm:badge-md font-bold gap-1.5 py-2.5 px-3">
-                            <FileEdit className="w-3.5 h-3.5" /> Modo Borrador
-                        </span>
-                    ) : (
-                        <span className="badge badge-success text-white badge-sm sm:badge-md font-bold gap-1.5 py-2.5 px-3">
-                            <Globe className="w-3.5 h-3.5" /> Modo Público
-                        </span>
-                    )}
-
-                    {lastSavedTime ? (
-                        <span className="flex items-center gap-1.5 text-success font-semibold text-xs">
-                            <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-                            💾 Respaldo local ({lastSavedTime})
-                        </span>
-                    ) : (
-                        <span className="text-base-content/50 text-xs hidden sm:inline">
-                            💡 Respaldo local activo
-                        </span>
-                    )}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-end">
-                    <a href="/admin/lessons" className="btn btn-ghost btn-sm sm:btn-md rounded-xl font-bold">
-                        Cancelar
-                    </a>
-
-                    {/* Botón Guardar Borrador */}
-                    <button 
-                        type="button" 
-                        onClick={handleSaveDraft}
-                        disabled={isSubmitting} 
-                        className="btn btn-outline btn-warning btn-sm sm:btn-md font-bold rounded-xl gap-2 shadow-sm hover:text-white"
-                        title="Guardar borrador (no visible para alumnos)"
-                    >
-                        {isSubmitting && submittingAction === 'draft' ? (
-                            <span className="loading loading-spinner loading-xs"></span>
+            {/* ──────── BARRA INFERIOR FIJA PLANA (< 60px) ──────── */}
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-base-100/95 backdrop-blur-md border-t border-base-200 px-4 py-2.5 sm:py-3 shadow-lg flex items-center justify-between h-14 sm:h-16">
+                <div className="max-w-4xl mx-auto w-full flex items-center justify-between gap-3">
+                    {/* Izquierda: Respaldo discreto */}
+                    <div className="text-xs text-slate-500 font-medium truncate flex items-center gap-1.5">
+                        {lastSavedTime ? (
+                            <span className="flex items-center gap-1 text-emerald-600 font-semibold truncate">
+                                <span>💾</span>
+                                <span className="hidden sm:inline">Guardado local</span>
+                                <span>{lastSavedTime}</span>
+                            </span>
                         ) : (
-                            <Save className="w-4 h-4" />
+                            <span className="truncate hidden sm:inline">💡 Respaldo activo</span>
                         )}
-                        <span>Guardar Borrador</span>
-                    </button>
+                    </div>
 
-                    {/* Botón Publicar Lección */}
-                    <button 
-                        type="button" 
-                        onClick={handlePublish}
-                        disabled={isSubmitting} 
-                        className="btn btn-primary btn-sm sm:btn-md font-bold shadow-lg rounded-xl gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform"
-                        title="Publicar lección para todos los alumnos"
-                    >
-                        {isSubmitting && submittingAction === 'publish' ? (
-                            <span className="loading loading-spinner loading-xs"></span>
-                        ) : (
-                            <Rocket className="w-4 h-4" />
+                    {/* Derecha: Botones de navegación contextuales */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        {currentStep === 1 && (
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(2)}
+                                className="btn btn-primary btn-sm sm:btn-md rounded-xl font-bold gap-1 px-4 sm:px-6 shadow-sm"
+                            >
+                                <span>Siguiente: Bloques</span>
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
                         )}
-                        <span>{isAlreadyPublished ? 'Actualizar Lección' : 'Publicar Lección'}</span>
-                    </button>
+
+                        {currentStep === 2 && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentStep(1)}
+                                    className="btn btn-ghost btn-sm sm:btn-md rounded-xl font-bold text-slate-600"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                    <span>General</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentStep(3)}
+                                    className="btn btn-primary btn-sm sm:btn-md rounded-xl font-bold gap-1 px-4 sm:px-6 shadow-sm"
+                                >
+                                    <span>Siguiente: Cierre</span>
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </>
+                        )}
+
+                        {currentStep === 3 && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentStep(2)}
+                                    className="btn btn-ghost btn-sm sm:btn-md rounded-xl font-bold text-slate-600"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                    <span>Bloques</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={isSubmitting}
+                                    onClick={handleSubmitAction}
+                                    className={`btn btn-sm sm:btn-md rounded-xl font-bold gap-1.5 px-5 sm:px-7 shadow-md ${
+                                        isDraft ? 'btn-warning text-white' : 'btn-primary'
+                                    }`}
+                                >
+                                    {isSubmitting ? (
+                                        <span className="loading loading-spinner loading-xs"></span>
+                                    ) : isDraft ? (
+                                        <Save className="w-4 h-4" />
+                                    ) : (
+                                        <Rocket className="w-4 h-4" />
+                                    )}
+                                    <span>
+                                        {isDraft 
+                                            ? 'Guardar Borrador' 
+                                            : (isAlreadyPublished ? 'Actualizar Lección' : 'Publicar Lección')}
+                                    </span>
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
-        </form>
+
+        </div>
     );
 }
