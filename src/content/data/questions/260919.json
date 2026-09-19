@@ -1,0 +1,61 @@
+{
+  "lessonId": "260919",
+  "title": "NUESTROS MÁRTIRES, TESTIGOS VIVOS DEL ESPÍRITU SANTO",
+  "questions": [
+    {
+      "id": 0,
+      "text": "¿Qué caracteriza principalmente a un mártir?",
+      "options": [
+        {
+          "text": "Busca sufrir para demostrar que es mejor que los demás.",
+          "correct": false
+        },
+        {
+          "text": "Permanece fiel a Cristo y da testimonio de su fe incluso ante las dificultades.",
+          "correct": true
+        },
+        {
+          "text": "Se aleja de las personas para vivir solamente su fe. ",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "text": "¿Qué nos ofrece el Espíritu Santo cuando enfrentamos dificultades?",
+      "options": [
+        {
+          "text": "Una vida sin problemas ni dificultades.",
+          "correct": false
+        },
+        {
+          "text": "La posibilidad de evitar todas nuestras responsabilidades.",
+          "correct": false
+        },
+        {
+          "text": "Fuerza y valentía para permanecer fieles a Dios.",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "¿Cómo podemos ser testigos de Jesús en nuestra vida diaria?",
+      "options": [
+        {
+          "text": "Viviendo nuestra fe mediante el amor, el servicio y buenas acciones. ",
+          "correct": true
+        },
+        {
+          "text": " Solamente hablando de Dios, sin necesidad de poner la fe en práctica. ",
+          "correct": false
+        },
+        {
+          "text": "Obligando a los demás a pensar y creer como nosotros.",
+          "correct": false
+        }
+      ]
+    }
+  ],
+  "formsUrl": ""
+}
