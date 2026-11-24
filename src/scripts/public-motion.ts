@@ -115,13 +115,22 @@ if (document.documentElement.dataset.motionScope === 'public') {
 
 		const interactiveSelector =
 			'button, input[role="tab"], a.btn, .tab, header.navbar a, .menu a, .mobile-nav-link, footer a, .lesson-card, [data-motion-interactive]';
+		const interactiveElements = document.querySelectorAll<HTMLElement>(interactiveSelector);
+
+		// Prepara el transform antes del primer hover para evitar el salto de composición inicial.
+		interactiveElements.forEach((element) => {
+			element.classList.add('gsap-motion-item');
+			gsap.set(element, {
+				'--gsap-motion-y': '0px',
+				'--gsap-motion-scale': '1',
+			});
+		});
 
 		const animateInteraction = (element: HTMLElement, state: 'rest' | 'hover' | 'press') => {
 			if (reduceMotion) return;
 
-			element.classList.add('gsap-motion-item');
 			const isCard = element.matches('.lesson-card, [data-motion-interactive]');
-			const scale = state === 'press' ? '0.992' : state === 'hover' ? (isCard ? '1.006' : '1.008') : '1';
+			const scale = state === 'press' ? '0.992' : '1';
 			const y = state === 'press' ? '0px' : state === 'hover' ? (isCard ? '-2px' : '-1px') : '0px';
 
 			gsap.to(element, {
