@@ -32,7 +32,7 @@ const isLoggedIn = !!accessToken;
 <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
     
     {!isLoggedIn && (
-        <div class="alert bg-base-200 border-l-4 border-accent shadow-md mb-8 flex flex-col sm:flex-row justify-between items-center rounded-lg">
+        <div class="alert bg-base-200 border-l-4 border-accent shadow-md mb-8 flex flex-col sm:flex-row justify-between items-center rounded-lg" data-motion-reveal>
             <div class="flex items-center gap-4">
                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-accent shrink-0 h-8 w-8" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
@@ -48,7 +48,7 @@ const isLoggedIn = !!accessToken;
     )}
 
     {/* Toggle de vistas */}
-    <div class="flex justify-center mb-8">
+    <div class="flex justify-center mb-8" data-motion-reveal>
         <div class="join bg-base-200 p-1 rounded-full shadow-inner">
             <button class="join-item btn btn-sm rounded-full bg-base-100 shadow-sm px-6" id="btnPathView">
                 <Icon name="mdi:map-marker-path" class="w-4 h-4 mr-2" />
@@ -63,7 +63,7 @@ const isLoggedIn = !!accessToken;
 
     {/* Vista de Mapa (Por defecto) */}
     <div id="pathView">
-        <LessonPath client:only="react" lessons={lessons} />
+        <LessonPath client:load lessons={lessons} />
     </div>
 
     {/* Vista de Cuadrícula (Oculta por defecto) */}

@@ -27,7 +27,7 @@ const lessonDataObj = allQuestions[`../content/data/questions/${lessonId}.json`]
 const lessonData = lessonDataObj?.default || null;
 ---
 
-<html lang="es">
+<html lang="es" data-theme="confirtheme">
 <head>
     <BaseHead title={title} description={description}/>
     <style>
@@ -43,7 +43,7 @@ const lessonData = lessonDataObj?.default || null;
         }
 
         .prose {
-            color: rgb(var(--gray-dark));
+            color: var(--foreground);
             width: 100%;
             max-width: 800px;
             margin: auto;
@@ -63,7 +63,7 @@ const lessonData = lessonDataObj?.default || null;
 
         .date {
             margin-bottom: 0.5em;
-            color: rgb(var(--gray));
+            color: color-mix(in srgb, var(--foreground) 72%, var(--background));
         }
 
         .last-updated-on {
@@ -90,10 +90,10 @@ const lessonData = lessonDataObj?.default || null;
 
     <main class="flex-grow w-full mx-auto px-4 lg:px-8">
         <article>
-            <div class="hero-image mt-4 max-w-4xl mx-auto">
+            <div class="hero-image mt-4 max-w-4xl mx-auto" data-motion-reveal>
                 {heroImage && <img width={1020} height={510} src={heroImage} alt=""/>}
             </div>
-            <div class="prose max-w-none w-full mx-auto lg:max-w-5xl">
+            <div class="prose max-w-none w-full mx-auto lg:max-w-5xl" data-motion-reveal>
                 <div class="title max-w-4xl mx-auto">
                     <div class="date">
                         <FormattedDate date={pubDate}/>

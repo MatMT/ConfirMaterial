@@ -11,6 +11,11 @@ function useInView(options = {}) {
   const ref = useRef(null);
 
   useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsIntersecting(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         setIsIntersecting(true);
@@ -40,7 +45,7 @@ const getIconComponent = (type: 'completed' | 'current' | 'locked', index: numbe
   if (type === 'current') {
     const icons = [Flame, Star, Sun];
     const IconComponent = icons[index % icons.length];
-    return <IconComponent className="w-12 h-12 sm:w-14 sm:h-14 text-accent-content animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />;
+    return <IconComponent className="w-12 h-12 sm:w-14 sm:h-14 text-accent-content drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />;
   }
   const icons = [Lock, Shield];
   const IconComponent = icons[index % icons.length];
@@ -62,13 +67,13 @@ function LessonNode({ lesson, index, isCompleted, isCurrent, isLocked }) {
     <div 
       ref={ref}
       id={isCurrent ? "current-lesson" : undefined}
-      className={`relative z-10 flex flex-col items-center mb-16 transition-all duration-700 ease-out 
+      className={`relative z-10 flex flex-col items-center mb-16 transition-all duration-800 ease-out
         ${translateX} 
-        ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+        ${inView ? 'opacity-100 translate-y-0' : 'opacity-100 translate-y-2'}`}
     >
       {/* Tooltip / Título */}
-      <div className={`mb-3 px-4 py-2 rounded-xl text-sm font-bold shadow-md whitespace-nowrap transition-transform duration-500 delay-200
-        ${inView ? 'scale-100' : 'scale-0'}
+      <div className={`mb-3 px-4 py-2 rounded-xl text-sm font-bold shadow-md whitespace-nowrap transition-transform duration-600 delay-150
+        ${inView ? 'scale-100' : 'scale-95'}
         ${isCompleted ? 'bg-primary text-primary-content' : 
           isCurrent ? 'bg-accent text-accent-content' : 
           'bg-base-300 text-base-content/50'}
@@ -81,8 +86,8 @@ function LessonNode({ lesson, index, isCompleted, isCurrent, isLocked }) {
         <a 
           href={isLocked ? '#' : `/lessons/${lesson.id}/`}
           className={`relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full shadow-2xl border-4 
-            ${isCompleted ? 'border-primary cursor-pointer hover:scale-105' : 
-              isCurrent ? 'border-accent cursor-pointer scale-110 shadow-accent/40 hover:scale-125 animate-bounce-subtle' : 
+            ${isCompleted ? 'border-primary cursor-pointer hover:scale-[1.02]' :
+              isCurrent ? 'border-accent cursor-pointer scale-105 shadow-accent/40 hover:scale-110 animate-bounce-subtle' :
               'border-base-300 opacity-80 cursor-not-allowed grayscale'}
             transition-all duration-300 overflow-hidden group
           `}
@@ -118,7 +123,7 @@ function LessonNode({ lesson, index, isCompleted, isCurrent, isLocked }) {
         {/* Botón flotante "Continuar" a la par */}
         {isCurrent && (
             <a href={`/lessons/${lesson.id}/`} 
-               className={`absolute top-1/2 -translate-y-1/2 hidden md:flex btn btn-sm btn-accent rounded-full shadow-xl font-bold text-accent-content whitespace-nowrap hover:scale-110 transition-transform z-20 animate-pulse
+               className={`absolute top-1/2 -translate-y-1/2 hidden md:flex btn btn-sm btn-accent rounded-full shadow-xl font-bold text-accent-content whitespace-nowrap hover:scale-[1.02] transition-transform duration-300 z-20
                 ${offsetCycle === 3 ? 'right-full mr-6' : 'left-full ml-6'}
                `}>
                 Continuar ➜
@@ -139,10 +144,10 @@ export default function LessonPath({ lessons }: LessonPathProps) {
   const bounceAnimation = `
     @keyframes bounce-subtle {
       0%, 100% { top: 0px; }
-      50% { top: -12px; }
+      50% { top: -6px; }
     }
     .animate-bounce-subtle {
-      animation: bounce-subtle 2.5s infinite ease-in-out;
+      animation: bounce-subtle 3.2s infinite ease-in-out;
     }
   `;
 
@@ -167,7 +172,7 @@ export default function LessonPath({ lessons }: LessonPathProps) {
               window.scrollTo({ top: y, behavior: 'smooth' });
             }
           }}
-          className="btn btn-primary shadow-lg shadow-primary/30 rounded-full h-14 flex items-center justify-center px-6 hover:scale-105 transition-all"
+          className="btn btn-primary shadow-lg shadow-primary/30 rounded-full h-14 flex items-center justify-center px-6 hover:scale-[1.02] transition-all duration-300"
         >
           <Target className="w-5 h-5 mr-2" />
           Mi Lección

@@ -20,11 +20,12 @@ export const prerender = true;
         <Header />
 
         <main
-            class="flex-grow container mx-auto px-4 py-16 max-w-4xl flex flex-col items-center justify-center text-center animate-fade-up"
+            class="flex-grow container mx-auto px-4 py-16 max-w-4xl flex flex-col items-center justify-center text-center"
+            data-motion-hero
         >
             <div class="relative mb-8">
                 <div
-                    class="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse"
+                    class="absolute inset-0 bg-primary/20 blur-3xl rounded-full"
                 >
                 </div>
                 <Icon
@@ -53,14 +54,14 @@ export const prerender = true;
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
                     href="/lessons"
-                    class="btn btn-primary btn-lg rounded-full shadow-lg shadow-primary/30 hover:scale-105 transition-all"
+                    class="btn btn-primary btn-lg rounded-full shadow-lg shadow-primary/30 hover:scale-105 transition-transform"
                 >
                     <Icon name="mdi:map-marker-path" class="w-6 h-6 mr-2" />
                     Volver al Roadmap
                 </a>
                 <a
                     href="/"
-                    class="btn btn-outline btn-lg rounded-full hover:scale-105 transition-all"
+                    class="btn btn-outline btn-lg rounded-full hover:scale-105 transition-transform"
                 >
                     <Icon name="mdi:home" class="w-6 h-6 mr-2" />
                     Ir al Inicio

@@ -24,8 +24,8 @@ import { Icon } from 'astro-icon/components'
 <style>
 	footer {
 		padding: 2em 1em 6em 1em;
-		background: linear-gradient(var(--gray-gradient)) no-repeat;
-		color: rgb(var(--gray));
+		background: linear-gradient(hsl(var(--b2)), hsl(var(--b1))) no-repeat;
+		color: color-mix(in srgb, var(--foreground) 72%, var(--background));
 		text-align: center;
 	}
 	.social-links {
@@ -36,9 +36,9 @@ import { Icon } from 'astro-icon/components'
 	}
 	.social-links a {
 		text-decoration: none;
-		color: rgb(var(--gray));
+		color: color-mix(in srgb, var(--foreground) 72%, var(--background));
 	}
 	.social-links a:hover {
-		color: rgb(var(--gray-dark));
+		color: var(--foreground);
 	}
 </style>
